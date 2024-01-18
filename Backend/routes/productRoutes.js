@@ -1,17 +1,17 @@
 const express = require('express')
 const router = express.Router()
-const projectController = require('../controllers/projectsController')
+const productController = require('../controllers/productsController')
 
 //@desc Routes for Product
 
 
 router.route('/')
-    .get(projectController.getAllProjects)
-    .post(projectController.createNewProject)
+    .get(productController.getAllProducts)
+    .post(productController.createNewProduct)
 
 
 router.route('/:id')
-    .get(projectController.getProjectsById)
-    .patch(projectController.updateProject)
-    .delete(projectController.deleteProject)
+    .get(productController.getProductById)
+    .patch(productController.updateProduct)
+    .delete(productController.deleteProduct)
 module.exports = router

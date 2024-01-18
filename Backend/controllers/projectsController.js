@@ -16,7 +16,7 @@ const getAllProjects = asyncHandler(async (req, res) => {
 // @desc Get specific projects
 // @route GET /projects
 // @access private
-const getProjectsById = asyncHandler(async (req, res) => {
+const getProjectById = asyncHandler(async (req, res) => {
     const projects = await Project.findById(req.params.id).lean()
     if(!projects){
         return res.status(400).json({ message: 'No project found with that ID'})
@@ -122,7 +122,7 @@ const deleteProject = asyncHandler(async (req, res) => {
 
 module.exports = {
     getAllProjects,
-    getProjectsById,
+    getProjectById,
     createNewProject,
     updateProject,
     deleteProject

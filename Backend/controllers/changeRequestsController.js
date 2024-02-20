@@ -82,10 +82,84 @@ const deleteChangeRequest = asyncHandler(async (req, res) => {
     res.json(reply)
 })
 
+// @desc List change requests by status
+// @route GET /changeRequests/status/:status
+// @access private
+const listChangeRequestsByStatus = asyncHandler(async (req, res) => {
+    const { status } = req.params; // Get status from URL params
+
+    // Find change requests with the given status
+    const changeRequests = await ChangeRequest.find({ status: status });
+
+    if (!changeRequests.length) {
+        return res.status(404).json({ message: `No change requests found with status ${status}` });
+    }
+
+    res.json(changeRequests);
+});
+
+
+// @desc Assign a change request to a user
+// @route PATCH /changeRequests/:id/assign
+// @access private
+const assignChangeRequest = asyncHandler(async (req, res) => {
+    const { userId } = req.body; // ID of the user to whom the request is assigned
+    const changeRequestId = req.params.id; // ID of the change request
+
+    const changeRequest = await ChangeRequest.findById(changeRequestId);
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'Change request not found' });
+    }
+
+    // Optionally, verify the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Assign the change request
+    changeRequest.assignedTo = userId;
+    await changeRequest.save();
+
+    res.json({ message: `Change request ${changeRequestId} assigned to user ${userId}` });
+});
+
+
+// @desc Approve or reject a change request
+// @route PATCH /changeRequests/:id/approveReject
+// @access private
+const approveRejectChangeRequest = asyncHandler(async (req, res) => {
+    const { approvalStatus } = req.body; // Expected to be either 'Approved' or 'Rejected'
+    const changeRequestId = req.params.id;
+
+    const changeRequest = await ChangeRequest.findById(changeRequestId);
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'Change request not found' });
+    }
+
+    if (!['Approved', 'Rejected'].includes(approvalStatus)) {
+        return res.status(400).json({ message: 'Invalid approval status' });
+    }
+
+    changeRequest.approvalStatus = approvalStatus;
+    await changeRequest.save();
+
+    res.json({
+        message: `Change request ${changeRequestId} has been ${approvalStatus.toLowerCase()}`,
+        changeRequest
+    });
+});
+
+
 module.exports = {
     getAllChangeRequests,
     getChangeRequestById,
     createNewChangeRequest,
     updateChangeRequest,
-    deleteChangeRequest
+    deleteChangeRequest,
+    listChangeRequestsByStatus,
+    assignChangeRequest,
+    approveRejectChangeRequest
 }

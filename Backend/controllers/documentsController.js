@@ -106,6 +106,8 @@ const deleteDocument = asyncHandler(async (req, res) => {
     res.json(reply)
 })
 
+//Endpoint to be able 
+
 module.exports = {
     getAllDocuments,
     getDocumentById,

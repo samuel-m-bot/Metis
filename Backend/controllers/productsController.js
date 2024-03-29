@@ -118,6 +118,28 @@ const deleteProduct = asyncHandler(async (req, res) => {
     res.json(reply)
 })
 
+// @desc List products by category
+// @route GET /products/category/:categoryName
+// @access private
+const listProductsByCategory = asyncHandler(async (req, res) => {
+    const { categoryName } = req.params;
+
+    // Find products by category
+    const products = await Product.find({ category: categoryName });
+
+    if (!products.length) {
+        return res.status(404).json({ message: `No products found in category ${categoryName}` });
+    }
+
+    res.json(products);
+});
+
+
+//Search Product
+
+//Link Product To Project
+
+//Update Product Status
 module.exports = {
     getAllProducts,
     getProductById,

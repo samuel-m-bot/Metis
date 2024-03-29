@@ -1,0 +1,9 @@
+#breadcrumb_metis{
+    background-color: #287379;
+    color: white;
+}
+
+#breadcrumb_metis .breadcrumb-item a, 
+#breadcrumb_metis .breadcrumb-item.active {
+  color: #fff; 
+}

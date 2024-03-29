@@ -1,0 +1,197 @@
+.container-fluid {
+  padding: 20px;
+}
+
+h2, h3, h5 {
+  color: #343a40;
+}
+
+p, li {
+  color: #495057;
+}
+
+/* Tab Navigation Customization */
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+
+.nav-link.active {
+  color: #287379 !important;
+  border-color: #dee2e6 #dee2e6 #f8f9fa !important;
+  background-color: #f8f9fa !important;
+}
+
+.nav-link {
+  color: #495057;
+  margin-right: 2px;
+}
+
+.Project-name button{
+  color: #287379;
+  font-weight: bold;
+  font-size: x-large
+}
+/* Overview */
+.project-overview{
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 1px solid #dee2e6;
+}
+
+/* DOCUMENTS */
+.project-documents .attachments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.project-documents .attachment-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.project-documents .attachment-title {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.project-documents .attachment-description, 
+.project-documents .attachment-upload-date {
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.project-documents .btn-primary {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+/* Progress Bar Customization */
+.progress {
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+}
+
+.progress-bar {
+  background-color: #28a745;
+}
+
+/* Chart Section Adjustments */
+.chart-container {
+  border: 1px solid #dee2e6; 
+  border-radius: 8px;
+  margin-bottom: 30px; 
+  padding: 20px; 
+  background-color: #fff; 
+  max-height: 300px;
+}
+
+/* Table Styling for Tasks and Change Requests */
+.table {
+  color: #495057;
+}
+
+.table th {
+  background-color: #e9ecef;
+  color: #343a40;
+  border-top: none;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Button Enhancements */
+.btn-primary {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-primary:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Adjustments for No Items Available Messages */
+.tab-tasks p {
+  color: #6c757d;
+  text-align: center;
+}
+
+
+/* Design Table Styling */
+.design-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.design-table th, .design-table td {
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.design-table th {
+  background-color: #e9ecef; 
+  color: #343a40;
+}
+
+.design-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Button Styles within Design Table */
+.design-table .btn-info {
+  color: #fff;
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  padding: 5px 10px;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  border-radius: 5px;
+}
+
+.design-table .btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+}
+
+
+.design-tab-content {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 30px;
+}
+
+.design-tab-title {
+  color: #343a40;
+  margin-bottom: 15px;
+}
+
+.design-tab-summary {
+  margin-bottom: 20px;
+}
+
+.design-updates, .design-approval-status, .featured-designs {
+  margin-bottom: 20px;
+}
+
+.design-actions {
+  display: flex;
+  justify-content: start;
+  margin-bottom: 20px;
+}
+
+.design-actions .btn-primary {
+  margin-right: 10px;
+}
+
+

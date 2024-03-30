@@ -8,14 +8,14 @@ import NotFound from './components/NotFound'
 import ProjectDashboard from './features/projects/ProjectDashboard'
 import ProductList from './features/products/ProductList.js'
 import DesignManagement from './features/designs/DesignManagement'
-import ChangeRequests from './features/changes/ChangeRequests'
+import ChangeRequests from './features/changes/ChangeRequests.js'
 import DocumentLibrary from './features/documents/DocumentLibrary'
 import UserManagement from './features/users/UserManagement'
 import MetisLayout from './components/MetisLayout.js'
 import Project from './features/projects/Project.js'
 import ProjectList from './features/projects/ProjectList.js'
 import Documents from './features/documents/Documents.js'
-import ChangeRequest from './features/changes/ChangeRequests'
+import ChangeRequestTabs from './features/changes/ChangeRequestsTabs.js'
 import ChangeRequestReview from './features/changes/ChangeRequestReview.js'
 import TaskDetails from './features/Tasks/TaskDetail.js'
 import Product from './features/products/Product.js'
@@ -38,7 +38,7 @@ function App() {
           <Route path="projects/:projectId" element={<ProjectDashboard />} />#
           <Route path="tasks/:taskId" element={<TaskDetails />} />
           <Route path="documents/:documentId" element={<Documents />} />
-          <Route path="change-requests/:changeRequestID" element={<ChangeRequest />} />
+          <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />
           <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
           <Route path="products" element={<ProductList />} />
           <Route path="products/:productId" element={<Product />} />

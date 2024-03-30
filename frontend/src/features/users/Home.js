@@ -37,7 +37,6 @@ const Home = () => {
             <li className="list-group-item"><a href="/projects">Projects Dashboard</a></li>
             <li className="list-group-item"><a href="/products">Product List</a></li>
             <li className="list-group-item"><a href="/designs">Design management</a></li>
-            <li className="list-group-item"><a href="/change-requests">Change Requests</a></li>
             <li className="list-group-item"><a href="/documents">Document Library</a></li>
           </ul>
         </div>

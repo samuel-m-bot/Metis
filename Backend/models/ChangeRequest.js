@@ -40,7 +40,11 @@ const changeRequestSchema = new mongoose.Schema({
     relatedDocuments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'
-    }]
+    }],
+    associatedTasks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Task'
+    }],
 });
 
 module.exports = mongoose.model('ChangeRequest', changeRequestSchema);

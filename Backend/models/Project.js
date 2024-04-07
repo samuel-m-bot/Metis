@@ -34,6 +34,10 @@ const projectSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],
+    projectTasks: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Task'
+    }],
     relatedDesigns: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Design'

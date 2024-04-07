@@ -47,7 +47,7 @@ const designSchema = new mongoose.Schema({
     linkedChangeRequests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'ChangeRequest'
-    }]
+    }],
 });
 
 module.exports = mongoose.model('Design', designSchema);

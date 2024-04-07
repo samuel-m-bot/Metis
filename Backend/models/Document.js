@@ -45,7 +45,7 @@ const documentSchema = new mongoose.Schema({
     relatedDocuments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'
-    }]
+    }],
 });
 
 module.exports = mongoose.model('Document', documentSchema);

@@ -77,7 +77,7 @@ const taskSchema = new mongoose.Schema({
     projectID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Project',
-        required: function() { return this.taskType === 'Others'; }
+        required: true
     },
     dueDate: {
         type: Date
@@ -97,7 +97,7 @@ const taskSchema = new mongoose.Schema({
     onModel: {
         type: String,
         required: true,
-        enum: ['Project', 'ChangeRequest', 'Design', 'Document']
+        enum: ['Project', 'ChangeRequest']
     },
     subtasks: [subtaskSchema],
     checklist: [checklistItemSchema],

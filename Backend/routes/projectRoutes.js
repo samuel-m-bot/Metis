@@ -19,5 +19,6 @@ router.patch('/:id/removeTeamMember', projectController.removeTeamMember); // Re
 router.get('/:id/changeRequests', projectController.listProjectChangeRequests); // List change requests for a project
 router.patch('/:id/status', projectController.updateProjectStatus); // Update project status
 router.patch('/:id/archive', projectController.archiveProject); // Archive a project
+router.get('/assigned/:userId', projectController.getAssignedProjects); // Getting assigned projects for the user
 
 module.exports = router;

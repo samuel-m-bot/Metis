@@ -24,6 +24,22 @@ const getProjectById = asyncHandler(async (req, res) => {
     res.json(projects)
 })
 
+// @desc Get projects assigned to the current user
+// @route GET /projects/assigned/:userId
+// @access Private
+const getAssignedProjects = asyncHandler(async (req, res) => {
+    const userId = req.params.userId;
+
+    // Find projects where the userId is in the teamMembers array
+    const assignedProjects = await Project.find({ teamMembers: { $in: [userId] } });
+
+    if (!assignedProjects.length) {
+        return res.status(404).json({ message: 'No assigned projects found' });
+    }
+
+    res.json(assignedProjects);
+});
+
 // @desc Create new project
 // @route POST /projects
 // @access private
@@ -265,6 +281,7 @@ const archiveProject = asyncHandler(async (req, res) => {
 module.exports = {
     getAllProjects,
     getProjectById,
+    getAssignedProjects,
     createNewProject,
     updateProject,
     deleteProject,

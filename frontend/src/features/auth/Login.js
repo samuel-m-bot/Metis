@@ -19,7 +19,7 @@ const Login = () => {
 
     const handleIDInput = (e) => setXID(e.target.value)
     const handlePwdInput = (e) => setPassword(e.target.value)
-    const handleToggle = (e) => setPersist(prev => !prev)
+    // const handleToggle = (e) => setPersist(prev => !prev)
 
     const errClass = errMsg ? "errmsg" : "offscreen"
 

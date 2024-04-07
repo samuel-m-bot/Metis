@@ -23,4 +23,7 @@ router.patch('/:taskId/checklist/:itemId', taskController.toggleChecklistItem); 
 router.post('/:id/comments', taskController.addCommentToTask); // Add a comment to a task
 router.patch('/:taskId/comments/:commentId', taskController.editTaskComment); // Edit a task comment
 
+// Route to get tasks assigned to a specific user
+router.get('/user/:userId', taskController.getUserTasks); // Get tasks for a specific user
+
 module.exports = router;

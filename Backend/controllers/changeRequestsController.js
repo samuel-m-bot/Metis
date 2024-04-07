@@ -1,6 +1,7 @@
 const ChangeRequest = require('../models/ChangeRequest')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
+const Activity = require('../models/Activity');
 
 // @desc Get all changeRequests
 // @route GET /changeRequests
@@ -122,9 +123,17 @@ const assignChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.assignedTo = userId;
     await changeRequest.save();
 
+    const newActivity = new Activity({
+        actionType: 'Assigned',
+        description: `Change request ${changeRequestId} assigned to user ${userId}`,
+        createdBy: req.user._id,
+        relatedTo: changeRequestId,
+        onModel: 'ChangeRequest',
+    });
+    await newActivity.save();
+
     res.json({ message: `Change request ${changeRequestId} assigned to user ${userId}` });
 });
-
 
 // @desc Approve or reject a change request
 // @route PATCH /changeRequests/:id/approveReject
@@ -146,12 +155,20 @@ const approveRejectChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.approvalStatus = approvalStatus;
     await changeRequest.save();
 
+    const approvalActivity = new Activity({
+        actionType: approvalStatus, 
+        description: `Change request ${changeRequestId} has been ${approvalStatus.toLowerCase()}`,
+        createdBy: req.user._id,
+        relatedTo: changeRequestId,
+        onModel: 'ChangeRequest',
+    });
+    await approvalActivity.save();
+
     res.json({
         message: `Change request ${changeRequestId} has been ${approvalStatus.toLowerCase()}`,
         changeRequest
     });
 });
-
 
 module.exports = {
     getAllChangeRequests,

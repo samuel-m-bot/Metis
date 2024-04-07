@@ -67,6 +67,27 @@ const getTaskById = asyncHandler(async (req, res) => {
     res.status(200).json(task);
 });
 
+// @desc Get tasks assigned to a specific user
+// @route GET /tasks/user/:userId
+// @access Private
+const getUserTasks = asyncHandler(async (req, res) => {
+    const userId = req.params.userId; // Or obtain the userId from req.user if using authentication middleware
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    // Find tasks where the userId is in the assignedTo array
+    const tasks = await Task.find({ assignedTo: { $in: [userId] } });
+
+    if (tasks.length === 0) {
+        return res.status(404).json({ message: 'No tasks found for this user' });
+    }
+
+    res.status(200).json(tasks);
+});
+
+
 // @desc Update a task
 // @route PATCH /tasks/:id
 // @access Private
@@ -245,6 +266,7 @@ module.exports = {
     createTask,
     getAllTasks,
     getTaskById,
+    getUserTasks,
     updateTask,
     deleteTask,
     addSubtask,

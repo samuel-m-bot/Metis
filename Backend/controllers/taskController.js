@@ -1,4 +1,4 @@
-const Task = require('../models/Task');
+const Task = require('../models/Tasks');
 const ChangeRequest = require('../models/ChangeRequest');
 const asyncHandler = require('express-async-handler');
 
@@ -122,6 +122,14 @@ const deleteTask = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'Task not found' });
     }
     await task.remove();
+    const newActivity = new Activity({
+        actionType: 'Deleted',
+        description: `Task ${req.params.id} has been deleted by user ${userId}`,
+        createdBy: req.user._id,
+        relatedTo: req.params.id,
+        onModel: 'Task',
+    });
+    await newActivity.save();
     res.status(200).json({ message: 'Task deleted successfully' });
 });
 
@@ -147,6 +155,15 @@ const addSubtask = asyncHandler(async (req, res) => {
 
     task.subtasks.push(subtask);
     await task.save();
+
+    const newActivity = new Activity({
+        actionType: 'Created',
+        description: `Subtask ${subtask.title}, has been created for task ${req.params.id}.Created by user ${userId}`,
+        createdBy: req.user._id,
+        relatedTo: req.params.id,
+        onModel: 'Task',
+    });
+    await newActivity.save();
     res.status(201).json({ message: 'Subtask added successfully', task });
 });
 

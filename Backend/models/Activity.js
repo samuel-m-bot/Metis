@@ -4,7 +4,7 @@ const activitySchema = new mongoose.Schema({
     actionType: {
         type: String,
         required: true,
-        enum: ['Created', 'Updated', 'Reviewed', 'Commented', 'Completed', 'Approved', 'Rejected', 'Other'],
+        enum: ['Created', 'Updated', 'Reviewed', 'Commented', 'Completed', 'Approved', 'Rejected', 'Deleted', 'Other'],
     },
     description: {
         type: String,

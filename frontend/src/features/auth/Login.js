@@ -1,25 +1,49 @@
 import { useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useLoginMutation } from './authApiSlice'
+import { useDispatch } from 'react-redux'
+import { setCredentials } from './authSlice'
+import usePersist from '../../hooks/usePersist'
 
 const Login = () => {
     const userRef = useRef()
     const errRef = useRef()
-    const [XID, setXID] = useState('')
+    const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [errMsg, setErrMsg] = useState('')
+    const [persist, setPersist] = usePersist()
 
+    const dispatch = useDispatch()
     const navigate = useNavigate()
 
-    //const [login, {isLoading} ] = useLoginMutation()
+    const [login, {isLoading} ] = useLoginMutation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        navigate('/home') 
+        try{
+            const {accessToken, role} = await login({email, password}).unwrap()
+            console.log(role)
+            dispatch(setCredentials({ accessToken, role}))
+            setEmail('')
+            setPassword('')
+            navigate('/home');
+        } catch (err){
+            if(!errMsg.status) {
+                setErrMsg('No server response')
+            }else if(err.status === 400) {
+                setErrMsg('Missing email or Password')
+            }else if(err.status === 401){
+                setErrMsg('Unauthorized')
+            }else{
+                setErrMsg(err.message || err.data?.message)
+            }
+            errRef.current.focus()
+        }
     }
 
-    const handleIDInput = (e) => setXID(e.target.value)
+    const handleIDInput = (e) => setEmail(e.target.value)
     const handlePwdInput = (e) => setPassword(e.target.value)
-    // const handleToggle = (e) => setPersist(prev => !prev)
+    const handleToggle = (e) => setPersist(prev => !prev)
 
     const errClass = errMsg ? "errmsg" : "offscreen"
 
@@ -37,12 +61,12 @@ const Login = () => {
                         <input
                             className="viewerLoginInput"
                             type="text"
-                            id="ID"
+                            id="email"
                             ref={userRef}
-                            value={XID}
+                            value={email}
                             onChange={handleIDInput}
                             autoComplete="off"
-                            placeholder='ID'
+                            placeholder='Email'
                             required
                         />
 
@@ -60,6 +84,16 @@ const Login = () => {
                         </div>
                         <button className="viewerLoginSubmitButton"><b>Login</b></button>
 
+                        <label htmlFor="persist" className="userLoginPersistLabel">
+                            <input
+                                type="checkbox"
+                                className="form__checkbox"
+                                id="persist"
+                                onChange={handleToggle}
+                                checked={persist}
+                            />
+                            Stay logged in?
+                        </label>
                     </form>
                     <div className='signUpContainer'>
                         <p>Don’t have an account? <Link  className='signUp' to="/signUp"><b>Sign up</b></Link></p>

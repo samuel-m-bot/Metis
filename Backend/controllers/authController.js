@@ -25,8 +25,6 @@ const login = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: 'Unauthorized - Incorrect information'})
     }
 
-    let isNewUser = false
-    if(!foundUser.email) isNewUser=true
     console.log(foundUser.email)
     const accessToken = jwt.sign(
         {
@@ -55,7 +53,7 @@ const login = asyncHandler(async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
-    res.json({ accessToken, role: foundUser.roles, isNewUser: isNewUser })
+    res.json({ accessToken, role: foundUser.roles })
 })
 
 const refresh = asyncHandler(async (req, res) => {

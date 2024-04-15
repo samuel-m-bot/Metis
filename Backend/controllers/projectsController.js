@@ -7,9 +7,6 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllProjects = asyncHandler(async (req, res) => {
     const projects = await Project.find().lean()
-    if(!projects?.length){
-        return res.status(400).json({ message: 'No projects found'})
-    }
     res.json(projects)
 })
 

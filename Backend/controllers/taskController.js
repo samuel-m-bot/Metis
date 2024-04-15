@@ -50,9 +50,6 @@ const createTask = asyncHandler(async (req, res) => {
 // @access Private
 const getAllTasks = asyncHandler(async (req, res) => {
     const tasks = await Task.find().populate('assignedTo', 'firstName surname').populate('projectID', 'name');
-    if (tasks.length === 0) {
-        return res.status(404).json({ message: 'No tasks found' });
-    }
     res.status(200).json(tasks);
 });
 

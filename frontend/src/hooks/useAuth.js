@@ -8,7 +8,6 @@ const useAuth = () => {
     let isAdmin = false
     let status = "User"
 
-    console.log(token)
     if (token) {
         const decoded = jwtDecode(token)
         const { id, email, firstName, surname, roles } = decoded.UserInfo 

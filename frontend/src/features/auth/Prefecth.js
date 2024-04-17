@@ -4,6 +4,7 @@ import { projectsApiSlice } from '../projects/projectsApiSlice';
 import { productsApiSlice } from '../products/productsApiSlice';
 import { tasksApiSlice } from '../Tasks/tasksApiSlice';
 import { designsApiSlice } from '../designs/designsApiSlice';
+import { documentsApiSlice } from '../documents/documentsApiSlice';
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ const Prefetch = () => {
         const products = store.dispatch(productsApiSlice.endpoints.getProjects.initiate())
         const tasks = store.dispatch(tasksApiSlice.endpoints.getProjects.initiate())
         const designs = store.dispatch(designsApiSlice.endpoints.getProjects.initiate())
+        const documents = store.dispatch(documentsApiSlice.endpoints.getProjects.initiate())
 
         return () => {
             console.log('unsubscribing')
@@ -23,6 +25,7 @@ const Prefetch = () => {
             products.unsubscribe()
             tasks.unsubscribe()
             designs.unsubscribe()
+            documents.unsubscribe()
         }
     }, [])
 

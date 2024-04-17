@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAddNewDesignMutation } from './designsApiSlice';
 import { useGetProductsQuery } from '../products/productsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
+import { useGetProjectsQuery } from "../projects/projectsApiSlice";
 
 const NewDesignForm = () => {
     const navigate = useNavigate();
     const [addNewDesign, { isLoading }] = useAddNewDesignMutation();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
+    const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
 
+    const [projectId, setProjectId] = useState('');
     const [productId, setProductId] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -21,9 +24,16 @@ const NewDesignForm = () => {
     const [designer, setDesigner] = useState('');
     const [file, setFile] = useState(null);
 
+    const handleRevisionChange = (e) => {
+        // Allows input changes without immediate validation for flexibility
+        setRevisionNumber(e.target.value);
+        if (revisionError) setRevisionError(''); // Clear error if previously set
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         const formData = new FormData();
+        formData.append('projectId', projectId);
         formData.append('productID', productId);
         formData.append('name', name);
         formData.append('description', description);
@@ -42,14 +52,13 @@ const NewDesignForm = () => {
         }
     };
 
-    const handleRevisionChange = (e) => {
-        const value = e.target.value;
-        const regex = /^[A-Z]*\.?\d+(\.\d+)?$/; // Matches formats like "A.1", "1.1", or just "1"
-        if (regex.test(value) || value === '') {
-            setRevisionNumber(value);
-            setRevisionError(''); // Clear error message if valid
-        } else {
+    const validateRevisionNumber = () => {
+        // Validates when user finishes input (onBlur or onSubmit)
+        const regex = /^[A-Z]*\.?\d+(\.\d+)?$/;
+        if (!regex.test(revisionNumber)) {
             setRevisionError('Invalid format. Use A.1, 1.1, or similar formats.');
+        } else {
+            setRevisionError(''); // Clear error message if valid
         }
     };
     
@@ -59,6 +68,22 @@ const NewDesignForm = () => {
         <div className="container mt-3">
             <h1>Create New Design</h1>
             <form onSubmit={handleSubmit} encType="multipart/form-data">
+            <div className="mb-3">
+                    <label htmlFor="projectId" className="form-label">Project:</label>
+                    <select
+                        className="form-select"
+                        id="projectId"
+                        value={projectId}
+                        onChange={e => setProjectId(e.target.value)}
+                    >
+                        <option value="">Select a project</option>
+                        {projects?.ids.map(id => (
+                            <option key={id} value={id}>
+                                {projects.entities[id].name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className="mb-3">
                     <label htmlFor="productId" className="form-label">Product:</label>
                     <select 
@@ -97,9 +122,16 @@ const NewDesignForm = () => {
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="revisionNumber" className="form-label">Revision Number:</label>
-                    <input type="text" className="form-control" id="revisionNumber" value={revisionNumber} onChange={handleRevisionChange} required />
-                    {revisionError && <div className="text-danger">{revisionError}</div>}
+                    <label htmlFor="revisionNumber">Revision Number:</label>
+                    <input
+                        type="text"
+                        id="revisionNumber"
+                        value={revisionNumber}
+                        onChange={handleRevisionChange}
+                        onBlur={validateRevisionNumber}
+                        required
+                    />
+                    {revisionError && <div style={{ color: 'red' }}>{revisionError}</div>}
                 </div>
                 <div className="mb-3">
                     <label htmlFor="status" className="form-label">Status:</label>

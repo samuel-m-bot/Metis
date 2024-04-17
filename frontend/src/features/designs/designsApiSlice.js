@@ -72,7 +72,28 @@ export const designsApiSlice = apiSlice.injectEndpoints({
               method: 'GET',
               responseHandler: (response) => response.blob(),
             }),
-          }),
+        }),
+        getDesignsByProjectId: builder.query({
+            query: projectId => ({
+                url: `/designs/project/${projectId}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const loadedDesigns = responseData.map(design => {
+                    design.id = design._id;
+                    return design;
+                });
+                return designsAdapter.setAll(initialState, loadedDesigns);
+            },
+            providesTags: (result, error, arg) => {
+                if (result?.ids) {
+                    return [
+                        { type: 'Design', id: 'LIST' },
+                        ...result.ids.map(id => ({ type: 'Design', id }))
+                    ]
+                } else return [{ type: 'Design', id: 'LIST' }];
+            }
+        }),
     }),
 })
 
@@ -82,7 +103,8 @@ export const {
     useUpdateDesignMutation,
     useDeleteDesignMutation,
     useDownloadDesignQuery,
-    useLazyDownloadDesignQuery
+    useLazyDownloadDesignQuery,
+    useGetDesignsByProjectIdQuery
 } = designsApiSlice
 
 // returns the query result object

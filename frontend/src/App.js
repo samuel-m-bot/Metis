@@ -36,6 +36,9 @@ import DesignList from './features/designs/DesignList.js'
 import NewProductForm from './features/products/NewProductForm.js'
 import EditProduct from './features/products/EditProduct.js'
 import EditDesign from './features/designs/EditDesign.js'
+import DocuemntList from './features/documents/DocumentList.js'
+import NewDocumentForm from './features/documents/NewDocumentForm.js'
+import EditDocument from './features/documents/EditDocument.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -81,9 +84,9 @@ function App() {
                 </Route>
 
                 <Route path="documents">
-                  <Route index element={<UsersList />} />
-                  <Route path=":id" element={<EditUser />} />
-                  <Route path="create" element={<NewUserForm />} />
+                  <Route index element={<DocuemntList />} />
+                  <Route path=":id" element={<EditDocument />} />
+                  <Route path="create" element={<NewDocumentForm />} />
                 </Route>
 
                 <Route path="designs">

@@ -28,65 +28,79 @@ const getDocumentById = asyncHandler(async (req, res) => {
 // @route POST /documents
 // @access private
 const createNewDocument = asyncHandler(async (req, res) => {
-    const {
-        name, type, revisionNumber, associatedProductID, author, creationDate, lastModifiedDate, status,
-        approvalStatus, approver, content, tags, relatedDocuments
-    } = req.body
+    const {title, type, description, revisionNumber, associatedProductID, authors, status, relatedDocuments } = req.body;
 
-    // Confirm data is all there to create a document
-    if (!name || !type || !revisionNumber) {
-        return res.status(400).json({ message: 'Name, type, and revision number are required' })
+    // Validate required fields
+    if (!title || !type || !description || !revisionNumber || !authors || !status ) {
+        return res.status(400).json({ message: 'Required fields are missing' });
     }
 
-    // Check for duplicate documents
-    const duplicate = await Document.findOne({ name }).lean().exec()
-    if (duplicate) {
-        return res.status(409).json({ message: 'Duplicate document name' })
+    // Validate revision number format
+    if (!/^[A-Z]*\.?\d+(\.\d+)?$/.test(revisionNumber)) {
+        return res.status(400).json({ message: 'Invalid revision number format' });
     }
 
-    const documentObject = {
-        name, type, revisionNumber, associatedProductID, author, creationDate, lastModifiedDate,
-        status, approvalStatus, approver, content, tags, relatedDocuments
-    }
+    // Prepare the attachment data
+    const attachment = req.file ? {
+        filePath: req.file.path,
+        fileName: req.file.filename
+    } : undefined;
 
-    // Create and store the new document
-    const document = await Document.create(documentObject)
+    // Create new document with attachment if available
+    const docuemnt = new Document({
+        title,
+        type,
+        description,
+        revisionNumber,
+        authors,
+        status,
+        attachment
+    });
 
-    if (document) {
-        res.status(201).json({ message: `New document '${name}' created` })
-    } else {
-        res.status(400).json({ message: 'Invalid document data received' })
-    }
+    if(associatedProductID) docuemnt.associatedProductID = associatedProductID
+    if(relatedDocuments) docuemnt.relatedDocuments = relatedDocuments
+
+    // Automatically set the creation  date to now
+    docuemnt.creationDate = Date.now();
+
+    const createdDocuemnt = await docuemnt.save();
+    res.status(201).json(createdDocuemnt);
 })
 
 // @desc Update a document
 // @route PATCH /documents/:id
 // @access private
 const updateDocument = asyncHandler(async (req, res) => {
-    const documentId = req.params.id
-    const document = await Document.findById(documentId)
+    const documentId = req.params.id;
+    const document = await document.findById(documentId);
 
     if (!document) {
-        return res.status(404).json({ message: 'Document not found' })
+        return res.status(404).json({ message: 'document not found' });
     }
 
-    // Update fields if they are provided
-    document.name = req.body.name || document.name
-    document.type = req.body.type || document.type
-    document.revisionNumber = req.body.revisionNumber || document.revisionNumber
-    document.associatedProductID = req.body.associatedProductID || document.associatedProductID
-    document.author = req.body.author || document.author
-    document.creationDate = req.body.creationDate || document.creationDate
-    document.lastModifiedDate = req.body.lastModifiedDate || document.lastModifiedDate
-    document.status = req.body.status || document.status
-    document.approvalStatus = req.body.approvalStatus || document.approvalStatus
-    document.approver = req.body.approver || document.approver
-    document.content = req.body.content || document.content
-    document.tags = req.body.tags || document.tags
-    document.relatedDocuments = req.body.relatedDocuments || document.relatedDocuments
+    // Update fields if provided
+    document.title = req.body.title || document.title;
+    document.type = req.body.type || document.type;
+    document.description = req.body.description || document.description;
+    document.revisionNumber = req.body.revisionNumber || document.revisionNumber;
+    document.associatedProductID = req.body.associatedProductID || document.associatedProductID;
+    document.authors = req.body.authors || document.authors;
+    document.status = req.body.status || document.status;
+    document.relatedDocuments = req.body.relatedDocuments || document.relatedDocuments;
+    document.comments = req.body.comments || document.comments;
+    // Automatically set the last modified date to now
+    document.lastModifiedDate = Date.now();
 
-    const updatedDocument = await document.save()
-    res.json({ message: `Document '${updatedDocument.name}' updated` })
+    // Prepare the attachment data if a file is uploaded
+    if (req.file) {
+        document.attachment = {
+            filePath: req.file.path,  // The path to the file in the filesystem
+            fileName: req.file.filename 
+        };
+    }
+
+    const updateddocument = await document.save();
+    res.json({ message: `document '${updateddocument._id}' updated successfully.` });
 })
 
 // @desc Delete a document

@@ -10,6 +10,10 @@ const documentSchema = new mongoose.Schema({
         required: true,
         enum: [ 'Requiremnts', 'Design', 'Devlopment', 'Manufacturing', 'Miantenance', 'End of Life']
     },
+    description: {
+        type: String,
+        required: true
+    },
     attachment: {
         filePath: { type: String, required: true }, 
         fileName: { type: String, required: true }  
@@ -49,6 +53,11 @@ const documentSchema = new mongoose.Schema({
     relatedDocuments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'
+    }],
+    comments: [{
+        text: { type: String, required: true },
+        author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        timestamp: { type: Date, default: Date.now },
     }],
 });
 

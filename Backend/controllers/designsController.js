@@ -7,9 +7,6 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllDesigns = asyncHandler(async (req, res) => {
     const designs = await Design.find().lean()
-    if(!designs?.length){
-        return res.status(400).json({ message: 'No designs found'})
-    }
     res.json(designs)
 })
 
@@ -28,19 +25,34 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { productID, version, changes, status, comments, designer, attachments, versionNotes, linkedChangeRequests } = req.body
+    const { productID, name, description, version, status, designer } = req.body;
 
     // Validate required fields
-    if (!productID || !version || !changes || !status || !designer) {
-        return res.status(400).json({ message: 'Required fields are missing' })
+    if (!productID || !name || !description || !version || !status || !designer) {
+        return res.status(400).json({ message: 'Required fields are missing' });
     }
 
-    // Create new design
-    const design = new Design({ productID, version, changes, status, comments, designer, attachments, versionNotes, linkedChangeRequests })
+    // Prepare the attachment data
+    const attachment = req.file ? {
+        filePath: req.file.path,  // The path to the file in the filesystem
+        fileName: req.file.filename 
+    } : undefined;
 
-    const createdDesign = await design.save()
+    // Create new design with attachment if available
+    const design = new Design({
+        productID,
+        name,
+        description,
+        version,
+        status,
+        designer,
+        attachment  // Include the attachment data
+    });
+
+    const createdDesign = await design.save();
     res.status(201).json(createdDesign);
-})
+});
+
 
 // @desc Update an existing design
 // @route PATCH /designs/:id
@@ -54,18 +66,22 @@ const updateDesign = asyncHandler(async (req, res) => {
     }
 
     // Update fields if provided
+    design.productID = req.body.productID || design.productID
+    design.name = req.body.name || design.name
+    design.description = req.body.description || design.description
     design.version = req.body.version || design.version
-    design.changes = req.body.changes || design.changes
     design.status = req.body.status || design.status
     design.comments = req.body.comments || design.comments
-    design.designer = req.body.designer || design.designer
-    design.creationDate = req.body.creationDate || design.creationDate
     design.modificationDate = req.body.modificationDate || design.modificationDate
-    design.approvalStatus = req.body.approvalStatus || design.approvalStatus
-    design.approver = req.body.approver || design.approver
-    design.attachments = req.body.attachments || design.attachments
-    design.versionNotes = req.body.versionNotes || design.versionNotes
-    design.linkedChangeRequests = req.body.linkedChangeRequests || design.linkedChangeRequests
+
+    // Prepare the attachment data
+    const attachment = req.file ? {
+        filePath: req.file.path,  // The path to the file in the filesystem
+        fileName: req.file.filename 
+    } : undefined;
+
+    design.attachments = attachment || design.attachments
+    // design.linkedChangeRequests = req.body.linkedChangeRequests || design.linkedChangeRequests
 
     const updatedDesign = await design.save()
     res.json({ message: `Design '${updatedDesign._id}' updated` })
@@ -88,10 +104,33 @@ const deleteDesign = asyncHandler(async (req, res) => {
     res.json(reply)
 })
 
+// @desc Download a design file
+// @route GET /designs/:id/download
+// @access private
+const downloadDesignFile = asyncHandler(async (req, res) => {
+    const design = await Design.findById(req.params.id);
+
+    if (!design) {
+        return res.status(404).json({ message: 'Design not found' });
+    }
+
+    const file = design.attachment.filePath;
+    
+    // Set the correct headers on the response to prompt download
+    res.download(file, design.attachment.fileName, (err) => {
+        if (err) {
+            res.status(500).send({
+                message: "Could not download the file. " + err,
+            });
+        }
+    });
+});
+
 module.exports = {
     getAllDesigns,
     getDesignById,
     createNewDesign,
     updateDesign,
-    deleteDesign
+    deleteDesign,
+    downloadDesignFile
 }

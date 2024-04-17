@@ -9,6 +9,10 @@ const documentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    attachment: {
+        filePath: { type: String, required: true }, 
+        fileName: { type: String, required: true }  
+    },
     revisionNumber: {
         type: String,
         required: true
@@ -17,9 +21,11 @@ const documentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],
-    author: {
-        type: String
-    },
+    authors: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }],
     creationDate: {
         type: Date,
         default: Date.now
@@ -29,15 +35,6 @@ const documentSchema = new mongoose.Schema({
     },
     status: {
         type: String
-    },
-    approvalStatus: {
-        type: String
-    },
-    approver: {
-        type: String
-    },
-    content: {
-        type: String 
     },
     tags: [{
         type: String

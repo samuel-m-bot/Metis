@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 
 const changeRequestSchema = new mongoose.Schema({
-    productID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
-    },
     requestedBy: {
         type: String,
         required: true
@@ -37,10 +32,14 @@ const changeRequestSchema = new mongoose.Schema({
         postedBy: String,
         postedDate: Date
     }],
-    relatedDocuments: [{
+    relatedDocuments: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'
-    }],
+    },
+    relatedDesigns: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Design'
+    },
     associatedTasks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task'

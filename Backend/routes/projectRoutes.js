@@ -14,6 +14,7 @@ router.route('/:id')
 
 // Additional project-specific routes
 router.get('/search', projectController.searchProjects); // Search for projects
+router.get('/:id/TeaMember', projectController.getProjectTeamDetails); // Gets the member details of the project
 router.patch('/:id/addTeamMember', projectController.addTeamMember); // Add a team member to a project
 router.patch('/:id/removeTeamMember', projectController.removeTeamMember); // Remove a team member from a project
 router.get('/:id/changeRequests', projectController.listProjectChangeRequests); // List change requests for a project

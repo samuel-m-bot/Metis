@@ -27,11 +27,6 @@ const productSchema = new Schema({
         type: String,
         required: false
     },
-    creator: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -43,10 +38,6 @@ const productSchema = new Schema({
     documents: [{
         type: Schema.Types.ObjectId,
         ref: 'Document'
-    }],
-    changeRequests: [{
-        type: Schema.Types.ObjectId,
-        ref: 'ChangeRequest'
     }],
     type: {
         type: String,

@@ -1,4 +1,5 @@
 const Project = require('../models/Project')
+const User = require('../models/User')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 
@@ -159,20 +160,50 @@ const searchProjects = asyncHandler(async (req, res) => {
     res.json(projects);
 });
 
+// @desc Get project with team member details
+// @route GET /projects/:id/team
+// @access Private
+const getProjectTeamDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params; // ID of the project
+
+    // Fetch the project
+    const project = await Project.findById(id)
+                                 .populate('teamMembers', 'firstName surname email') // Assuming you only need these fields
+                                 .exec();
+
+    if (!project) {
+        res.status(404).json({ message: 'Project not found' });
+        return;
+    }
+
+    // Since team members are populated, the user details are directly accessible
+    res.status(200).json({
+        projectName: project.name,
+        teamMembers: project.teamMembers.map(member => ({
+            id: member._id,
+            firstName: member.firstName,
+            surname: member.surname,
+            email: member.email
+        }))
+    });
+});
 
 // @desc Add a team member to a project
 // @route PATCH /projects/:id/addTeamMember
 // @access private
 const addTeamMember = asyncHandler(async (req, res) => {
-    const { projectId, userId } = req.body; // Assuming you're sending these in the body
+    const { userId } = req.body;
 
+    const projectId = req.params.id
     // Find the project and check if it exists
+    console.log(projectId)
     const project = await Project.findById(projectId);
     if (!project) {
         return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Optionally, verify the user exists as well
+    // Verify the user exists as well
+    console.log(userId)
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -194,18 +225,38 @@ const addTeamMember = asyncHandler(async (req, res) => {
 // @access private
 const removeTeamMember = asyncHandler(async (req, res) => {
     const { teamMemberId } = req.body; // ID of the team member to remove
-    const project = await Project.findById(req.params.projectId);
+    const project = await Project.findById(req.params.id).populate({
+        path: 'projectTasks',
+        populate: { path: 'linkedChangeRequests' }
+    });
 
     if (!project) {
         return res.status(404).json({ message: 'Project not found' });
     }
 
+    // Check if any change requests are active and assigned to the user
+    const isAssignedToActiveCR = project.projectTasks.some(task =>
+        task.linkedChangeRequests.some(cr => 
+            cr.assignedTo.toString() === teamMemberId && cr.status !== 'Completed'
+        )
+    );
+
+    if (isAssignedToActiveCR) {
+        return res.status(400).json({ message: 'Cannot remove: User is assigned to active change requests.' });
+    }
+
+    // Verify the user exists
+    const user = await User.findById(teamMemberId);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
     // Remove the team member
     project.teamMembers = project.teamMembers.filter(member => member.toString() !== teamMemberId);
-    
     await project.save();
     res.json({ message: 'Team member removed successfully' });
 });
+
 
 
 // @desc List change requests for a project
@@ -283,6 +334,7 @@ module.exports = {
     updateProject,
     deleteProject,
     searchProjects,
+    getProjectTeamDetails,
     addTeamMember,
     removeTeamMember,
     listProjectChangeRequests,

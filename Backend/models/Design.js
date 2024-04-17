@@ -6,23 +6,30 @@ const designSchema = new mongoose.Schema({
         ref: 'Product',
         required: true
     },
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
     version: {
         type: Number,
         required: true
     },
-    changes: {
-        type: String,
-        required: true
-    },
     status: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Draft', 'Review', 'Update', 'Final']
+        
     },
     comments: [{
         type: String
     }],
     designer: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     creationDate: {
@@ -32,22 +39,14 @@ const designSchema = new mongoose.Schema({
     modificationDate: {
         type: Date
     },
-    approvalStatus: {
-        type: String
+    attachment: {
+        filePath: { type: String, required: false },  
+        fileName: { type: String, required: false }   
     },
-    approver: {
-        type: String
-    },
-    attachments: [{
-        type: String // URL or reference to files
-    }],
-    versionNotes: {
-        type: String
-    },
-    linkedChangeRequests: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ChangeRequest'
-    }],
+    // linkedChangeRequests: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'ChangeRequest'
+    // }],
 });
 
 module.exports = mongoose.model('Design', designSchema);

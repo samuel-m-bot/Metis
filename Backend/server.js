@@ -25,9 +25,11 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/', express.static(path.join(__dirname, 'public')))
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/', require('./routes/root'))
 app.use('/users', require('./routes/userRoutes'))
+app.use('/uploads', express.static('uploads'));
 app.use('/auth', require('./routes/authRoutes'))
 app.use('/projects', require('./routes/projectRoutes'))
 app.use('/products', require('./routes/productRoutes'))

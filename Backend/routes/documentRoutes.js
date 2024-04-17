@@ -1,17 +1,15 @@
-const express = require('express')
-const router = express.Router()
-const documentController = require('../controllers/documentsController')
-
-//@desc Routes for Document
-
+const express = require('express');
+const router = express.Router();
+const documentsController = require('../controllers/documentsController');
+const upload = require('../config/multerConfig');  
 
 router.route('/')
-    .get(documentController.getAllDocuments)
-    .post(documentController.createNewDocument)
-
+    .get(documentsController.getAllDocuments)
+    .post(upload.single('documentFile'), documentsController.createNewDocument);
 
 router.route('/:id')
-    .get(documentController.getDocumentById)
-    .patch(documentController.updateDocument)
-    .delete(documentController.deleteDocument)
-module.exports = router
+    .get(documentsController.getDocumentById)
+    .patch(upload.single('documentFile'), documentsController.updateDocument)  
+    .delete(documentsController.deleteDocument);
+
+module.exports = router;

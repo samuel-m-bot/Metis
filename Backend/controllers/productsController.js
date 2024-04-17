@@ -7,9 +7,6 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllProducts = asyncHandler(async (req, res) => {
     const products = await Product.find().lean()
-    if(!products?.length){
-        return res.status(400).json({ message: 'No products found'})
-    }
     res.json(products)
 })
 
@@ -29,12 +26,12 @@ const getProductById = asyncHandler(async (req, res) => {
 // @access private
 const createNewProduct = asyncHandler(async (req, res) => {
     const {
-        name, description, category, lifecycleStatus, type, creator,
+        name, description, category, lifecycleStatus, type,
         physicalAttributes, digitalAttributes
     } = req.body
 
     // Confirm mandatory data is provided
-    if (!name || !description || !category || !lifecycleStatus || !type || !creator) {
+    if (!name || !description || !category || !lifecycleStatus || !type) {
         return res.status(400).json({ message: 'All required fields are not provided' })
     }
 
@@ -46,7 +43,7 @@ const createNewProduct = asyncHandler(async (req, res) => {
 
     // Create new product object
     const productObject = {
-        name, description, category, lifecycleStatus, type, creator,
+        name, description, category, lifecycleStatus, type,
         physicalAttributes, digitalAttributes
     }
 

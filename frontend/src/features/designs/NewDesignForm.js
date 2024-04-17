@@ -13,6 +13,9 @@ const NewDesignForm = () => {
     const [productId, setProductId] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [type, setType] = useState('');
+    const [revisionNumber, setRevisionNumber] = useState('');
+    const [revisionError, setRevisionError] = useState('');
     const [version, setVersion] = useState('');
     const [status, setStatus] = useState('Draft');
     const [designer, setDesigner] = useState('');
@@ -24,6 +27,8 @@ const NewDesignForm = () => {
         formData.append('productID', productId);
         formData.append('name', name);
         formData.append('description', description);
+        formData.append('type', type);
+        formData.append('revisionNumber', revisionNumber);
         formData.append('version', version);
         formData.append('status', status);
         formData.append('designer', designer);
@@ -37,6 +42,17 @@ const NewDesignForm = () => {
         }
     };
 
+    const handleRevisionChange = (e) => {
+        const value = e.target.value;
+        const regex = /^[A-Z]*\.?\d+(\.\d+)?$/; // Matches formats like "A.1", "1.1", or just "1"
+        if (regex.test(value) || value === '') {
+            setRevisionNumber(value);
+            setRevisionError(''); // Clear error message if valid
+        } else {
+            setRevisionError('Invalid format. Use A.1, 1.1, or similar formats.');
+        }
+    };
+    
     if (isFetchingUsers || isFetchingProducts) return <p>Loading...</p>;
     if (isUsersError || isProductsError) return <p>Error loading data.</p>;
     return (
@@ -59,28 +75,47 @@ const NewDesignForm = () => {
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Name</label>
-                    <input type="text" className="form-control" id="name" value={name} onChange={e => setName(e.target.value)} />
+                    <label htmlFor="name" className="form-label">Name:</label>
+                    <input type="text" className="form-control" id="name" value={name} onChange={e => setName(e.target.value)} required />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="description" className="form-label">Description</label>
-                    <textarea className="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)}></textarea>
+                    <label htmlFor="description" className="form-label">Description:</label>
+                    <textarea className="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)} required></textarea>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="version" className="form-label">Version</label>
-                    <input type="text" className="form-control" id="version" value={version} onChange={e => setVersion(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="status" className="form-label">Status</label>
-                    <select className="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
-                        <option value="Draft">Draft</option>
-                        <option value="Review">Update</option>
-                        <option value="Review">Review</option>
-                        <option value="Final">Final</option>
+                    <label htmlFor="type" className="form-label">Type:</label>
+                    <select className="form-select" id="type" value={type} onChange={e => setType(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Conceptual">Conceptual</option>
+                        <option value="Functional">Functional</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Prototype">Prototype</option>
+                        <option value="Production">Production</option>
+                        <option value="Schematic">Schematic</option>
+                        <option value="Assembly">Assembly</option>
+                        <option value="Detail">Detail</option>
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="designer" className="form-label">Designer:</label>
+                    <label htmlFor="revisionNumber" className="form-label">Revision Number:</label>
+                    <input type="text" className="form-control" id="revisionNumber" value={revisionNumber} onChange={handleRevisionChange} required />
+                    {revisionError && <div className="text-danger">{revisionError}</div>}
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="status" className="form-label">Status:</label>
+                    <select className="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
+                        <option value="Draft">Draft</option>
+                        <option value="In Review">In Review</option>
+                        <option value="Revised">Revised</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Published">Published</option>
+                        <option value="Archived">Archived</option>
+                        <option value="Checked Out">Checked Out</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="designer" className="form-label">Designer(s):</label>
                     <select multiple className="form-select" id="designer" value={designer}
                             onChange={e => setDesigner([...e.target.selectedOptions].map(o => o.value))}>
                         {users?.ids.map(userId => (
@@ -89,8 +124,8 @@ const NewDesignForm = () => {
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="file" className="form-label">Design File</label>
-                    <input type="file" className="form-control" id="file" onChange={e => setFile(e.target.files[0])} />
+                    <label htmlFor="file" className="form-label">Design File:</label>
+                    <input type="file" className="form-control" id="file" onChange={e => setFile(e.target.files[0])} required />
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={isLoading}>Create Design</button>
             </form>

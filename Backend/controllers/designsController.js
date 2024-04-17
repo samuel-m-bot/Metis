@@ -25,17 +25,22 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { productID, name, description, version, status, designer } = req.body;
+    const { productID, name, description, type, revisionNumber, status, designer } = req.body;
 
     // Validate required fields
-    if (!productID || !name || !description || !version || !status || !designer) {
+    if (!productID || !name || !description || !type || !revisionNumber || !status || !designer) {
         return res.status(400).json({ message: 'Required fields are missing' });
+    }
+
+    // Validate revision number format
+    if (!/^[A-Z]*\.?\d+(\.\d+)?$/.test(revisionNumber)) {
+        return res.status(400).json({ message: 'Invalid revision number format' });
     }
 
     // Prepare the attachment data
     const attachment = req.file ? {
-        filePath: req.file.path,  // The path to the file in the filesystem
-        fileName: req.file.filename 
+        filePath: req.file.path,
+        fileName: req.file.filename
     } : undefined;
 
     // Create new design with attachment if available
@@ -43,10 +48,11 @@ const createNewDesign = asyncHandler(async (req, res) => {
         productID,
         name,
         description,
-        version,
+        type,
+        revisionNumber,
         status,
         designer,
-        attachment  // Include the attachment data
+        attachment
     });
 
     const createdDesign = await design.save();
@@ -58,34 +64,38 @@ const createNewDesign = asyncHandler(async (req, res) => {
 // @route PATCH /designs/:id
 // @access private
 const updateDesign = asyncHandler(async (req, res) => {
-    const designId = req.params.id
-    const design = await Design.findById(designId)
+    const designId = req.params.id;
+    const design = await Design.findById(designId);
 
     if (!design) {
-        return res.status(404).json({ message: 'Design not found' })
+        return res.status(404).json({ message: 'Design not found' });
     }
 
     // Update fields if provided
-    design.productID = req.body.productID || design.productID
-    design.name = req.body.name || design.name
-    design.description = req.body.description || design.description
-    design.version = req.body.version || design.version
-    design.status = req.body.status || design.status
-    design.comments = req.body.comments || design.comments
-    design.modificationDate = req.body.modificationDate || design.modificationDate
+    design.productID = req.body.productID || design.productID;
+    design.name = req.body.name || design.name;
+    design.description = req.body.description || design.description;
+    design.type = req.body.type || design.type;
+    design.revisionNumber = req.body.revisionNumber || design.revisionNumber;
+    design.version = req.body.version || design.version;
+    design.status = req.body.status || design.status;
+    design.comments = req.body.comments || design.comments;
+    design.designers = req.body.designers || design.designers;
 
-    // Prepare the attachment data
-    const attachment = req.file ? {
-        filePath: req.file.path,  // The path to the file in the filesystem
-        fileName: req.file.filename 
-    } : undefined;
+    // Automatically set the last modified date to now
+    design.lastModifiedDate = Date.now();
 
-    design.attachments = attachment || design.attachments
-    // design.linkedChangeRequests = req.body.linkedChangeRequests || design.linkedChangeRequests
+    // Prepare the attachment data if a file is uploaded
+    if (req.file) {
+        design.attachment = {
+            filePath: req.file.path,  // The path to the file in the filesystem
+            fileName: req.file.filename 
+        };
+    }
 
-    const updatedDesign = await design.save()
-    res.json({ message: `Design '${updatedDesign._id}' updated` })
-})
+    const updatedDesign = await design.save();
+    res.json({ message: `Design '${updatedDesign._id}' updated successfully.` });
+});
 
 // @desc Delete a design
 // @route DELETE /designs

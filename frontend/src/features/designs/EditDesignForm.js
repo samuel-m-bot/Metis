@@ -15,6 +15,9 @@ const EditDesignForm = ({ design }) => {
     const [productID, setProductID] = useState(design.productID);
     const [name, setName] = useState(design.name);
     const [description, setDescription] = useState(design.description);
+    const [type, setType] = useState(design.type);
+    const [revisionNumber, setRevisionNumber] = useState(design.revisionNumber);
+    const [revisionError, setRevisionError] = useState('');
     const [version, setVersion] = useState(design.version);
     const [status, setStatus] = useState(design.status);
     const [designer, setDesigner] = useState(design.designer);
@@ -25,10 +28,10 @@ const EditDesignForm = ({ design }) => {
         formData.append('productID', productID);
         formData.append('name', name);
         formData.append('description', description);
-        formData.append('version', version);
+        formData.append('type', type);
+        formData.append('revisionNumber', revisionNumber);
         formData.append('status', status);
         formData.append('designer', designer);
-        formData.append('modificationDate', new Date());
         formData.append('designImage', file);
 
         try {
@@ -36,6 +39,17 @@ const EditDesignForm = ({ design }) => {
             navigate('/admin-dashboard/designs');
         } catch (error) {
             console.error('Failed to update the design:', error);
+        }
+    };
+
+    const handleRevisionChange = (e) => {
+        const value = e.target.value;
+        const regex = /^[A-Z]*\.?\d+(\.\d+)?$/; // Matches formats like "A.1", "1.1", or just "1"
+        if (regex.test(value) || value === '') {
+            setRevisionNumber(value);
+            setRevisionError(''); // Clear error message if valid
+        } else {
+            setRevisionError('Invalid format. Use A.1, 1.1, or similar formats.');
         }
     };
 
@@ -71,6 +85,25 @@ const EditDesignForm = ({ design }) => {
                     <textarea className="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)} />
                 </div>
                 <div className="mb-3">
+                    <label htmlFor="type" className="form-label">Type:</label>
+                    <select className="form-select" id="type" value={type} onChange={e => setType(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Conceptual">Conceptual</option>
+                        <option value="Functional">Functional</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Prototype">Prototype</option>
+                        <option value="Production">Production</option>
+                        <option value="Schematic">Schematic</option>
+                        <option value="Assembly">Assembly</option>
+                        <option value="Detail">Detail</option>
+                    </select>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="revisionNumber" className="form-label">Revision Number:</label>
+                    <input type="text" className="form-control" id="revisionNumber" value={revisionNumber} onChange={handleRevisionChange} required />
+                    {revisionError && <div className="text-danger">{revisionError}</div>}
+                </div>
+                <div className="mb-3">
                     <label htmlFor="version" className="form-label">Version:</label>
                     <input type="number" className="form-control" id="version" value={version} onChange={e => setVersion(e.target.value)} />
                 </div>
@@ -78,9 +111,13 @@ const EditDesignForm = ({ design }) => {
                     <label htmlFor="status" className="form-label">Status:</label>
                     <select className="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
                         <option value="Draft">Draft</option>
-                        <option value="Review">Review</option>
-                        <option value="Update">Update</option>
-                        <option value="Final">Final</option>
+                        <option value="In Review">In Review</option>
+                        <option value="Revised">Revised</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Published">Published</option>
+                        <option value="Archived">Archived</option>
+                        <option value="Checked Out">Checked Out</option>
+                        <option value="On Hold">On Hold</option>
                     </select>
                 </div>
                 <div className="mb-3">

@@ -28,6 +28,14 @@ import NewUserForm from './features/users/NewUserForm.js'
 import TasksList from './features/Tasks/TasksList.js'
 import NewTaskForm from './features/Tasks/NewTaskForm.js'
 import NewProjectForm from './features/projects/NewProjectForm.js'
+import EditProject from './features/projects/EditProject.js'
+import ProjectManageMembers from './features/projects/ProjectManageMembers.js'
+import PersistLogin from './features/auth/PersistLogin.js'
+import NewDesignForm from './features/designs/NewDesignForm.js'
+import DesignList from './features/designs/DesignList.js'
+import NewProductForm from './features/products/NewProductForm.js'
+import EditProduct from './features/products/EditProduct.js'
+import EditDesign from './features/designs/EditDesign.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -39,76 +47,80 @@ function App() {
         <Route path='signUp' element={<SignUp/>}/>
 
         // Nested MetisLayout as the layout component for specific routes
-        <Route element={<Prefetch />}>
-          <Route path="/" element={<MetisLayout />}>
-            <Route path="home" element={<Home />} />
-            <Route path="/admin-dashboard"> 
-              <Route index element={<AdminDashboard />} />
-              <Route path="users">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
-              </Route>
+        <Route element={<PersistLogin />}>
+          <Route element={<Prefetch />}>
+            <Route path="/" element={<MetisLayout />}>
+              <Route path="home" element={<Home />} />
+              <Route path="/admin-dashboard"> 
+                <Route index element={<AdminDashboard />} />
+                <Route path="users">
+                  <Route index element={<UsersList />} />
+                  <Route path=":id" element={<EditUser />} />
+                  <Route path="create" element={<NewUserForm />} />
+                </Route>
 
-              <Route path="tasks">
-                <Route index element={<TasksList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewTaskForm />} />
-              </Route>
+                <Route path="tasks">
+                  <Route index element={<TasksList />} />
+                  <Route path=":id" element={<EditUser />} />
+                  <Route path="create" element={<NewTaskForm />} />
+                </Route>
 
-              <Route path="projects">
-                <Route index element={<ProjectList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewProjectForm />} />
-              </Route>
+                <Route path="projects">
+                  <Route index element={<ProjectList />} />
+                  <Route path=":id" > 
+                    <Route index element={<EditProject />} />
+                    <Route path="manage-team" element={<ProjectManageMembers />} />
+                  </Route>
+                  <Route path="create" element={<NewProjectForm />} />
+                </Route>
 
-              <Route path="products">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
-              </Route>
+                <Route path="products">
+                  <Route index element={<ProductList />} />
+                  <Route path=":id" element={<EditProduct />} />
+                  <Route path="create" element={<NewProductForm />} />
+                </Route>
 
-              <Route path="documents">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
-              </Route>
+                <Route path="documents">
+                  <Route index element={<UsersList />} />
+                  <Route path=":id" element={<EditUser />} />
+                  <Route path="create" element={<NewUserForm />} />
+                </Route>
 
-              <Route path="design">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
-              </Route>
+                <Route path="designs">
+                  <Route index element={<DesignList />} />
+                  <Route path=":id" element={<EditDesign />} />
+                  <Route path="create" element={<NewDesignForm />} />
+                </Route>
 
-              <Route path="change-request">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
-              </Route>
+                <Route path="change-request">
+                  <Route index element={<UsersList />} />
+                  <Route path=":id" element={<EditUser />} />
+                  <Route path="create" element={<NewUserForm />} />
+                </Route>
 
-              <Route path="activities">
-                <Route index element={<UsersList />} />
-                <Route path=":id" element={<EditUser />} />
-                <Route path="create" element={<NewUserForm />} />
+                <Route path="activities">
+                  <Route index element={<UsersList />} />
+                  <Route path=":id" element={<EditUser />} />
+                  <Route path="create" element={<NewUserForm />} />
+                </Route>
               </Route>
+              <Route path="projects" element={<ProjectList />}/>
+              <Route path="projects/project" element={<Project />}/>
+              <Route path="projects/:projectId" element={<ProjectDashboard />} />#
+              <Route path="tasks/:taskId" element={<TaskDetails />} />
+              <Route path="documents/:documentId" element={<Documents />} />
+              <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />
+              <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
+              <Route path="products" element={<ProductList />} />
+              <Route path="products/:productId" element={<Product />} />
+              <Route path="designs" element={<DesignManagement />} />
+              <Route path="designs/:designId" element={<Design />} />
+              <Route path="change-requests" element={<ChangeRequests />} />
+              <Route path="documents" element={<DocumentLibrary />} />
+              <Route path="users" element={<UserManagement />} />
             </Route>
-            <Route path="projects" element={<ProjectList />}/>
-            <Route path="projects/project" element={<Project />}/>
-            <Route path="projects/:projectId" element={<ProjectDashboard />} />#
-            <Route path="tasks/:taskId" element={<TaskDetails />} />
-            <Route path="documents/:documentId" element={<Documents />} />
-            <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />
-            <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
-            <Route path="products" element={<ProductList />} />
-            <Route path="products/:productId" element={<Product />} />
-            <Route path="designs" element={<DesignManagement />} />
-            <Route path="designs/:designId" element={<Design />} />
-            <Route path="change-requests" element={<ChangeRequests />} />
-            <Route path="documents" element={<DocumentLibrary />} />
-            <Route path="users" element={<UserManagement />} />
           </Route>
         </Route>
-
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

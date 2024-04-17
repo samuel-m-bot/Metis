@@ -25,10 +25,10 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { productID, name, description, type, revisionNumber, status, designer } = req.body;
+    const { projectId, productID, name, description, type, revisionNumber, status, designer } = req.body;
 
     // Validate required fields
-    if (!productID || !name || !description || !type || !revisionNumber || !status || !designer) {
+    if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designer) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -45,6 +45,7 @@ const createNewDesign = asyncHandler(async (req, res) => {
 
     // Create new design with attachment if available
     const design = new Design({
+        projectId,
         productID,
         name,
         description,
@@ -72,6 +73,7 @@ const updateDesign = asyncHandler(async (req, res) => {
     }
 
     // Update fields if provided
+    design.projectId = req.body.projectId || design.projectId;
     design.productID = req.body.productID || design.productID;
     design.name = req.body.name || design.name;
     design.description = req.body.description || design.description;
@@ -136,11 +138,25 @@ const downloadDesignFile = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc Get designs by projectId
+// @route GET /designs/project/:projectId
+// @access private
+const getDesignsByProjectId = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const designs = await Design.find({ projectId }).lean();
+    if (!designs.length) {
+        return res.status(404).json({ message: 'No designs found for this project' });
+    }
+    res.json(designs);
+});
+
+
 module.exports = {
     getAllDesigns,
     getDesignById,
     createNewDesign,
     updateDesign,
     deleteDesign,
-    downloadDesignFile
+    downloadDesignFile,
+    getDesignsByProjectId
 }

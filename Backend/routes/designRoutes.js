@@ -16,4 +16,6 @@ router.route('/:id')
     .delete(designController.deleteDesign);
     
 router.get('/download/:id', designController.downloadDesignFile);
+router.get('/designs/project/:projectId', designController.getDesignsByProjectId);
+
 module.exports = router

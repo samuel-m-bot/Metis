@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const documentSchema = new mongoose.Schema({
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true
+    },
     title: {
         type: String,
         required: true
@@ -29,7 +34,7 @@ const documentSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid revision number!`
         }
     },
-    associatedProductID: [{
+    associatedProductIDs: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],

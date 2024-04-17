@@ -7,9 +7,6 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllDocuments = asyncHandler(async (req, res) => {
     const documents = await Document.find().lean()
-    if(!documents?.length){
-        return res.status(400).json({ message: 'No documents found'})
-    }
     res.json(documents)
 })
 
@@ -28,10 +25,10 @@ const getDocumentById = asyncHandler(async (req, res) => {
 // @route POST /documents
 // @access private
 const createNewDocument = asyncHandler(async (req, res) => {
-    const {title, type, description, revisionNumber, associatedProductID, authors, status, relatedDocuments } = req.body;
+    const {projectId, title, type, description, revisionNumber, associatedProductIDs, authors, status, relatedDocuments } = req.body;
 
     // Validate required fields
-    if (!title || !type || !description || !revisionNumber || !authors || !status ) {
+    if (!projectId || !title || !type || !description || !revisionNumber || !authors || !status ) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -48,6 +45,7 @@ const createNewDocument = asyncHandler(async (req, res) => {
 
     // Create new document with attachment if available
     const docuemnt = new Document({
+        projectId,
         title,
         type,
         description,
@@ -57,7 +55,7 @@ const createNewDocument = asyncHandler(async (req, res) => {
         attachment
     });
 
-    if(associatedProductID) docuemnt.associatedProductID = associatedProductID
+    if(associatedProductIDs) docuemnt.associatedProductID = associatedProductIDs
     if(relatedDocuments) docuemnt.relatedDocuments = relatedDocuments
 
     // Automatically set the creation  date to now
@@ -79,11 +77,12 @@ const updateDocument = asyncHandler(async (req, res) => {
     }
 
     // Update fields if provided
+    document.projectId = req.body.projectId || document.projectId;
     document.title = req.body.title || document.title;
     document.type = req.body.type || document.type;
     document.description = req.body.description || document.description;
     document.revisionNumber = req.body.revisionNumber || document.revisionNumber;
-    document.associatedProductID = req.body.associatedProductID || document.associatedProductID;
+    document.associatedProductIDs = req.body.associatedProductIDs || document.associatedProductIDs;
     document.authors = req.body.authors || document.authors;
     document.status = req.body.status || document.status;
     document.relatedDocuments = req.body.relatedDocuments || document.relatedDocuments;
@@ -120,12 +119,45 @@ const deleteDocument = asyncHandler(async (req, res) => {
     res.json(reply)
 })
 
-//Endpoint to be able 
+// @desc Download a docuemnt file
+// @route GET /docuemnts/:id/download
+// @access private
+const downloadDocumentFile = asyncHandler(async (req, res) => {
+    const document = await Document.findById(req.params.id);
+    if (!document || !document.attachment || !document.attachment.filePath) {
+        return res.status(404).json({ message: 'Document not found' });
+    }
+
+    const filePath = document.attachment.filePath;
+    const fileName = document.attachment.fileName;
+
+    res.download(filePath, fileName, function(err) {
+        if (err) {
+            // handle errors
+            res.status(500).send({ message: "Could not download the file: " + err });
+        }
+    });
+});
+
+// @desc Get documents by projectId
+// @route GET /documents/project/:projectId
+// @access private
+const getDocumentsByProjectId = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const documents = await Document.find({ projectId }).lean();
+    if (!documents.length) {
+        return res.status(404).json({ message: 'No documents found for this project' });
+    }
+    res.json(documents);
+});
+
 
 module.exports = {
     getAllDocuments,
     getDocumentById,
     createNewDocument,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    downloadDocumentFile,
+    getDocumentsByProjectId
 }

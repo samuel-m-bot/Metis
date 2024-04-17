@@ -12,4 +12,7 @@ router.route('/:id')
     .patch(upload.single('documentFile'), documentsController.updateDocument)  
     .delete(documentsController.deleteDocument);
 
+router.get('/download/:id', documentsController.downloadDocumentFile);
+router.get('/project/:projectId', documentsController.getDocumentsByProjectId);
+
 module.exports = router;

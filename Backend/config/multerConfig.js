@@ -4,7 +4,7 @@ const path = require('path');
 // Check file type
 const fileFilter = (req, file, cb) => {
     // Allowed ext
-    const filetypes = /stp|step|igs|iges|dwg|dxf|obj|stl|jpeg|jpg|png|gif/;
+    const filetypes = /stp|step|igs|iges|dwg|dxf|obj|stl|jpeg|jpg|png|gif|doc|docx|pdf|xls|xlsx|ppt|pptx|txt|csv/;
     // Check ext
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 

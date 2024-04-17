@@ -14,39 +14,48 @@ const designSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    version: {
-        type: Number,
+    type: {
+        type: String,
+        enum: ['Conceptual', 'Functional', 'Technical', 'Prototype', 'Production', 'Schematic', 'Assembly', 'Detail'],
         required: true
+    },
+    revisionNumber: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(v) {
+                // Regex to validate both 'A.1' format and '1.1' format
+                return /^[A-Z]*\.?\d+(\.\d+)?$/.test(v);
+            },
+            message: props => `${props.value} is not a valid revision number!`
+        }
     },
     status: {
         type: String,
-        required: true,
-        enum: ['Draft', 'Review', 'Update', 'Final']
-        
+        enum: ['Draft', 'In Review', 'Revised', 'Approved', 'Published', 'Archived', 'Checked Out', 'On Hold'],
+        default: 'Draft'
     },
     comments: [{
-        type: String
+        text: { type: String, required: true },
+        author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        timestamp: { type: Date, default: Date.now },
     }],
-    designer: {
+    designers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
+    }],
     creationDate: {
         type: Date,
         default: Date.now
     },
-    modificationDate: {
+    lastModifiedDate: {
         type: Date
     },
     attachment: {
         filePath: { type: String, required: false },  
         fileName: { type: String, required: false }   
     },
-    // linkedChangeRequests: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'ChangeRequest'
-    // }],
 });
 
 module.exports = mongoose.model('Design', designSchema);

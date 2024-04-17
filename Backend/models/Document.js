@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const documentSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true
     },
     type: {
         type: String,
-        required: true
+        required: true,
+        enum: [ 'Requiremnts', 'Design', 'Devlopment', 'Manufacturing', 'Miantenance', 'End of Life']
     },
     attachment: {
         filePath: { type: String, required: true }, 
@@ -15,7 +16,14 @@ const documentSchema = new mongoose.Schema({
     },
     revisionNumber: {
         type: String,
-        required: true
+        required: true,
+        validate: {
+            validator: function(v) {
+                // Regex to validate both 'A.1' format and '1.1' format
+                return /^[A-Z]*\.?\d+(\.\d+)?$/.test(v);
+            },
+            message: props => `${props.value} is not a valid revision number!`
+        }
     },
     associatedProductID: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -34,11 +42,10 @@ const documentSchema = new mongoose.Schema({
         type: Date
     },
     status: {
-        type: String
+        type: String,
+        enum: ['Draft', 'In Review', 'Revised', 'Approved', 'Published', 'Archived', 'Checked Out', 'On Hold'],
+        default: 'Draft'
     },
-    tags: [{
-        type: String
-    }],
     relatedDocuments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'

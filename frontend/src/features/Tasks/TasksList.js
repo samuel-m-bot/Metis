@@ -15,7 +15,8 @@ const TasksList = () => {
     if (isLoading) return <LoadingSpinner />;
     if (isError) return <p>Error: {error.message}</p>;
 
-    if (!tasks.length) {
+    console.log(tasks)
+    if (!tasks.ids.length) {
         return (
             <div>
                 <button onClick={handleCreateNewTask} className="btn btn-success mb-3">
@@ -25,6 +26,7 @@ const TasksList = () => {
             </div>
         );
     }
+
 
     return (
         <div>
@@ -45,7 +47,7 @@ const TasksList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {tasks.map(task => <Task key={task._id} task={task} />)}
+                    {tasks?.ids.map(taskId => <Task key={taskId} task={tasks.entities[taskId]} />)}
                 </tbody>
             </table>
         </div>

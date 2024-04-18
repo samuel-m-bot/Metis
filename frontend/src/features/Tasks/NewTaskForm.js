@@ -49,7 +49,7 @@ const NewTaskForm = () => {
     };
 
     const onSaveTaskClicked = async () => {
-        console.log(projectId)
+        console.log(priority)
         if (name && description && status && priority && assignedTo.length && taskType && projectId && relatedTo) {
             const taskData = {
                 projectId,
@@ -205,10 +205,10 @@ const NewTaskForm = () => {
                             value={assignedDocument}
                             onChange={e => setAssignedDocument(e.target.value)}
                         >
-                            <option value="">Select a document</option>
-                            {documents?.map(doc => (
-                                <option key={doc.id} value={doc.id}>{doc.name}</option>
-                            ))}
+                        <option value="">Select a document</option>
+                        {documents?.ids.map(documentId => (
+                            <option key={documentId} value={documentId}>{documents.entities[documentId].title}</option>
+                        ))}
                         </select>
                     </div>
                 )}
@@ -222,10 +222,10 @@ const NewTaskForm = () => {
                             value={assignedDesign}
                             onChange={e => setAssignedDesign(e.target.value)}
                         >
-                            <option value="">Select a design</option>
-                            {designs?.map(design => (
-                                <option key={design.id} value={design.id}>{design.name}</option>
-                            ))}
+                        <option value="">Select a design</option>
+                        {designs?.ids.map(designId => (
+                            <option key={designId} value={designId}>{designs.entities[designId].name}</option>
+                        ))}
                         </select>
                     </div>
                 )}
@@ -239,10 +239,10 @@ const NewTaskForm = () => {
                             value={assignedProduct}
                             onChange={e => setAssignedProduct(e.target.value)}
                         >
-                            <option value="">Select a product</option>
-                            {products?.map(product => (
-                                <option key={product.id} value={product.id}>{product.name}</option>
-                            ))}
+                        <option value="">Select a product</option>
+                        {products?.ids.map((id) => (
+                            <option key={id} value={id}>{products.entities[id].name}</option>
+                        ))}
                         </select>
                     </div>
                 )}

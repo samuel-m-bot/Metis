@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useUpdateTaskMutation, useDeleteTaskMutation } from "./tasksApiSlice";
 import { useGetUsersQuery } from "../users/usersApiSlice";
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
-import { useLazyGetDocumentsQuery, useLazyGetDesignsQuery, useLazyGetProductsQuery } from "../entities/entitiesApiSlice";
+import { useLazyGetDesignsQuery } from "../designs/designsApiSlice";
+import { useLazyGetDocumentsQuery } from "../documents/documentsApiSlice";
+import { useLazyGetProductsQuery } from "../products/productsApiSlice";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -29,6 +31,11 @@ const EditTaskForm = ({ task }) => {
     const [assignedDesign, setAssignedDesign] = useState(task.assignedDesign);
     const [assignedDocument, setAssignedDocument] = useState(task.assignedDocument);
     const [assignedProduct, setAssignedProduct] = useState(task.assignedProduct);
+
+    const handleMultiSelectChange = (event, setState) => {
+        const values = Array.from(event.target.selectedOptions, option => option.value);
+        setState(values);
+    };
 
     useEffect(() => {
         if (relatedTo === 'Document') {
@@ -65,13 +72,13 @@ const EditTaskForm = ({ task }) => {
         }
     };
     const onDeleteTaskClicked = async () => {
-        await deleteTask({ id: user.id });
+        await deleteTask({ id: task.id });
+        navigate('/admin-dashboard/tasks');
     };
-    if (isFetchingUsers || isFetchingProjects) return <p>Loading...</p>;
-    if (isUsersError || isProjectsError) return <p>Error loading data.</p>;
+    if (isLoading ) return <p>Loading...</p>;
     return (
         <div className="container mt-3">
-            <h2>Create New Task</h2>
+            <h2>Edit Task</h2>
             <form>
                 <div className="mb-3">
                     <label htmlFor="projectId" className="form-label">Project:</label>
@@ -198,10 +205,10 @@ const EditTaskForm = ({ task }) => {
                             value={assignedDocument}
                             onChange={e => setAssignedDocument(e.target.value)}
                         >
-                            <option value="">Select a document</option>
-                            {documents?.map(doc => (
-                                <option key={doc.id} value={doc.id}>{doc.name}</option>
-                            ))}
+                        <option value="">Select a document</option>
+                        {documents?.ids.map(documentId => (
+                            <option key={documentId} value={documentId}>{documents.entities[documentId].title}</option>
+                        ))}
                         </select>
                     </div>
                 )}
@@ -215,10 +222,10 @@ const EditTaskForm = ({ task }) => {
                             value={assignedDesign}
                             onChange={e => setAssignedDesign(e.target.value)}
                         >
-                            <option value="">Select a design</option>
-                            {designs?.map(design => (
-                                <option key={design.id} value={design.id}>{design.name}</option>
-                            ))}
+                        <option value="">Select a design</option>
+                        {designs?.ids.map(designId => (
+                            <option key={designId} value={designId}>{designs.entities[designId].name}</option>
+                        ))}
                         </select>
                     </div>
                 )}
@@ -232,15 +239,15 @@ const EditTaskForm = ({ task }) => {
                             value={assignedProduct}
                             onChange={e => setAssignedProduct(e.target.value)}
                         >
-                            <option value="">Select a product</option>
-                            {products?.map(product => (
-                                <option key={product.id} value={product.id}>{product.name}</option>
-                            ))}
+                        <option value="">Select a product</option>
+                        {products?.ids.map((id) => (
+                            <option key={id} value={id}>{products.entities[id].name}</option>
+                        ))}
                         </select>
                     </div>
                 )}
                 <div className="d-flex justify-content-between">
-                    <button type="button" className="btn btn-primary" onClick={onSaveTaskClicked} disabled={updateProject.isLoading}>
+                    <button type="button" className="btn btn-primary" onClick={onSaveTaskClicked} disabled={isLoading}>
                         <FontAwesomeIcon icon={faSave} /> Save Changes
                     </button>
                     <button type="button" className="btn btn-danger" onClick={onDeleteTaskClicked}>

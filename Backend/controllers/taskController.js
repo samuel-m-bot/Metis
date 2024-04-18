@@ -19,7 +19,7 @@ const createTask = asyncHandler(async (req, res) => {
 
     // Create a new task
     const task = new Task({
-        projectID: projectId,
+        projectId,
         name,
         description,
         status,
@@ -28,11 +28,11 @@ const createTask = asyncHandler(async (req, res) => {
         taskType,
         dueDate,
         relatedTo,
-        assignedDesign,
-        assignedDocument,
-        assignedProduct
     });
 
+    if(relatedTo && relatedTo==="Design" && assignedDesign!=="")task.assignedDesign = assignedDesign
+    if(relatedTo && relatedTo==="Document" && assignedDocument!=="")task.assignedDocument = assignedDocument
+    if(relatedTo && relatedTo==="Product" && assignedProduct!=="")task.assignedProduct = assignedProduct
     task.creationDate = Date.now();
 
     const savedTask = await task.save();
@@ -45,7 +45,7 @@ const createTask = asyncHandler(async (req, res) => {
 // @route GET /tasks
 // @access Private
 const getAllTasks = asyncHandler(async (req, res) => {
-    const tasks = await Task.find().populate('assignedTo', 'firstName surname').populate('projectID', 'name');
+    const tasks = await Task.find().populate('assignedTo', 'firstName surname').populate('projectId', 'name');
     res.status(200).json(tasks);
 });
 
@@ -53,7 +53,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
 // @route GET /tasks/:id
 // @access Private
 const getTaskById = asyncHandler(async (req, res) => {
-    const task = await Task.findById(req.params.id).populate('assignedTo', 'firstName surname').populate('projectID', 'name');
+    const task = await Task.findById(req.params.id).populate('assignedTo', 'firstName surname').populate('projectId', 'name');
     if (!task) {
         return res.status(404).json({ message: 'Task not found' });
     }

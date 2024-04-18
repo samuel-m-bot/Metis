@@ -39,6 +39,7 @@ import EditDesign from './features/designs/EditDesign.js'
 import DocuemntList from './features/documents/DocumentList.js'
 import NewDocumentForm from './features/documents/NewDocumentForm.js'
 import EditDocument from './features/documents/EditDocument.js'
+import EditTask from './features/Tasks/EditTask.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -64,7 +65,7 @@ function App() {
 
                 <Route path="tasks">
                   <Route index element={<TasksList />} />
-                  <Route path=":id" element={<EditUser />} />
+                  <Route path=":id" element={<EditTask />} />
                   <Route path="create" element={<NewTaskForm />} />
                 </Route>
 

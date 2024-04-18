@@ -104,7 +104,8 @@ export const {
     useDeleteDesignMutation,
     useDownloadDesignQuery,
     useLazyDownloadDesignQuery,
-    useGetDesignsByProjectIdQuery
+    useGetDesignsByProjectIdQuery,
+    useLazyGetDesignsQuery
 } = designsApiSlice
 
 // returns the query result object

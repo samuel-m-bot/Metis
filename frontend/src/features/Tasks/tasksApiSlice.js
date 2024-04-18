@@ -46,22 +46,30 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         updateTask: builder.mutation({
-            query: (taskData) => ({
-                url: `/tasks/${taskData.id}`, 
+            query: ({ id, projectId, name, description, status, priority, assignedTo, taskType, dueDate,relatedTo, assignedDesign, assignedDocument, assignedProduct }) => ({
+                url: `/tasks/${id}`,
                 method: 'PATCH',
                 body: {
-                    email: taskData.email,
-                    firstName: taskData.firstName,
-                    surname: taskData.surname,
-                    roles: taskData.roles,
-                    password: taskData.password,
+                    projectId,
+                    name,
+                    description,
+                    status,
+                    priority,
+                    assignedTo,
+                    taskType,
+                    dueDate,
+                    relatedTo,
+                    assignedDesign,
+                    assignedDocument,
+                    assignedProduct
                 }
             }),
             invalidatesTags: (result, error, arg) => [
                 { type: 'Task', id: arg.id },
                 { type: 'Task', id: "LIST" }
             ]
-        }),        
+        }),
+                
         deleteTask: builder.mutation({
             query: ({ id }) => ({
                 url: `/tasks/${id}`,

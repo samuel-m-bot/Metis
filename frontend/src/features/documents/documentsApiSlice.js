@@ -124,7 +124,8 @@ export const {
     useDeleteDocumentMutation,
     useDownloadDocumentQuery,
     useLazyDownloadDocumentQuery,
-    useGetDocumentsByProjectIdQuery
+    useGetDocumentsByProjectIdQuery,
+    useLazyGetDocumentsQuery
 } = documentsApiSlice
 
 // returns the query result object

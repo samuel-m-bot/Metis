@@ -85,6 +85,7 @@ export const {
     useAddNewProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
+    useLazyGetProductsQuery
 } = productsApiSlice
 
 // returns the query result object

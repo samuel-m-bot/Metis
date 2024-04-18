@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const Task = ({ task }) => {
     const navigate = useNavigate();
 
-    const handleEdit = () => navigate(`/admin-dashboard/tasks/edit/${task._id}`);
+    const handleEdit = () => navigate(`/admin-dashboard/tasks/${task._id}`);
 
     return (
         <tr>

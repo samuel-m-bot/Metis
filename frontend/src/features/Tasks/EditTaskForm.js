@@ -1,37 +1,34 @@
 import { useState, useEffect } from "react";
-import { useAddNewTaskMutation } from "./tasksApiSlice";
+import { useUpdateTaskMutation, useDeleteTaskMutation } from "./tasksApiSlice";
 import { useGetUsersQuery } from "../users/usersApiSlice";
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
-import { useLazyGetDocumentsQuery } from "../documents/documentsApiSlice";
-import { useLazyGetDesignsQuery } from "../designs/designsApiSlice";
-import { useLazyGetProductsQuery } from "../products/productsApiSlice";
+import { useLazyGetDocumentsQuery, useLazyGetDesignsQuery, useLazyGetProductsQuery } from "../entities/entitiesApiSlice";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
-const NewTaskForm = () => {
+const EditTaskForm = ({ task }) => {
     const navigate = useNavigate();
-    const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
-    const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
-    const [addNewTask, { isLoading }] = useAddNewTaskMutation();
+    const [updateTask, { isLoading }] = useUpdateTaskMutation();
+    const [deleteTask] = useDeleteTaskMutation();
+    const { data: users } = useGetUsersQuery();
+    const { data: projects } = useGetProjectsQuery();
     const [triggerGetDocuments, { data: documents }] = useLazyGetDocumentsQuery();
     const [triggerGetDesigns, { data: designs }] = useLazyGetDesignsQuery();
     const [triggerGetProducts, { data: products }] = useLazyGetProductsQuery();
 
-    const [projectId, setProjectId] = useState('');
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('');
-    const [priority, setPriority] = useState('');
-    const [assignedTo, setAssignedTo] = useState([]);
-    const [taskType, setTaskType] = useState('');
-    const [relatedTo, setRelatedTo] = useState('Review');
-    const [dueDate, setDueDate] = useState('');
-
-    const [assignedDesign, setAssignedDesign] = useState('');
-    const [assignedDocument, setAssignedDocument] = useState('');
-    const [assignedProduct, setAssignedProduct] = useState('');
-
+    const [projectId, setProjectId] = useState(task.projectId);
+    const [name, setName] = useState(task.name);
+    const [description, setDescription] = useState(task.description);
+    const [status, setStatus] = useState(task.status);
+    const [priority, setPriority] = useState(task.priority);
+    const [assignedTo, setAssignedTo] = useState(task.assignedTo);
+    const [taskType, setTaskType] = useState(task.taskType);
+    const [relatedTo, setRelatedTo] = useState(task.relatedTo);
+    const [dueDate, setDueDate] = useState(task.dueDate);
+    const [assignedDesign, setAssignedDesign] = useState(task.assignedDesign);
+    const [assignedDocument, setAssignedDocument] = useState(task.assignedDocument);
+    const [assignedProduct, setAssignedProduct] = useState(task.assignedProduct);
 
     useEffect(() => {
         if (relatedTo === 'Document') {
@@ -42,16 +39,11 @@ const NewTaskForm = () => {
             triggerGetProducts();
         }
     }, [relatedTo, triggerGetDocuments, triggerGetDesigns, triggerGetProducts]);
-    
-    const handleMultiSelectChange = (event, setState) => {
-        const values = Array.from(event.target.selectedOptions, option => option.value);
-        setState(values);
-    };
 
     const onSaveTaskClicked = async () => {
-        console.log(projectId)
-        if (name && description && status && priority && assignedTo.length && taskType && projectId && relatedTo) {
-            const taskData = {
+        if (name && description && status && priority && assignedTo.length && taskType && projectId) {
+            const updatedTaskData = {
+                id: task.id,
                 projectId,
                 name,
                 description,
@@ -59,21 +51,22 @@ const NewTaskForm = () => {
                 priority,
                 assignedTo,
                 taskType,
-                relatedTo,
-                dueDate: dueDate || undefined,
+                dueDate,
                 assignedDesign,
                 assignedDocument,
                 assignedProduct
             };
             try {
-                await addNewTask(taskData).unwrap();
+                await updateTask(updatedTaskData).unwrap();
                 navigate('/admin-dashboard/tasks');
             } catch (error) {
-                console.error('Failed to save the task', error);
+                console.error('Failed to update the task', error);
             }
         }
     };
-
+    const onDeleteTaskClicked = async () => {
+        await deleteTask({ id: user.id });
+    };
     if (isFetchingUsers || isFetchingProjects) return <p>Loading...</p>;
     if (isUsersError || isProjectsError) return <p>Error loading data.</p>;
     return (
@@ -246,12 +239,17 @@ const NewTaskForm = () => {
                         </select>
                     </div>
                 )}
-                <button type="button" className="btn btn-primary" onClick={onSaveTaskClicked} disabled={isLoading}>
-                    <FontAwesomeIcon icon={faSave} /> Create Task
-                </button>
+                <div className="d-flex justify-content-between">
+                    <button type="button" className="btn btn-primary" onClick={onSaveTaskClicked} disabled={updateProject.isLoading}>
+                        <FontAwesomeIcon icon={faSave} /> Save Changes
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={onDeleteTaskClicked}>
+                        <FontAwesomeIcon icon={faTrashCan} /> Delete
+                    </button>
+                </div>
             </form>
         </div>
     );
 };
 
-export default NewTaskForm;
+export default EditTaskForm;

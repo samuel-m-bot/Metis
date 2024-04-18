@@ -40,6 +40,9 @@ import DocuemntList from './features/documents/DocumentList.js'
 import NewDocumentForm from './features/documents/NewDocumentForm.js'
 import EditDocument from './features/documents/EditDocument.js'
 import EditTask from './features/Tasks/EditTask.js'
+import ChangeRequestList from './features/changes/ChangeRequestList.js'
+import NewChangeRequestForm from './features/changes/NewChangeRequestForm.js'
+import EditChangeRequest from './features/changes/EditChangeRequest.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -96,10 +99,10 @@ function App() {
                   <Route path="create" element={<NewDesignForm />} />
                 </Route>
 
-                <Route path="change-request">
-                  <Route index element={<UsersList />} />
-                  <Route path=":id" element={<EditUser />} />
-                  <Route path="create" element={<NewUserForm />} />
+                <Route path="change-requests">
+                  <Route index element={<ChangeRequestList />} />
+                  <Route path=":id" element={<EditChangeRequest />} />
+                  <Route path="create" element={<NewChangeRequestForm />} />
                 </Route>
 
                 <Route path="activities">

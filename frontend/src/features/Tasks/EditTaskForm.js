@@ -19,12 +19,12 @@ const EditTaskForm = ({ task }) => {
     const [triggerGetDesigns, { data: designs }] = useLazyGetDesignsQuery();
     const [triggerGetProducts, { data: products }] = useLazyGetProductsQuery();
 
-    const [projectId, setProjectId] = useState(task.projectId);
+    const [projectId, setProjectId] = useState(task.projectId._id);
     const [name, setName] = useState(task.name);
     const [description, setDescription] = useState(task.description);
     const [status, setStatus] = useState(task.status);
     const [priority, setPriority] = useState(task.priority);
-    const [assignedTo, setAssignedTo] = useState(task.assignedTo);
+    const [assignedTo, setAssignedTo] = useState(task.assignedTo.map(user => user._id));
     const [taskType, setTaskType] = useState(task.taskType);
     const [relatedTo, setRelatedTo] = useState(task.relatedTo);
     const [dueDate, setDueDate] = useState(task.dueDate);
@@ -36,7 +36,7 @@ const EditTaskForm = ({ task }) => {
         const values = Array.from(event.target.selectedOptions, option => option.value);
         setState(values);
     };
-
+    
     useEffect(() => {
         if (relatedTo === 'Document') {
             triggerGetDocuments();
@@ -80,6 +80,7 @@ const EditTaskForm = ({ task }) => {
         <div className="container mt-3">
             <h2>Edit Task</h2>
             <form>
+                {console.log(task.assignedTo)}
                 <div className="mb-3">
                     <label htmlFor="projectId" className="form-label">Project:</label>
                     <select
@@ -149,7 +150,9 @@ const EditTaskForm = ({ task }) => {
                     <label htmlFor="assignedTo" className="form-label">Assigned To:</label>
                     <select multiple className="form-select" id="assignedTo" value={assignedTo} onChange={(e) => handleMultiSelectChange(e, setAssignedTo)}>
                         {users?.ids.map(userId => (
-                            <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
+                            <option key={userId} value={userId}>
+                                {users.entities[userId].firstName} {users.entities[userId].surname}
+                            </option>
                         ))}
                     </select>
                 </div>

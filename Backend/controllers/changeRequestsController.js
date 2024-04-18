@@ -9,7 +9,7 @@ const Activity = require('../models/Activity');
 const getAllChangeRequests = asyncHandler(async (req, res) => {
     const changeRequests = await ChangeRequest.find().lean()
     if(!changeRequests?.length){
-        return res.status(400).json({ message: 'No changeRequests found'})
+        return res.status(400).json({ message: 'No Change Requests found'})
     }
     res.json(changeRequests)
 })
@@ -25,46 +25,61 @@ const getChangeRequestById = asyncHandler(async (req, res) => {
     res.json(changeRequests)
 })
 
-// @desc Create a new change request
+/// @desc Create a new change request
 // @route POST /changeRequests
 // @access private
 const createNewChangeRequest = asyncHandler(async (req, res) => {
-    const { productID, requestedBy, description, status, priority, estimatedCompletionDate, assignedTo, comments, relatedDocuments } = req.body
+    const {
+        requestedBy, projectId, description, status, priority, estimatedCompletionDate,
+        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+    } = req.body;
 
     // Validate required fields
-    if (!productID || !requestedBy || !description || !status) {
-        return res.status(400).json({ message: 'Required fields are missing' })
+    if (!requestedBy || !projectId || !description || !status) {
+        return res.status(400).json({ message: 'Required fields are missing' });
     }
 
     // Create new change request
-    const changeRequest = new ChangeRequest({ productID, requestedBy, description, status, priority, estimatedCompletionDate, assignedTo, comments, relatedDocuments })
+    const changeRequest = new ChangeRequest({
+        requestedBy, projectId, description, status, priority, estimatedCompletionDate,
+        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+    });
 
-    const createdChangeRequest = await changeRequest.save()
+    const createdChangeRequest = await changeRequest.save();
     res.status(201).json(createdChangeRequest);
-})
+});
+
 
 // @desc Update an existing change request
 // @route PATCH /changeRequests/:id
 // @access private
 const updateChangeRequest = asyncHandler(async (req, res) => {
+    const {
+        description, status, priority, estimatedCompletionDate, assignedTo, comments,
+        relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+    } = req.body;
     const changeRequestId = req.params.id;
-    const changeRequest = await ChangeRequest.findById(changeRequestId)
 
+    const changeRequest = await ChangeRequest.findById(changeRequestId);
     if (!changeRequest) {
-        return res.status(404).json({ message: 'Change request not found' })
+        return res.status(404).json({ message: 'Change request not found' });
     }
 
-    // Update fields if provided
-    changeRequest.status = req.body.status || changeRequest.status
-    changeRequest.priority = req.body.priority || changeRequest.priority
-    changeRequest.estimatedCompletionDate = req.body.estimatedCompletionDate || changeRequest.estimatedCompletionDate
-    changeRequest.assignedTo = req.body.assignedTo || changeRequest.assignedTo
-    changeRequest.comments = req.body.comments || changeRequest.comments
-    changeRequest.relatedDocuments = req.body.relatedDocuments || changeRequest.relatedDocuments
+    changeRequest.description = description || changeRequest.description;
+    changeRequest.status = status || changeRequest.status;
+    changeRequest.priority = priority || changeRequest.priority;
+    changeRequest.estimatedCompletionDate = estimatedCompletionDate || changeRequest.estimatedCompletionDate;
+    changeRequest.assignedTo = assignedTo || changeRequest.assignedTo;
+    changeRequest.comments = comments || changeRequest.comments;
+    changeRequest.relatedDocuments = relatedDocuments || changeRequest.relatedDocuments;
+    changeRequest.relatedDesigns = relatedDesigns || changeRequest.relatedDesigns;
+    changeRequest.associatedTasks = associatedTasks || changeRequest.associatedTasks;
+    changeRequest.relatedProducts = relatedProducts || changeRequest.relatedProducts;
 
-    const updatedChangeRequest = await changeRequest.save()
-    res.json({ message: `Change request '${updatedChangeRequest._id}' updated` })
-})
+    const updatedChangeRequest = await changeRequest.save();
+    res.json(updatedChangeRequest);
+});
+
 
 // @desc Delete a changeRequest
 // @route DELETE /changeRequests

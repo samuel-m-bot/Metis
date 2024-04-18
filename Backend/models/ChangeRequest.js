@@ -2,7 +2,13 @@ const mongoose = require('mongoose');
 
 const changeRequestSchema = new mongoose.Schema({
     requestedBy: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
         required: true
     },
     description: {
@@ -11,10 +17,14 @@ const changeRequestSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Requested', 'Reviewed', 'Approved', 'Implemented', 'Closed', 'Rejected']
     },
     priority: {
-        type: String
+        type: String,
+        enum: ['High', 'Medium', 'Low'],
+        default: 'Medium',
+        required: true
     },
     creationDate: {
         type: Date,
@@ -29,21 +39,31 @@ const changeRequestSchema = new mongoose.Schema({
     },
     comments: [{
         text: String,
-        postedBy: String,
-        postedDate: Date
+        postedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        postedDate: {
+            type: Date,
+            default: Date.now
+        }
     }],
-    relatedDocuments: {
+    relatedDocuments: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Document'
-    },
-    relatedDesigns: {
+    }],
+    relatedDesigns: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Design'
-    },
+    }],
     associatedTasks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task'
     }],
+    relatedProducts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    }]
 });
 
 module.exports = mongoose.model('ChangeRequest', changeRequestSchema);

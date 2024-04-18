@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useGetProjectsQuery } from './projectsApiSlice';
 import Project from './Project';
 import LoadingSpinner from "../../components/LoadingSpinner";
+import useAuth from '../../hooks/useAuth';
 
 const ProjectsList = () => {
     const navigate = useNavigate();
+    const {isAdmin, isProjectManager} = useAuth()
     const { 
         data: projects, 
         isLoading, 
@@ -21,20 +23,37 @@ const ProjectsList = () => {
     };
 
     if (isLoading) return <LoadingSpinner />;
-    if (isError) return <p>Error: {error.message}</p>;
-
-    // Check if there are project IDs
-    if (!projects.ids.length) {
-        return (
-            <div>
-                <button onClick={handleCreateNewProject} className="btn btn-success mb-3">
-                    Create New Project
+    if (isError) {
+    
+        if (error.status === 400 && error.data.message === 'No projects found') {
+          return (
+            <div className="container mt-5">
+              <h2>{error.data.message}</h2>
+              {(isAdmin || isProjectManager) && (
+                <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/change-requests/create')}>
+                  Create New Change Request
                 </button>
-                <p>No projects found. Click above to create a new project.</p>
+              )}
             </div>
+          );
+        }
+        return <p>Error: {error.data.message}</p>;
+      }
+      
+      if (projects.length === 0) {
+        return (
+          <div className="container mt-5">
+            <h2>No Change Requests Found</h2>
+            {(isAdmin || isProjectManager) && (
+              <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/change-requests/create')}>
+                Create New Change Request
+              </button>
+            )}
+          </div>
         );
-    }
+      }
 
+    const canEdit = (isAdmin || isProjectManager)
     return (
         <div>
             <button onClick={handleCreateNewProject} className="btn btn-success mb-3">
@@ -53,7 +72,7 @@ const ProjectsList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {projects.ids.map(projectId => <Project key={projectId} project={projects.entities[projectId]} />)}
+                    {projects.ids.map(projectId => <Project key={projectId} project={projects.entities[projectId]} canEdit={canEdit} />)}
                 </tbody>
             </table>
         </div>

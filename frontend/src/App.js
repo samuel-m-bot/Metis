@@ -43,6 +43,7 @@ import EditTask from './features/Tasks/EditTask.js'
 import ChangeRequestList from './features/changes/ChangeRequestList.js'
 import NewChangeRequestForm from './features/changes/NewChangeRequestForm.js'
 import EditChangeRequest from './features/changes/EditChangeRequest.js'
+import ProjectsDashboard from './features/projects/ProjectsDashboard.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -111,7 +112,7 @@ function App() {
                   <Route path="create" element={<NewUserForm />} />
                 </Route>
               </Route>
-              <Route path="projects" element={<ProjectList />}/>
+              <Route path="projects" element={<ProjectsDashboard />}/>
               <Route path="projects/project" element={<Project />}/>
               <Route path="projects/:projectId" element={<ProjectDashboard />} />#
               <Route path="tasks/:taskId" element={<TaskDetails />} />

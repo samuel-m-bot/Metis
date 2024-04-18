@@ -29,12 +29,12 @@ const ProjectDashboard = () => {
     navigate('/tasks/all');
   };
 
-  const ongoingTasks = project.tasks.filter(task => task.status === 'Ongoing');
-  const completedTasks = project.tasks.filter(task => task.status === 'Completed');
-  const upcomingTasks = project.tasks.filter(task => task.status === 'Not Started');
+  // const ongoingTasks = project.tasks.filter(task => task.status === 'Ongoing');
+  // const completedTasks = project.tasks.filter(task => task.status === 'Completed');
+  // const upcomingTasks = project.tasks.filter(task => task.status === 'Not Started');
 
-  const ongoingChangeRequest = project.changeRequests.filter(task => task.status !== 'Completed');
-  const completedChangeRequest = project.changeRequests.filter(task => task.status === 'Completed');
+  // const ongoingChangeRequest = project.changeRequests.filter(task => task.status !== 'Completed');
+  // const completedChangeRequest = project.changeRequests.filter(task => task.status === 'Completed');
 
   return (
     <div className="container-fluid">
@@ -52,8 +52,8 @@ const ProjectDashboard = () => {
           <p><strong>End Date:</strong> {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}</p>
           <p><strong>Status:</strong> <span className={`badge ${project.status === 'Completed' ? 'bg-success' : 'bg-warning'}`}>{project.status}</span></p>
           <p><strong>Description:</strong> {project.description}</p>
-          <p><strong>Project Manager:</strong> {project.projectManagerName}</p>
-          <p><strong>Team Members:</strong> {project.teamMembersNames.join(', ')}</p>
+          <p><strong>Project Manager:</strong> {project.projectManagerID}</p>
+          <p><strong>Team Members:</strong> {project.teamMembers.join(', ')}</p>
           <div><strong>Progress:</strong></div>
           <div className="progress" style={{ height: '20px' }}>
             <div className="progress-bar" role="progressbar" style={{ width: '50%' }}></div>
@@ -88,7 +88,7 @@ const ProjectDashboard = () => {
               </ul>
             </div>
             <div className="col-md-4">
-              <TasksDoughnutChart tasks={project.tasks} />
+              {/* <TasksDoughnutChart tasks={project.tasks} /> */}
             </div>
             <div className="col-md-4">
               <div className="chart-container">
@@ -140,15 +140,15 @@ const ProjectDashboard = () => {
         <Tab eventKey="tasks" title="Tasks" className="tab-tasks">
           <div className="row">
             <div className="col-md-6">
-              <TasksTable tasks={ongoingTasks} title="Ongoing Tasks" />
+              {/* <TasksTable tasks={ongoingTasks} title="Ongoing Tasks" /> */}
             </div>
             <div className="col-md-6">
-              <TasksTable tasks={completedTasks} title="Completed Tasks" />
+              {/* <TasksTable tasks={completedTasks} title="Completed Tasks" /> */}
             </div>
           </div>
           <div className="row mt-4">
             <div className="col">
-              <TasksTable tasks={upcomingTasks} title="Upcoming Tasks" />
+              {/* <TasksTable tasks={upcomingTasks} title="Upcoming Tasks" /> */}
             </div>
           </div>
           <div className="mt-4">
@@ -158,11 +158,11 @@ const ProjectDashboard = () => {
         <Tab eventKey="changeRequests" title="Change Requests">
           <div className='row'>
             <h3>On going Change request</h3>
-            <ChangeRequestsTable changeRequests={ongoingChangeRequest} />
+            {/* <ChangeRequestsTable changeRequests={ongoingChangeRequest} /> */}
           </div>
           <div className='row'>
             <h3>Completed Change request</h3>
-            <ChangeRequestsTable changeRequests={completedChangeRequest} />
+            {/* <ChangeRequestsTable changeRequests={completedChangeRequest} /> */}
           </div>
         </Tab>
         <Tab eventKey="design" title="Design" className="design-tab-content">
@@ -188,7 +188,7 @@ const ProjectDashboard = () => {
             <button className="btn btn-secondary">View All Designs</button>
           </div>
 
-          <DesignTable designs={project.designs} />
+          {/* <DesignTable designs={project.designs} /> */}
         </Tab>
 
       </Tabs>

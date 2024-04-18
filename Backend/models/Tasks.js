@@ -46,6 +46,11 @@ const commentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const taskSchema = new mongoose.Schema({
+    projectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true
+    },
     name: {
         type: String,
         required: true
@@ -56,9 +61,10 @@ const taskSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Ongoing', 'Completed', 'Upcoming'],
+        enum: ['Not Started', 'In Progress', 'On Hold', 'Completed', 'Reviewed', 'Approved', 'Cancelled'],
+        default: 'Not Started',
         required: true
-    },
+    },    
     priority: {
         type: String,
         enum: ['High', 'Medium', 'Low'],
@@ -71,14 +77,9 @@ const taskSchema = new mongoose.Schema({
     }],
     taskType: {
         type: String,
-        enum: ['Review', 'Update', 'Approve', 'Others'],
+        enum: ['Review', 'Update', 'Approve', 'Create', 'Verify', 'Revise', 'Release', 'Archive', 'Others'],
         required: true
-    },
-    projectID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Project',
-        required: true
-    },
+    },    
     dueDate: {
         type: Date
     },
@@ -90,14 +91,21 @@ const taskSchema = new mongoose.Schema({
         type: Date
     },
     relatedTo: {
-        type: mongoose.Schema.Types.ObjectId,
-        refPath: 'onModel',
+        type: String,
+        enum: ['Design', 'Document', 'Product', 'Project'],
         required: true
     },
-    onModel: {
-        type: String,
-        required: true,
-        enum: ['Project', 'ChangeRequest']
+    assignedDesign: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Design'
+    },
+    assignedDocument: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Document'
+    },
+    assignedProduct: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
     },
     subtasks: [subtaskSchema],
     checklist: [checklistItemSchema],

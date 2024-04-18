@@ -3,46 +3,42 @@ const ChangeRequest = require('../models/ChangeRequest');
 const asyncHandler = require('express-async-handler');
 
 
-// @desc Create a new task and associate it with a change request if applicable
+// @desc Create a new task
 // @route POST /tasks
 // @access Private
 const createTask = asyncHandler(async (req, res) => {
-    const { name, description, status, priority, assignedTo, taskType, projectId, dueDate, relatedTo, onModel } = req.body;
+    const {
+        name, description, status, priority, assignedTo, taskType,
+        projectId, dueDate, relatedTo,  assignedDesign, assignedDocument, assignedProduct
+    } = req.body;
 
-    if (!name || !description || !status || !priority || !assignedTo || !taskType || !projectId) {
+    if (!name || !description || !status || !priority || !assignedTo || !taskType || !projectId || !relatedTo) {
         res.status(400);
         throw new Error('Missing required fields');
     }
 
     // Create a new task
     const task = new Task({
+        projectID: projectId,
         name,
         description,
         status,
         priority,
         assignedTo,
         taskType,
-        projectID: projectId,
         dueDate,
         relatedTo,
-        onModel
+        assignedDesign,
+        assignedDocument,
+        assignedProduct
     });
 
+    task.creationDate = Date.now();
+
     const savedTask = await task.save();
-
-    // If the task is for a ChangeRequest, update the associated ChangeRequest
-    if (onModel === 'ChangeRequest' && relatedTo) {
-        const changeRequest = await ChangeRequest.findById(relatedTo);
-        if (!changeRequest) {
-            res.status(404);
-            throw new Error('ChangeRequest not found');
-        }
-        changeRequest.associatedTasks.push(savedTask._id);
-        await changeRequest.save();
-    }
-
     res.status(201).json(savedTask);
 });
+
 
 
 // @desc Get all tasks
@@ -89,12 +85,17 @@ const getUserTasks = asyncHandler(async (req, res) => {
 // @route PATCH /tasks/:id
 // @access Private
 const updateTask = asyncHandler(async (req, res) => {
+    const {
+        name, description, status, priority, assignedTo, taskType,
+        projectId, dueDate, relatedTo, assignedDesign, assignedDocument, assignedProduct
+    } = req.body;
+
     const task = await Task.findById(req.params.id);
     if (!task) {
         return res.status(404).json({ message: 'Task not found' });
     }
 
-    const { name, description, status, priority, assignedTo, taskType, projectId, dueDate, relatedTo, onModel } = req.body;
+    // Update task fields if provided
     task.name = name || task.name;
     task.description = description || task.description;
     task.status = status || task.status;
@@ -104,11 +105,14 @@ const updateTask = asyncHandler(async (req, res) => {
     task.projectID = projectId || task.projectID;
     task.dueDate = dueDate || task.dueDate;
     task.relatedTo = relatedTo || task.relatedTo;
-    task.onModel = onModel || task.onModel;
+    task.assignedDesign = assignedDesign || task.assignedDesign;
+    task.assignedDocument = assignedDocument || task.assignedDocument;
+    task.assignedProduct = assignedProduct || task.assignedProduct;
 
     const updatedTask = await task.save();
     res.status(200).json(updatedTask);
 });
+
 
 // @desc Delete a task
 // @route DELETE /tasks/:id
@@ -198,7 +202,7 @@ const updateSubtask = asyncHandler(async (req, res) => {
 
 // @desc Mark a checklist item as completed
 // @route PATCH /tasks/:taskId/checklist/:itemId
-// @access Private
+// @access Privateer(
 const toggleChecklistItem = asyncHandler(async (req, res) => {
     const { taskId, itemId } = req.params;
 

@@ -1,7 +1,7 @@
 const Task = require('../models/Tasks');
 const ChangeRequest = require('../models/ChangeRequest');
 const asyncHandler = require('express-async-handler');
-
+const Project = require('../models/Project')
 
 // @desc Create a new task
 // @route POST /tasks
@@ -30,16 +30,22 @@ const createTask = asyncHandler(async (req, res) => {
         relatedTo,
     });
 
-    if(relatedTo && relatedTo==="Design" && assignedDesign!=="")task.assignedDesign = assignedDesign
-    if(relatedTo && relatedTo==="Document" && assignedDocument!=="")task.assignedDocument = assignedDocument
-    if(relatedTo && relatedTo==="Product" && assignedProduct!=="")task.assignedProduct = assignedProduct
+    if(relatedTo && relatedTo==="Design" && assignedDesign) task.assignedDesign = assignedDesign;
+    if(relatedTo && relatedTo==="Document" && assignedDocument) task.assignedDocument = assignedDocument;
+    if(relatedTo && relatedTo==="Product" && assignedProduct) task.assignedProduct = assignedProduct;
     task.creationDate = Date.now();
 
     const savedTask = await task.save();
+
+    // Update the Project to include the new task
+    await Project.findByIdAndUpdate(
+        projectId,
+        { $push: { projectTasks: savedTask._id } },
+        { new: true, safe: true, upsert: true }
+    );
+
     res.status(201).json(savedTask);
 });
-
-
 
 // @desc Get all tasks
 // @route GET /tasks
@@ -122,17 +128,29 @@ const deleteTask = asyncHandler(async (req, res) => {
     if (!task) {
         return res.status(404).json({ message: 'Task not found' });
     }
+
+    const projectId = task.projectId;
     await task.remove();
+
+    // Remove the task from the Project document
+    await Project.findByIdAndUpdate(
+        projectId,
+        { $pull: { projectTasks: req.params.id } },
+        { new: true }
+    );
+
     const newActivity = new Activity({
         actionType: 'Deleted',
-        description: `Task ${req.params.id} has been deleted by user ${userId}`,
+        description: `Task ${req.params.id} has been deleted by user ${req.user._id}`,
         createdBy: req.user._id,
         relatedTo: req.params.id,
         onModel: 'Task',
     });
     await newActivity.save();
+
     res.status(200).json({ message: 'Task deleted successfully' });
 });
+
 
 
 // @desc Add a subtask to a task
@@ -279,6 +297,22 @@ const editTaskComment = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Comment updated successfully', task });
 });
 
+// @desc Filter tasks by IDs and Status
+// @route POST /tasks/filter
+// @access Private
+const filterTasks = asyncHandler(async (req, res) => {
+    const { taskIds, status } = req.body;
+    try {
+        const tasks = await Task.find({
+            '_id': { $in: taskIds },
+            'status': status
+        }).populate('assignedTo', 'firstName surname');  // Populate if needed
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
+});
+
 
 module.exports = {
     createTask,
@@ -291,5 +325,6 @@ module.exports = {
     updateSubtask,
     toggleChecklistItem,
     addCommentToTask,
-    editTaskComment
+    editTaskComment,
+    filterTasks
 };

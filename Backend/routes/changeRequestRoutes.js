@@ -17,4 +17,5 @@ router.route('/:id')
 router.get('/status/:status', changeRequestController.listChangeRequestsByStatus); // Queys list of CR by status
 router.get('/:id/assign', changeRequestController.assignChangeRequest); // Assign CR to a user
 router.get('/:id/approveReject', changeRequestController.approveRejectChangeRequest); // Approving or rejecting a CR
+router.get('/project/:projectId/:status', changeRequestController.getChangeRequestsByProjectAndStatus);
 module.exports = router

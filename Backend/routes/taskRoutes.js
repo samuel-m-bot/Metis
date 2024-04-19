@@ -26,4 +26,6 @@ router.patch('/:taskId/comments/:commentId', taskController.editTaskComment); //
 // Route to get tasks assigned to a specific user
 router.get('/user/:userId', taskController.getUserTasks); // Get tasks for a specific user
 
+router.post('/filter', taskController.filterTasks);
+
 module.exports = router;

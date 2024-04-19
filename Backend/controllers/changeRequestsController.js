@@ -185,6 +185,33 @@ const approveRejectChangeRequest = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc Get change requests by Project ID and Status
+// @route GET /changeRequests/project/:projectId/:status
+// @access Private
+const getChangeRequestsByProjectAndStatus = asyncHandler(async (req, res) => {
+    const { projectId, status } = req.params;
+
+    // Create a query to find the change requests with the required conditions
+    const changeRequests = await ChangeRequest.find({ projectId, status })
+        .populate({
+            path: 'requestedBy',
+            select: 'firstName surname'
+        })
+        .populate({
+            path: 'assignedTo',
+            select: 'firstName surname'
+        });
+
+    // Check if any change requests were found
+    if (changeRequests.length === 0) {
+        return res.status(404).json({ message: 'No change requests found' });
+    }
+
+    res.json(changeRequests);
+});
+
+
+
 module.exports = {
     getAllChangeRequests,
     getChangeRequestById,
@@ -193,5 +220,6 @@ module.exports = {
     deleteChangeRequest,
     listChangeRequestsByStatus,
     assignChangeRequest,
-    approveRejectChangeRequest
+    approveRejectChangeRequest,
+    getChangeRequestsByProjectAndStatus
 }

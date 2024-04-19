@@ -45,7 +45,7 @@ const getAssignedProjects = asyncHandler(async (req, res) => {
 // @route POST /projects
 // @access private
 const createNewProject = asyncHandler(async (req, res) => {
-    const { name, startDate, endDate, description, projectManagerID, teamMembers, associatedProducts, relatedDesigns, notes, attachments } = req.body
+    const { name, startDate, endDate, description, projectManagerID, teamMembers } = req.body
 
     // Confirm required data is present
     if (!name || !startDate || !description || !projectManagerID) {
@@ -67,10 +67,6 @@ const createNewProject = asyncHandler(async (req, res) => {
         projectManagerID,
         status: 'Not Started',
         teamMembers: teamMembers || [],
-        associatedProducts: associatedProducts || [],
-        relatedDesigns: relatedDesigns || [],
-        notes: notes || [],
-        attachments: attachments || []
     };
 
     // Create and store new project
@@ -109,10 +105,6 @@ const updateProject = asyncHandler(async (req, res) => {
     project.projectManagerID = req.body.projectManagerID || project.projectManagerID
     project.status = req.body.status || project.status
     project.teamMembers = req.body.teamMembers || project.teamMembers
-    project.associatedProducts = req.body.associatedProducts || project.associatedProducts
-    project.relatedDesigns = req.body.relatedDesigns || project.relatedDesigns
-    project.notes = req.body.notes || project.notes
-    project.attachments = req.body.attachments || project.attachments
 
     await project.save();
     res.status(200).json({ message: `Project ${project.name} updated` })

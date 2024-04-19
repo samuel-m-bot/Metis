@@ -43,25 +43,6 @@ const projectSchema = new mongoose.Schema({
             required: true
         }
     }],
-    associatedProducts: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
-    }],
-    projectTasks: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Task'
-    }],
-    relatedDesigns: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Design'
-    }],
-    notes: [{
-        type: String
-    }],
-    attachments: [{
-        fileName: String,
-        filePath: String
-    }]
 });
 
 module.exports = mongoose.model('Project', projectSchema);

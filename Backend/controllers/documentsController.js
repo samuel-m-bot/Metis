@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllDocuments = asyncHandler(async (req, res) => {
     const documents = await Document.find().lean()
+    if(!documents?.length){
+        return res.status(400).json({ message: 'No documents found'})
+    }
     res.json(documents)
 })
 

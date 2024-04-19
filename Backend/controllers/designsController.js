@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllDesigns = asyncHandler(async (req, res) => {
     const designs = await Design.find().lean()
+    if(!designs?.length){
+        return res.status(400).json({ message: 'No designs found'})
+    }
     res.json(designs)
 })
 
@@ -25,10 +28,10 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { projectId, productID, name, description, type, revisionNumber, status, designer, classification } = req.body;
+    const { projectId, productID, name, description, type, revisionNumber, status, designers, classification } = req.body;
 
     // Validate required fields
-    if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designer || !classification) {
+    if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designers || !classification) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -52,7 +55,7 @@ const createNewDesign = asyncHandler(async (req, res) => {
         type,
         revisionNumber,
         status,
-        designer,
+        designers,
         classification,
         attachment
     });
@@ -66,6 +69,8 @@ const createNewDesign = asyncHandler(async (req, res) => {
 // @route PATCH /designs/:id
 // @access private
 const updateDesign = asyncHandler(async (req, res) => {
+    console.log(req.body)
+    console.log(req.file)
     const designId = req.params.id;
     const design = await Design.findById(designId);
 

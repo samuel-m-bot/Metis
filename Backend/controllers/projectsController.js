@@ -45,20 +45,30 @@ const getAssignedProjects = asyncHandler(async (req, res) => {
 // @route POST /projects
 // @access private
 const createNewProject = asyncHandler(async (req, res) => {
-    const { name, startDate, endDate, description, projectManagerID, teamMembers } = req.body
+    const { name, startDate, endDate, description, projectManagerID, teamMembers } = req.body;
 
     // Confirm required data is present
     if (!name || !startDate || !description || !projectManagerID) {
-        return res.status(400).json({ message: 'Required fields are missing' })
+        return res.status(400).json({ message: 'Required fields are missing' });
     }
 
     // Check for duplicate projects
-    const duplicate = await Project.findOne({ name }).lean().exec()
+    const duplicate = await Project.findOne({ name }).lean().exec();
     if (duplicate) {
-        return res.status(400).json({ message: 'Duplicate project name' })
+        return res.status(400).json({ message: 'Duplicate project name' });
     }
 
-    // Create project object with optional fields
+    // Prepare the teamMembers array, including the project manager as an admin
+    const initialTeamMembers = [
+        {
+            userId: projectManagerID, // Assumes projectManagerID is a valid ObjectId of the user
+            role: 'Admin',
+            permissions: ['Read', 'Write', 'Delete']
+        },
+        ...teamMembers // Spread any additional team members that might have been provided
+    ];
+
+    // Create project object with all fields
     const projectObject = {
         name,
         startDate,
@@ -66,17 +76,18 @@ const createNewProject = asyncHandler(async (req, res) => {
         description,
         projectManagerID,
         status: 'Not Started',
-        teamMembers: teamMembers || [],
+        teamMembers: initialTeamMembers
     };
 
     // Create and store new project
-    const project = await Project.create(projectObject)
+    const project = await Project.create(projectObject);
     if (project) {
-        res.status(201).json({ message: `New project ${name} created` })
+        res.status(201).json({ message: `New project ${name} created` });
     } else {
-        res.status(400).json({ message: 'Invalid project data received' })
+        res.status(400).json({ message: 'Invalid project data received' });
     }
-})
+});
+
 
 // @desc Update a project
 // @route PATCH /projects
@@ -163,7 +174,7 @@ const getProjectTeamDetails = asyncHandler(async (req, res) => {
 
     // Fetch the project and populate user details within teamMembers
     const project = await Project.findById(id)
-                                 .populate('teamMembers.userId', 'firstName lastName email') // Populate the userId ref
+                                 .populate('teamMembers.userId', 'firstName surname email') // Populate the userId ref
                                  .exec();
 
     if (!project) {
@@ -174,7 +185,7 @@ const getProjectTeamDetails = asyncHandler(async (req, res) => {
     const teamDetails = project.teamMembers.map(member => ({
         userId: member.userId._id,
         firstName: member.userId.firstName,
-        lastName: member.userId.lastName,
+        surname: member.userId.surname,
         email: member.userId.email,
         role: member.role,
         permissions: member.permissions

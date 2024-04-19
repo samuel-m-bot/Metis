@@ -17,16 +17,25 @@ const productSchema = new Schema({
     },
     category: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Electronics', 'Apparel', 'Home Goods', 'Books', 'Tools', 
+        'Healthcare', 'Toys', 'Groceries', 'Mobile Apps', 'Software',]
     },
     lifecycleStatus: {
         type: String,
         required: true,
         enum: ['Concept', 'Development', 'Market', 'Retire'],
     },
-    version: {
+    revisionNumber: {
         type: String,
-        required: false
+        required: true,
+        validate: {
+            validator: function(v) {
+                // Regex to validate both 'A.1' format and '1.1' format
+                return /^[A-Z]*\.?\d+(\.\d+)?$/.test(v);
+            },
+            message: props => `${props.value} is not a valid revision number!`
+        }
     },
     partNumber: {
         type: String,
@@ -56,7 +65,6 @@ const productSchema = new Schema({
     },
     digitalAttributes: {
         softwareType: { type: String, required: false }, // e.g., Web, Mobile, Desktop
-        version: { type: String, required: false },
     },
     classification: {
         type: String,

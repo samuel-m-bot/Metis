@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt')
 // @access private
 const getAllProducts = asyncHandler(async (req, res) => {
     const products = await Product.find().lean()
+    if(!products?.length){
+        return res.status(400).json({ message: 'No products found'})
+    }
     res.json(products)
 })
 
@@ -26,12 +29,12 @@ const getProductById = asyncHandler(async (req, res) => {
 // @access private
 const createNewProduct = asyncHandler(async (req, res) => {
     const {
-        name, description, category, lifecycleStatus, type,
-        physicalAttributes, digitalAttributes, classification
+        projectId, name, description, category, lifecycleStatus, type,
+        revisionNumber, physicalAttributes, digitalAttributes, classification
     } = req.body
 
     // Confirm mandatory data is provided
-    if (!name || !description || !category || !lifecycleStatus || !type || !classification) {
+    if (!projectId ||!name || !description || !category || !lifecycleStatus || !type || !revisionNumber || !classification) {
         return res.status(400).json({ message: 'All required fields are not provided' })
     }
 
@@ -43,8 +46,8 @@ const createNewProduct = asyncHandler(async (req, res) => {
 
     // Create new product object
     const productObject = {
-        name, description, category, lifecycleStatus, type,
-        physicalAttributes, digitalAttributes, classification
+        projectId, name, description, category, lifecycleStatus, type,
+        revisionNumber, physicalAttributes, digitalAttributes, classification
     }
 
     // Create and store new product
@@ -81,6 +84,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.category = req.body.category || product.category
     product.lifecycleStatus = req.body.lifecycleStatus || product.lifecycleStatus
     product.type = req.body.type || product.type
+    product.revisionNumber = req.body.revisionNumber || product.revisionNumber
     product.physicalAttributes = req.body.physicalAttributes || product.physicalAttributes
     product.digitalAttributes = req.body.digitalAttributes || product.digitalAttributes
     product.classification = req.body.classification || product.classification

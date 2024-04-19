@@ -48,10 +48,10 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         addTeamMember: builder.mutation({
-            query: ({ projectId, userId }) => ({
+            query: ({ projectId, userId, role, permissions }) => ({
                 url: `/projects/${projectId}/addTeamMember`,
                 method: 'PATCH',
-                body: { userId }
+                body: { userId, role, permissions }
             }),
             invalidatesTags: (result, error, arg) => [{ type: 'Project', id: arg.projectId }]
         }),

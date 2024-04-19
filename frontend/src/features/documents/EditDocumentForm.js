@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateDocumentMutation, useGetDocumentsByProjectIdQuery } from './documentsApiSlice';
+import { useUpdateDocumentMutation, useGetDocumentsByProjectIdQuery, useDeleteDocumentMutation } from './documentsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { useGetProductsQuery } from '../products/productsApiSlice';
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 
 const EditDocumentForm = ({ document }) => {
     const navigate = useNavigate();
     const [updateDocument] = useUpdateDocumentMutation();
+    const [deleteDocument] = useDeleteDocumentMutation();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
@@ -75,6 +76,11 @@ const EditDocumentForm = ({ document }) => {
         } catch (error) {
             console.error('Failed to update the document:', error);
         }
+    };
+
+    const onDeleteProjectClicked = async () => {
+        await deleteDocument({ id: document.id });
+        navigate('/admin-dashboard/users')
     };
 
     const validateRevisionNumber = () => {
@@ -195,6 +201,9 @@ const EditDocumentForm = ({ document }) => {
                 </div>
                 <button type="submit" className="btn btn-primary" onClick={onSaveChanges}>
                     <FontAwesomeIcon icon={faSave} /> Save Changes
+                </button>
+                <button type="button" className="btn btn-danger" onClick={onDeleteProjectClicked}>
+                    <FontAwesomeIcon icon={faTrashCan} /> Delete
                 </button>
             </form>
         </div>

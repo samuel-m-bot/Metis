@@ -90,17 +90,21 @@ const handleDownload = async (documentId) => {
     navigate('/admin-dashboard/documents/create');
 };
   if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {error.message}</p>;
-  if (sortedDocuments.length === 0) return (
-    <div className="container mt-5">
-      <h2>No Documents Found</h2>
-      {(isAdmin || isProjectManager) && (
-        <button className="btn btn-primary" onClick={handleCreateNewDocument}>
-          Create New Document
-        </button>
-      )}
-    </div>
-  );
+  if (isError) {
+    if (error.status === 400 && error?.data?.message === 'No documents found') {
+      return (
+        <div className="container mt-5">
+          <h2>{error.data.message}</h2>
+          {(isAdmin || isProjectManager) && (
+            <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/documents/create')}>
+              Create New Change Request
+            </button>
+          )}
+        </div>
+      );
+    }
+    return <p>Error: {error?.data?.message}</p>;
+  }
 
   return (
     <div className="container mt-5">

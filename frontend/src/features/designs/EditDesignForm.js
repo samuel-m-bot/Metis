@@ -1,57 +1,65 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateDesignMutation } from './designsApiSlice';
+import { useUpdateDesignMutation, useDeleteDesignMutation } from './designsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { useGetProductsQuery } from '../products/productsApiSlice';
-import { useGetProjectsQuery } from "../projects/projectsApiSlice";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import { useGetDesignsQuery } from "../designs/designsApiSlice";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 
 const EditDesignForm = ({ design }) => {
     const navigate = useNavigate();
     const [updateDesign] = useUpdateDesignMutation();
+    const [deleteDocument] = useDeleteDesignMutation();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
-    const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
+    const { data: designs, isFetching: isFetchingDesigns, isError: isDesignsError } = useGetDesignsQuery();
 
-    const [projectId, setProjectId] = useState(design.projectId);
+    const [designId, setDesignId] = useState(design.designId);
     const [productID, setProductID] = useState(design.productID);
     const [name, setName] = useState(design.name);
     const [description, setDescription] = useState(design.description);
     const [type, setType] = useState(design.type);
     const [revisionNumber, setRevisionNumber] = useState(design.revisionNumber);
     const [revisionError, setRevisionError] = useState('');
-    const [version, setVersion] = useState(design.version);
     const [status, setStatus] = useState(design.status);
-    const [designer, setDesigner] = useState(design.designer);
+    const [designers, setDesigners] = useState(design.designers);
     const [file, setFile] = useState(null);
     const [classification, setClassification] = useState(document.classification);
+    
 
     const handleRevisionChange = (e) => {
-        // Allows input changes without immediate validation for flexibility
         setRevisionNumber(e.target.value);
         if (revisionError) setRevisionError(''); // Clear error if previously set
     };
 
-    const onSaveChanges = async () => {
+    const onSaveChanges = async (event) => {
+        event.preventDefault();  // This will prevent the default form submission behavior
         const formData = new FormData();
-        formData.append('projectId', projectId);
+        formData.append('designId', designId);
         formData.append('productID', productID);
         formData.append('name', name);
         formData.append('description', description);
         formData.append('type', type);
         formData.append('revisionNumber', revisionNumber);
         formData.append('status', status);
-        formData.append('designer', designer);
-        formData.append('designImage', file);
+        formData.append('designers', designers);
+        if (file) {  // Make sure a file is selected
+            formData.append('designImage', file);
+        }
         formData.append('classification', classification);
-
+    
         try {
             await updateDesign({id: design._id, formData}).unwrap();
             navigate('/admin-dashboard/designs');
         } catch (error) {
             console.error('Failed to update the design:', error);
         }
+    };    
+
+    const onDeleteDesignClicked = async () => {
+        await deleteDocument({ id: document.id });
+        navigate('/admin-dashboard/users')
     };
 
     const validateRevisionNumber = () => {
@@ -70,19 +78,20 @@ const EditDesignForm = ({ design }) => {
     return (
         <div className="container mt-3">
             <h2>Edit Design</h2>
-            <form encType="multipart/form-data">
+            {console.log(design)}
+            <form encType="multipart/form-data" onSubmit={onSaveChanges}>
             <div className="mb-3">
-                    <label htmlFor="projectId" className="form-label">Project:</label>
+                    <label htmlFor="designId" className="form-label">Design:</label>
                     <select
                         className="form-select"
-                        id="projectId"
-                        value={projectId}
-                        onChange={e => setProjectId(e.target.value)}
+                        id="designId"
+                        value={designId}
+                        onChange={e => setDesignId(e.target.value)}
                     >
-                        <option value="">Select a project</option>
-                        {projects?.ids.map(id => (
+                        <option value="">Select a design</option>
+                        {designs?.ids.map(id => (
                             <option key={id} value={id}>
-                                {projects.entities[id].name}
+                                {designs.entities[id].name}
                             </option>
                         ))}
                     </select>
@@ -138,10 +147,6 @@ const EditDesignForm = ({ design }) => {
                     {revisionError && <div style={{ color: 'red' }}>{revisionError}</div>}
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="version" className="form-label">Version:</label>
-                    <input type="number" className="form-control" id="version" value={version} onChange={e => setVersion(e.target.value)} />
-                </div>
-                <div className="mb-3">
                     <label htmlFor="status" className="form-label">Status:</label>
                     <select className="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
                         <option value="Draft">Draft</option>
@@ -155,9 +160,9 @@ const EditDesignForm = ({ design }) => {
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="designer" className="form-label">Designer:</label>
-                    <select className="form-select" id="designer" value={designer} onChange={e => setDesigner(e.target.value)}>
-                        <option value="">Select a Designer</option>
+                    <label htmlFor="designers" className="form-label">Designers:</label>
+                    <select className="form-select" id="designers" value={designers} onChange={e => setDesigners(e.target.value)}>
+                        <option value="">Select a Designers</option>
                         {users?.ids.map(userId => (
                             <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
                         ))}
@@ -177,8 +182,11 @@ const EditDesignForm = ({ design }) => {
                         <option value="Private">Private</option>
                     </select>
                 </div>
-                <button type="submit" className="btn btn-primary" onClick={onSaveChanges}>
+                <button type="submit" className="btn btn-primary">
                     <FontAwesomeIcon icon={faSave} /> Save Changes
+                </button>
+                <button type="button" className="btn btn-danger" onClick={onDeleteDesignClicked}>
+                    <FontAwesomeIcon icon={faTrashCan} /> Delete
                 </button>
             </form>
         </div>

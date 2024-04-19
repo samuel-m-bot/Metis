@@ -38,7 +38,7 @@ const ProductList = () => {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) {
-    if (error.status === 400 && error?.data?.message === 'No products found"') {
+    if (error.status === 400 && error?.data?.message === 'No products found') {
       return (
         <div className="container mt-5">
           <h2>{error.data.message}</h2>

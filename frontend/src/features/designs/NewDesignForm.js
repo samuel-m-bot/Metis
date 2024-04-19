@@ -21,7 +21,7 @@ const NewDesignForm = () => {
     const [revisionError, setRevisionError] = useState('');
     const [version, setVersion] = useState('');
     const [status, setStatus] = useState('Draft');
-    const [designer, setDesigner] = useState('');
+    const [designers, setDesigners] = useState('');
     const [file, setFile] = useState(null);
     const [classification, setClassification] = useState('');
 
@@ -42,7 +42,7 @@ const NewDesignForm = () => {
         formData.append('revisionNumber', revisionNumber);
         formData.append('version', version);
         formData.append('status', status);
-        formData.append('designer', designer);
+        formData.append('designers', designers);
         formData.append('designImage', file);
         formData.append('classification', classification);
 
@@ -149,9 +149,9 @@ const NewDesignForm = () => {
                     </select>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="designer" className="form-label">Designer(s):</label>
-                    <select multiple className="form-select" id="designer" value={designer}
-                            onChange={e => setDesigner([...e.target.selectedOptions].map(o => o.value))}>
+                    <label htmlFor="designers" className="form-label">Designers(s):</label>
+                    <select multiple className="form-select" id="designers" value={designers}
+                            onChange={e => setDesigners([...e.target.selectedOptions].map(o => o.value))}>
                         {users?.ids.map(userId => (
                             <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
                         ))}

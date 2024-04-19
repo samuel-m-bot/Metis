@@ -24,7 +24,9 @@ const AddTeamMemberModal = ({
                     <select className="modal-select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
                         <option value="">Select User</option>
                         {availableUsers.map((user) => (
-                            <option key={user.id} value={user.id}>{user.firstName} {user.surname} - {user.email}</option>
+                            <option key={user.id} value={user.id}>
+                                {user.firstName} {user.surname} - {user.email} ({user.roles.join(', ')})
+                            </option>
                         ))}
                     </select>
                     

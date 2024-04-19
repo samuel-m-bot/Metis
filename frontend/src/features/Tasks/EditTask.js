@@ -1,16 +1,19 @@
 import { useParams } from 'react-router-dom';
 import EditTaskForm from './EditTaskForm';
-import { useSelector } from 'react-redux';
-import { selectTaskById } from './tasksApiSlice';
+import { useGetTasksQuery } from './tasksApiSlice';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const EditTask = () => {
     const { id } = useParams();
-    const task = useSelector(state => selectTaskById(state, id));
 
+    const { task } = useGetTasksQuery("taskList", {
+        selectFromResult: ({ data }) => ({
+            task: data?.entities[id]
+        }),
+    })
     const content = task ? <EditTaskForm task={task} /> : <LoadingSpinner/>;
 
-    return content;
+    return content
 }
 
 export default EditTask;

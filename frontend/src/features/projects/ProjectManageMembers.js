@@ -72,9 +72,10 @@ const ProjectManageMembers = () => {
         <div className="container mt-3">
             <h2>Manage Team Members for {projectDetails.projectName}</h2>
             <ul className="list-group">
+                {console.log(projectDetails)}
                 {projectDetails.teamMembers.map((member) => (
                     <li key={member.userId} className="list-group-item d-flex justify-content-between align-items-center">
-                        {member.userId.firstName} {member.userId.lastName} - {member.role}
+                        {member.firstName} {member.surname} - {member.role} ---Permissions: {member.permissions.join(', ')}
                         <button className="btn btn-danger" onClick={() => handleRemoveMember(member.userId)} disabled={isRemoving}>
                             Remove
                         </button>

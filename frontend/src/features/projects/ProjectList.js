@@ -24,35 +24,21 @@ const ProjectsList = () => {
 
     if (isLoading) return <LoadingSpinner />;
     if (isError) {
-    
-        if (error.status === 400 && error.data.message === 'No projects found') {
-          return (
-            <div className="container mt-5">
-              <h2>{error.data.message}</h2>
-              {(isAdmin || isProjectManager) && (
-                <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/change-requests/create')}>
-                  Create New Change Request
-                </button>
-              )}
-            </div>
-          );
-        }
-        return <p>Error: {error.data.message}</p>;
-      }
-      
-      if (projects.length === 0) {
+      if (error.status === 400 && error.data.message === 'No projects found') {
         return (
           <div className="container mt-5">
-            <h2>No Change Requests Found</h2>
+            <h2>{error.data.message}</h2>
             {(isAdmin || isProjectManager) && (
-              <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/change-requests/create')}>
+              <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/projects/create')}>
                 Create New Change Request
               </button>
             )}
           </div>
         );
       }
-
+      return <p>Error: {error.data.message}</p>;
+    }
+      
     const canEdit = (isAdmin || isProjectManager)
     return (
         <div>

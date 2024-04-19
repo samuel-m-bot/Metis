@@ -66,19 +66,21 @@ const DesignList = () => {
     navigate('/admin-dashboard/designs/create');
 };
   if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {error.message}</p>;
-  if (sortedDesigns.length === 0) return (
-    <div className="container mt-5">
-      <h2>No Designs Found</h2>
-      {console.log(isAdmin)}
-      {console.log(email)}
-      {(isAdmin || isProjectManager) && (
-        <button className="btn btn-primary" onClick={handleCreateNewDesign}>
-          Create New Design
-        </button>
-      )}
-    </div>
-  );
+  if (isError) {
+    if (error.status === 400 && error?.data?.message === 'No designs found') {
+      return (
+        <div className="container mt-5">
+          <h2>{error.data.message}</h2>
+          {(isAdmin || isProjectManager) && (
+            <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/designs/create')}>
+              Create New Change Request
+            </button>
+          )}
+        </div>
+      );
+    }
+    return <p>Error: {error?.data?.message}</p>;
+  }
 
   return (
     <div className="container mt-5">

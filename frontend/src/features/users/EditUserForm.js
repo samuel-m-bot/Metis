@@ -21,6 +21,7 @@ const EditUserForm = ({ user }) => {
     const [password, setPassword] = useState('');
     const [validPassword, setValidPassword] = useState(false);
     const [roles, setRoles] = useState(user.roles);
+    const [department, setDepartment] = useState(user.department);
 
     useEffect(() => {
         setValidEmail(EMAIL_REGEX.test(email));
@@ -42,7 +43,8 @@ const EditUserForm = ({ user }) => {
             email: email,
             firstName: firstName,
             surname: surname,
-            roles: roles
+            roles: roles,
+            department: department
         };
         if (password) updatedUserData.password = password; // Only add password if it's provided
         await updateUser(updatedUserData);
@@ -103,6 +105,26 @@ const EditUserForm = ({ user }) => {
                     ))}
                 </select>
             </div>
+            <div className="mb-3">
+                    <label htmlFor="department" className="form-label">Department:</label>
+                    <select
+                        className="form-select"
+                        id="department"
+                        value={department}
+                        onChange={e => setDepartment(e.target.value)}
+                    >
+                        <option value="Engineering">Engineering</option>
+                        <option value="Product Management">Product Management</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Quality Assurance">Quality Assurance</option>
+                        <option value="Supply Chain">Supply Chain</option>
+                        <option value="Customer Support">Customer Support</option>
+                        <option value="Sales and Marketing">Sales and Marketing</option>
+                        <option value="IT and Systems">IT and Systems</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Research and Development">Research and Development</option>
+                    </select>
+                </div>
             <div className="d-flex justify-content-start gap-2">
                 <button type="button" className="btn btn-primary" onClick={onSaveUserClicked} disabled={!canSave}>
                     <FontAwesomeIcon icon={faSave} /> Save

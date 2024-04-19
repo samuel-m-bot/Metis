@@ -46,21 +46,10 @@ export const productsApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         updateProduct: builder.mutation({
-            query: (productData) => ({
+            query: productData => ({
                 url: `/products/${productData.id}`,
                 method: 'PATCH',
-                body: {
-                    name: productData.name,
-                    description: productData.description,
-                    category: productData.category,
-                    lifecycleStatus: productData.lifecycleStatus,
-                    version: productData.version,
-                    type: productData.type,
-                    physicalAttributes: productData.physicalAttributes,
-                    digitalAttributes: productData.digitalAttributes,
-                    documents: productData.documents,
-                    partNumber: productData.partNumber,
-                }
+                body: productData
             }),
             invalidatesTags: (result, error, arg) => [
                 { type: 'Product', id: arg.id },

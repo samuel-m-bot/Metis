@@ -25,6 +25,7 @@ const EditDesignForm = ({ design }) => {
     const [status, setStatus] = useState(design.status);
     const [designer, setDesigner] = useState(design.designer);
     const [file, setFile] = useState(null);
+    const [classification, setClassification] = useState(document.classification);
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -43,6 +44,7 @@ const EditDesignForm = ({ design }) => {
         formData.append('status', status);
         formData.append('designer', designer);
         formData.append('designImage', file);
+        formData.append('classification', classification);
 
         try {
             await updateDesign({id: design._id, formData}).unwrap();
@@ -164,6 +166,16 @@ const EditDesignForm = ({ design }) => {
                 <div className="mb-3">
                     <label htmlFor="file" className="form-label">Design File</label>
                     <input type="file" className="form-control" id="file" onChange={e => setFile(e.target.files[0])} />
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary" onClick={onSaveChanges}>
                     <FontAwesomeIcon icon={faSave} /> Save Changes

@@ -23,6 +23,7 @@ const NewDesignForm = () => {
     const [status, setStatus] = useState('Draft');
     const [designer, setDesigner] = useState('');
     const [file, setFile] = useState(null);
+    const [classification, setClassification] = useState('');
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -43,6 +44,7 @@ const NewDesignForm = () => {
         formData.append('status', status);
         formData.append('designer', designer);
         formData.append('designImage', file);
+        formData.append('classification', classification);
 
         try {
             await addNewDesign({formData}).unwrap();
@@ -158,6 +160,16 @@ const NewDesignForm = () => {
                 <div className="mb-3">
                     <label htmlFor="file" className="form-label">Design File:</label>
                     <input type="file" className="form-control" id="file" onChange={e => setFile(e.target.files[0])} required />
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={isLoading}>Create Design</button>
             </form>

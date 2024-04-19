@@ -13,6 +13,7 @@ const EditProductForm = ({ product }) => {
     const [version, setVersion] = useState(product.version);
     const [partNumber, setPartNumber] = useState(product.partNumber);
     const [type, setType] = useState(product.type);
+    const [classification, setClassification] = useState('');
 
     // Attributes based on product type
     const [material, setMaterial] = useState('');
@@ -41,6 +42,7 @@ const EditProductForm = ({ product }) => {
             lifecycleStatus,
             version,
             partNumber,
+            classification,
             type,
             physicalAttributes: { material, color, dimensions },
             digitalAttributes: { softwareType, version },
@@ -99,6 +101,16 @@ const EditProductForm = ({ product }) => {
                         <option value="Development">Development</option>
                         <option value="Market">Market</option>
                         <option value="Retire">Retire</option>
+                    </select>
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
                     </select>
                 </div>
                 <div className="mb-3">

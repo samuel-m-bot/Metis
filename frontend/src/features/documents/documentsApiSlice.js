@@ -46,7 +46,7 @@ export const documentsApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         updateDocument: builder.mutation({
-            query: (documentData) => ({
+            query: documentData => ({
                 url: `/documents/${documentData.id}`, 
                 method: 'PATCH',
                 body: documentData.formData

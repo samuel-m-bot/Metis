@@ -14,6 +14,7 @@ const NewProductForm = () => {
     const [partNumber, setPartNumber] = useState('');
     const [type, setType] = useState('Physical');
     const [hasParts, setHasParts] = useState(false);
+    const [classification, setClassification] = useState('');
 
     const [material, setMaterial] = useState('');
     const [color, setColor] = useState('');
@@ -29,6 +30,7 @@ const NewProductForm = () => {
             category,
             lifecycleStatus,
             version,
+            classification,
             type,
             ...(hasParts && { partNumber }),
             ...(type === 'Physical' && { physicalAttributes: { material, color, dimensions } }),
@@ -91,6 +93,16 @@ const NewProductForm = () => {
                         <option value="Development">Development</option>
                         <option value="Market">Market</option>
                         <option value="Retire">Retire</option>
+                    </select>
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
                     </select>
                 </div>
                 <div className="mb-3">

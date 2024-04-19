@@ -46,7 +46,7 @@ export const changeRequestsApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         updateChangeRequest: builder.mutation({
-            query: (changeRequestData) => ({
+            query: changeRequestData => ({
                 url: `/changeRequests/${changeRequestData.id}`,
                 method: 'PATCH',
                 body: changeRequestData

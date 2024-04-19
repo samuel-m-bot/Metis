@@ -30,6 +30,7 @@ const EditDocumentForm = ({ document }) => {
     const [status, setStatus] = useState(document.status);
     const [relatedDocuments, setRelatedDocuments] = useState(document.relatedDocuments || []);
     const [file, setFile] = useState(null);
+    const [classification, setClassification] = useState(document.classification);
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -66,6 +67,7 @@ const EditDocumentForm = ({ document }) => {
         formData.append('status', status);
         relatedDocuments.forEach(doc => formData.append('relatedDocuments', doc));
         formData.append('documentFile', file);
+        formData.append('classification', classification);
 
         try {
             await updateDocument({id: document._id, formData}).unwrap();
@@ -180,6 +182,16 @@ const EditDocumentForm = ({ document }) => {
                 <div classTitle="mb-3">
                     <label htmlFor="file" classTitle="form-label">Document File:</label>
                     <input type="file" classTitle="form-control" id="file" onChange={e => setFile(e.target.files[0])} required />
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary" onClick={onSaveChanges}>
                     <FontAwesomeIcon icon={faSave} /> Save Changes

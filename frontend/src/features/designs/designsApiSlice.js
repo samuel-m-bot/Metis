@@ -46,7 +46,7 @@ export const designsApiSlice = apiSlice.injectEndpoints({
             ]
         }),
         updateDesign: builder.mutation({
-            query: (designData) => ({
+            query: designData => ({
                 url: `/designs/${designData.id}`, 
                 method: 'PATCH',
                 body: designData.formData

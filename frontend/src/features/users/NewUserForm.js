@@ -26,6 +26,7 @@ const NewUserForm = () => {
     const [password, setPassword] = useState('');
     const [validPassword, setValidPassword] = useState(false);
     const [roles, setRoles] = useState([]);
+    const [department, setDepartment] = useState('');
 
     useEffect(() => {
         setValidEmail(EMAIL_REGEX.test(email));
@@ -49,7 +50,7 @@ const NewUserForm = () => {
     const onSaveUserClicked = async (e) => {
         e.preventDefault();
         if (canSave) {
-            await addNewUser({ email, firstName, surname, password, roles });
+            await addNewUser({ email, firstName, surname, password, roles, department });
         }
     };
 
@@ -118,6 +119,26 @@ const NewUserForm = () => {
                         {Object.values(ROLES).map(role => (
                             <option key={role} value={role}>{role}</option>
                         ))}
+                    </select>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="department" className="form-label">Department:</label>
+                    <select
+                        className="form-select"
+                        id="department"
+                        value={department}
+                        onChange={e => setDepartment(e.target.value)}
+                    >
+                        <option value="Engineering">Engineering</option>
+                        <option value="Product Management">Product Management</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Quality Assurance">Quality Assurance</option>
+                        <option value="Supply Chain">Supply Chain</option>
+                        <option value="Customer Support">Customer Support</option>
+                        <option value="Sales and Marketing">Sales and Marketing</option>
+                        <option value="IT and Systems">IT and Systems</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Research and Development">Research and Development</option>
                     </select>
                 </div>
                 <button type="button" className="btn btn-primary" onClick={onSaveUserClicked} disabled={!canSave}>

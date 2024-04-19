@@ -20,6 +20,7 @@ const NewDocumentForm = () => {
     const [authors, setAuthors] = useState('');
     const [status, setStatus] = useState('Draft');
     const [file, setFile] = useState(null);
+    const [classification, setClassification] = useState('');
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -43,6 +44,7 @@ const NewDocumentForm = () => {
         authors.forEach(author => formData.append('authors', author));
         formData.append('status', status);
         formData.append('documentFile', file);
+        formData.append('classification', classification);
 
         try {
             await addNewDocument({formData}).unwrap();
@@ -140,6 +142,16 @@ const NewDocumentForm = () => {
                 <div classTitle="mb-3">
                     <label htmlFor="file" classTitle="form-label">Document File:</label>
                     <input type="file" classTitle="form-control" id="file" onChange={e => setFile(e.target.files[0])} required />
+                </div>
+                <div classTitle="mb-3">
+                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
+                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                        <option value="">Select Type</option>
+                        <option value="Confidential">Confidential</option>
+                        <option value="Restricted">Restricted</option>
+                        <option value="Public">Public</option>
+                        <option value="Private">Private</option>
+                    </select>
                 </div>
                 <button type="submit" classTitle="btn btn-primary" disabled={isLoading}>Create Document</button>
             </form>

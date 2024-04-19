@@ -28,10 +28,10 @@ const getUsersById = asyncHandler(async (req, res) => {
 // @route POST /users
 // @access private
 const createNewUser = asyncHandler(async (req, res) => {
-    const {email, firstName, surname, password, roles} = req.body
+    const {email, firstName, surname, password, roles, department} = req.body
 
     // Confirm data is all there to create a user
-    if(!email ||!firstName ||!surname || !password || !Array.isArray(roles) || !roles.length){
+    if(!email ||!firstName ||!surname || !password || !Array.isArray(roles) || !roles.length || !department){
         return res.status(400).json({ message: 'All fields are required'})
     }
 
@@ -78,6 +78,8 @@ const updateUser = asyncHandler(async (req, res) => {
     user.email = req.body.email || user.email
     user.firstName = req.body.firstName || user.firstName
     user.surname = req.body.surname || user.surname
+    user.roles = req.body.roles || user.roles
+    user.department = req.body.department || user.department
 
     // Update password if provided
     if (req.body.password) {

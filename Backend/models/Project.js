@@ -27,8 +27,21 @@ const projectSchema = new mongoose.Schema({
         default: 'Not Started'
     },
     teamMembers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        role: {
+            type: String,
+            required: true,
+            enum: ['Admin', 'Engineer', 'Quality Control', 'Designer', 'Analyst', 'Observer'] // Define roles as needed
+        },
+        permissions: {
+            type: [String],
+            enum: ['Read', 'Write', 'Delete'],
+            required: true
+        }
     }],
     associatedProducts: [{
         type: mongoose.Schema.Types.ObjectId,

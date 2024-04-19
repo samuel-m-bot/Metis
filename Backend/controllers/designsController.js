@@ -25,10 +25,10 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { projectId, productID, name, description, type, revisionNumber, status, designer } = req.body;
+    const { projectId, productID, name, description, type, revisionNumber, status, designer, classification } = req.body;
 
     // Validate required fields
-    if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designer) {
+    if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designer || !classification) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -53,6 +53,7 @@ const createNewDesign = asyncHandler(async (req, res) => {
         revisionNumber,
         status,
         designer,
+        classification,
         attachment
     });
 
@@ -83,6 +84,7 @@ const updateDesign = asyncHandler(async (req, res) => {
     design.status = req.body.status || design.status;
     design.comments = req.body.comments || design.comments;
     design.designers = req.body.designers || design.designers;
+    design.classification = req.body.classification || design.classification;
 
     // Automatically set the last modified date to now
     design.lastModifiedDate = Date.now();

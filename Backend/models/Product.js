@@ -58,6 +58,11 @@ const productSchema = new Schema({
         softwareType: { type: String, required: false }, // e.g., Web, Mobile, Desktop
         version: { type: String, required: false },
     },
+    classification: {
+        type: String,
+        enum: ['Confidential', 'Restricted', 'Public', 'Private'],
+        required: true
+    },
 });
 
 module.exports = mongoose.model('Product', productSchema);

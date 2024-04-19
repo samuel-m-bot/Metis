@@ -19,9 +19,14 @@ const userSchema = new mongoose.Schema({
     },
     roles: [{
         type: String,
-        enum: ['Admin', 'Project Manager', 'Quality Assurance', 'User', 'Viewer'],
-        default: 'Viewer'
-    }]
+        enum: ['Admin', 'Project Manager', 'Engineer', 'Quality Control', 'Sales Representative', 'Customer Support', 'IT Specialist'],
+        required: true
+    }],
+    department: {
+        type: String,
+        required: true,
+        enum: ['Engineering', 'Product Management', 'Manufacturing', 'Quality Assurance', 'Supply Chain', 'Customer Support', 'Sales and Marketing', 'IT and Systems', 'Operations', 'Research and Development']
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);

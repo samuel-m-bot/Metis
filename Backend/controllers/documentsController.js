@@ -25,10 +25,11 @@ const getDocumentById = asyncHandler(async (req, res) => {
 // @route POST /documents
 // @access private
 const createNewDocument = asyncHandler(async (req, res) => {
-    const {projectId, title, type, description, revisionNumber, associatedProductIDs, authors, status, relatedDocuments } = req.body;
+    const {projectId, title, type, description, revisionNumber, associatedProductIDs, authors, 
+        status, relatedDocuments, classification } = req.body;
 
     // Validate required fields
-    if (!projectId || !title || !type || !description || !revisionNumber || !authors || !status ) {
+    if (!projectId || !title || !type || !description || !revisionNumber || !authors || !status || !classification) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -52,6 +53,7 @@ const createNewDocument = asyncHandler(async (req, res) => {
         revisionNumber,
         authors,
         status,
+        classification,
         attachment
     });
 
@@ -87,6 +89,7 @@ const updateDocument = asyncHandler(async (req, res) => {
     document.status = req.body.status || document.status;
     document.relatedDocuments = req.body.relatedDocuments || document.relatedDocuments;
     document.comments = req.body.comments || document.comments;
+    document.classification = req.body.classification || document.classification;
     // Automatically set the last modified date to now
     document.lastModifiedDate = Date.now();
 

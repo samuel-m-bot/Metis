@@ -61,6 +61,11 @@ const designSchema = new mongoose.Schema({
         filePath: { type: String, required: false },  
         fileName: { type: String, required: false }   
     },
+    classification: {
+        type: String,
+        enum: ['Confidential', 'Restricted', 'Public', 'Private'],
+        required: true
+    },
 });
 
 module.exports = mongoose.model('Design', designSchema);

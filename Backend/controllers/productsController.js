@@ -27,11 +27,11 @@ const getProductById = asyncHandler(async (req, res) => {
 const createNewProduct = asyncHandler(async (req, res) => {
     const {
         name, description, category, lifecycleStatus, type,
-        physicalAttributes, digitalAttributes
+        physicalAttributes, digitalAttributes, classification
     } = req.body
 
     // Confirm mandatory data is provided
-    if (!name || !description || !category || !lifecycleStatus || !type) {
+    if (!name || !description || !category || !lifecycleStatus || !type || !classification) {
         return res.status(400).json({ message: 'All required fields are not provided' })
     }
 
@@ -83,6 +83,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.type = req.body.type || product.type
     product.physicalAttributes = req.body.physicalAttributes || product.physicalAttributes
     product.digitalAttributes = req.body.digitalAttributes || product.digitalAttributes
+    product.classification = req.body.classification || product.classification
 
     // Handle updates to related entities if provided
     if (req.body.documents) {

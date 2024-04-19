@@ -169,58 +169,55 @@ const searchProjects = asyncHandler(async (req, res) => {
 const getProjectTeamDetails = asyncHandler(async (req, res) => {
     const { id } = req.params; // ID of the project
 
-    // Fetch the project
+    // Fetch the project and populate user details within teamMembers
     const project = await Project.findById(id)
-                                 .populate('teamMembers', 'firstName surname email') // Assuming you only need these fields
+                                 .populate('teamMembers.userId', 'firstName lastName email') // Populate the userId ref
                                  .exec();
 
     if (!project) {
-        res.status(404).json({ message: 'Project not found' });
-        return;
+        return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Since team members are populated, the user details are directly accessible
+    // Transform teamMembers to include user details and their roles/permissions
+    const teamDetails = project.teamMembers.map(member => ({
+        userId: member.userId._id,
+        firstName: member.userId.firstName,
+        lastName: member.userId.lastName,
+        email: member.userId.email,
+        role: member.role,
+        permissions: member.permissions
+    }));
+
     res.status(200).json({
         projectName: project.name,
-        teamMembers: project.teamMembers.map(member => ({
-            id: member._id,
-            firstName: member.firstName,
-            surname: member.surname,
-            email: member.email
-        }))
+        teamMembers: teamDetails
     });
 });
+
 
 // @desc Add a team member to a project
 // @route PATCH /projects/:id/addTeamMember
 // @access private
 const addTeamMember = asyncHandler(async (req, res) => {
-    const { userId } = req.body;
+    const { userId, role, permissions } = req.body;
+    const { id } = req.params;
 
-    const projectId = req.params.id
-    // Find the project and check if it exists
-    console.log(projectId)
-    const project = await Project.findById(projectId);
+    const project = await Project.findById(id);
     if (!project) {
         return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Verify the user exists as well
-    console.log(userId)
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Add the user to the project's teamMembers array if not already included
-    if (!project.teamMembers.includes(userId)) {
-        project.teamMembers.push(userId);
-        await project.save();
-        return res.status(200).json({ message: `User ${userId} added to project ${projectId}` });
-    } else {
+    // Ensure user is not already a member
+    if (project.teamMembers.find(member => member.userId.equals(userId))) {
         return res.status(400).json({ message: 'User already a member of the project' });
     }
+
+    // Add new member
+    project.teamMembers.push({ userId, role, permissions });
+    await project.save();
+    res.status(200).json({ message: `User added to project ${project.name}` });
 });
+
 
 
 // @desc Remove a team member from a project
@@ -228,7 +225,9 @@ const addTeamMember = asyncHandler(async (req, res) => {
 // @access private
 const removeTeamMember = asyncHandler(async (req, res) => {
     const { teamMemberId } = req.body; // ID of the team member to remove
-    const project = await Project.findById(req.params.id).populate({
+    const projectId = req.params.id;
+
+    const project = await Project.findById(projectId).populate({
         path: 'projectTasks',
         populate: { path: 'linkedChangeRequests' }
     });
@@ -237,7 +236,7 @@ const removeTeamMember = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Check if any change requests are active and assigned to the user
+    // Check if any change requests are active and assigned to the team member
     const isAssignedToActiveCR = project.projectTasks.some(task =>
         task.linkedChangeRequests.some(cr => 
             cr.assignedTo.toString() === teamMemberId && cr.status !== 'Completed'
@@ -245,22 +244,21 @@ const removeTeamMember = asyncHandler(async (req, res) => {
     );
 
     if (isAssignedToActiveCR) {
-        return res.status(400).json({ message: 'Cannot remove: User is assigned to active change requests.' });
+        return res.status(400).json({ message: 'Cannot remove: Team member is assigned to active change requests.' });
     }
 
-    // Verify the user exists
-    const user = await User.findById(teamMemberId);
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+    // Verify the team member exists in the project
+    const userExistsInProject = project.teamMembers.some(member => member.userId.toString() === teamMemberId);
+
+    if (!userExistsInProject) {
+        return res.status(404).json({ message: 'Team member not found in this project' });
     }
 
     // Remove the team member
-    project.teamMembers = project.teamMembers.filter(member => member.toString() !== teamMemberId);
+    project.teamMembers = project.teamMembers.filter(member => member.userId.toString() !== teamMemberId);
     await project.save();
     res.json({ message: 'Team member removed successfully' });
 });
-
-
 
 // @desc List change requests for a project
 // @route GET /projects/:id/changeRequests

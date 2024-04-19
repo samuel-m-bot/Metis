@@ -64,6 +64,16 @@ const documentSchema = new mongoose.Schema({
         author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         timestamp: { type: Date, default: Date.now },
     }],
+    accessControl: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }],
+    classification: {
+        type: String,
+        enum: ['Confidential', 'Restricted', 'Public', 'Private'],
+        required: true
+    },
 });
 
 module.exports = mongoose.model('Document', documentSchema);

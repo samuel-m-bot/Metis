@@ -1,8 +1,10 @@
-import React from 'react';
 import Item from '../items/Item';
+import { useLocation } from 'react-router-dom';
 
 const Documents = () => {
-  
+  const location = useLocation();
+  // const documentData = location.state?.documentData;
+
   const completedChangeRequests = [
     { id: 'CR001', title: 'Initial Creation', dateCompleted: '2022-01-10', status: 'Completed' },
     { id: 'CR002', title: 'Add Safety Section', dateCompleted: '2022-03-15', status: 'Completed' },
@@ -54,25 +56,52 @@ const Documents = () => {
     },
   ];
 
-  const documentData = {
-    name: "Project Proposal",
-    ID: "DOC123",
-    version: "1.2",
-    status: "Approved",
-    creationDate: "2023-01-01",
-    lastModified: "2023-01-10",
-    description: "This document outlines the initial project proposal, including objectives, scope, and preliminary budget estimates.",
-    Author: "Jane Doe",
-    Owners: "Project Management Team",
-    classificationType: "Internal",
-    accessDetails: "Viewable by all team members",
-  };
+  const mockDocumentData = {
+    id: 2,
+    projectId: "60af924b36e78cae837afb45",  // Example ObjectId
+    title: "Project Requirements Specification",
+    type: "Requirements",
+    description: "Detailed description of the project requirements including system, user, and functional requirements.",
+    attachment: {
+        filePath: "/documents/specifications.pdf",
+        fileName: "specifications.pdf"
+    },
+    revisionNumber: "A.1",
+    associatedProductIDs: [
+        "60af924b36e78cae837afb46",  // Example Product ObjectId
+    ],
+    authors: [
+        "60af924b36e78cae837afb47",  // Example User ObjectId
+    ],
+    creationDate: new Date("2023-03-01T00:00:00Z"),
+    lastModifiedDate: new Date("2023-03-10T00:00:00Z"),
+    status: "Draft",
+    relatedDocuments: [
+        "60af924b36e78cae837afb48",  // Example Related Document ObjectId
+    ],
+    comments: [
+        {
+            text: "Initial draft submitted for review.",
+            author: "60af924b36e78cae837afb49",  // Example User ObjectId
+            timestamp: new Date("2023-03-02T12:34:56Z")
+        },
+        {
+            text: "Reviewed the initial draft, minor changes needed.",
+            author: "60af924b36e78cae837afb50",  // Another Example User ObjectId
+            timestamp: new Date("2023-03-03T09:30:00Z")
+        }
+    ]
+};
+
+
+  // Use passed documentData or default data
+  //const finalDocumentData = documentData || defaultDocumentData;
   
   return (
     <>
       <Item 
-        taskType="document" 
-        itemData={documentData} 
+        itemType="Document" 
+        itemData={mockDocumentData} 
         changeRequests={changeRequests} 
         completedChangeRequests={completedChangeRequests}
       />

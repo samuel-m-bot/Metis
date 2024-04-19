@@ -78,11 +78,6 @@ const handleDownload = async (documentId) => {
   }
 };
 
-
-
-
-
-
   const requestSort = (key) => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {

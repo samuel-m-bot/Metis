@@ -48,11 +48,13 @@ const EditUserForm = ({ user }) => {
         };
         if (password) updatedUserData.password = password; // Only add password if it's provided
         await updateUser(updatedUserData);
+        navigate('/admin-dashboard/users')
     };
     
 
     const onDeleteUserClicked = async () => {
         await deleteUser({ id: user.id });
+        navigate('/admin-dashboard/users')
     };
 
     const canSave = [validEmail, firstName, surname, roles.length, validPassword].every(Boolean);
@@ -113,6 +115,7 @@ const EditUserForm = ({ user }) => {
                         value={department}
                         onChange={e => setDepartment(e.target.value)}
                     >
+                        <option value="">Select a Department</option>
                         <option value="Engineering">Engineering</option>
                         <option value="Product Management">Product Management</option>
                         <option value="Manufacturing">Manufacturing</option>

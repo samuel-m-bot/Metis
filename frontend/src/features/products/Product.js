@@ -55,23 +55,33 @@ const Product = () => {
   ];
 
   const productData = {
+    id: 4,
+    projectId: "6621cb51b0e4321947c1b560",  // Example Project ObjectId
     name: "New Software Tool",
-    ID: "PROD789",
-    version: "1.0",
-    status: "Development",
-    creationDate: "2023-03-05",
-    lastModified: "2023-03-12",
     description: "A new tool designed to improve workflow efficiency by automating repetitive tasks.",
-    Author: "Chris Johnson",
-    Owners: "Product Development Team",
-    classificationType: "Public",
-    accessDetails: "Available to all employees",
-  };
+    category: "Productivity Software",
+    lifecycleStatus: "Development",
+    version: "1.0",
+    partNumber: "PN7890",
+    createdAt: new Date("2023-03-05T00:00:00Z"),
+    updatedAt: new Date("2023-03-12T00:00:00Z"),
+    documents: [],  // Array of ObjectIds linking to related documents
+    type: "Software",
+    digitalAttributes: {
+        softwareType: "Desktop",
+        version: "1.0",
+    },
+    physicalAttributes: {
+        material: null, // Not applicable for software
+        color: null,
+        dimensions: null,
+    }
+};
   
   return (
     <>
       <Item 
-        taskType="document" 
+        taskType="Product" 
         itemData={productData} 
         changeRequests={changeRequests} 
         completedChangeRequests={completedChangeRequests}

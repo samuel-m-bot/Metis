@@ -6,115 +6,103 @@ import HistoryGraph from '../../components/HistoryGraph';
 import RelatedObjects from '../../components/RelatedObjects';
 import ChangeRequestModal from '../changes/ChangeRequestModal';
 
-const Item = ({taskType, itemData, changeRequests, completedChangeRequests }) => {
+const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
-
   const [showModal, setShowModal] = useState(false);
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
 
-
   const handleDownload = () => {
-    const documentUrl = `${process.env.PUBLIC_URL}/path/to/your/document.pdf`;
-  
-    const link = document.createElement("a");
-    link.href = documentUrl;
-    link.setAttribute("download", "");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Depending on the item type, the path may differ
+    // const basePath = `${process.env.PUBLIC_URL}/path/to/your/files`;
+    // const documentUrl = `${basePath}/${itemData.attachment?.fileName || 'default.pdf'}`;
+
+    // const link = document.createElement("a");
+    // link.href = documentUrl;
+    // link.setAttribute("download", "");
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
   };
 
   return (
     <div className="item-container">
       <div className="actions-and-tabs-container">
-      <Dropdown as={ButtonGroup} className="actions-dropdown">
-        <Button variant="secondary">Actions</Button>
+        <Dropdown as={ButtonGroup} className="actions-dropdown">
+          <Button variant="secondary">Actions</Button>
+          <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
+          <Dropdown.Menu>
+            <Dropdown.Item href="#/action-1">Check Out</Dropdown.Item>
+            <Dropdown.Item href="#/action-2">Check In</Dropdown.Item>
+            <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+        <ChangeRequestModal show={showModal} handleClose={handleCloseModal} />
 
-        <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
+        <Tabs
+          id="item-tabs"
+          activeKey={key}
+          onSelect={(k) => setKey(k)}
+          className="mb-3"
+        >
+          <Tab eventKey="details" title="Details" className="document-details">
+            <div className="detail-section">
+              <h2>General Details</h2>
+              <div className="detail-row">
+                <p className="detail-item"><span className="detail-label">Item Title:</span>{itemData.name || itemData.title}</p>
+                <p className="detail-item"><span className="detail-label">Item ID:</span> {itemData.id}</p>
+                <p className="detail-item"><span className="detail-label">Version:</span> {itemData.revisionNumber}</p>
+                <p className="detail-item"><span className="detail-label">Status:</span> {itemData.status}</p>
+                <p className="detail-item"><span className="detail-label">Creation Date:</span> {itemData.createdAt || itemData.creationDate}</p>
+                <p className="detail-item"><span className="detail-label">Last Modified:</span> {itemData.updatedAt || itemData.lastModifiedDate}</p>
+                <Button onClick={handleDownload} variant="primary">Download Item</Button>
+              </div>
+            </div>
+            <div className='row'>
+              <div className='col'>
+                <div className="detail-section">
+                  <h2>Item Description</h2>
+                  <div className="detail-row">
+                    <p className="detail-item"><span className="detail-label">Description:</span> {itemData.description}</p>
+                  </div>
+                </div>
+              </div>
+              {['Document', 'Design'].includes(itemType) && (
+                <div className='col'>
+                  <div className="detail-section">
+                    <h2>{itemType === 'Document' ? 'Authors' : 'Designers'}</h2>
+                    <div className="detail-row">
+                      <p className="detail-item">
+                        <span className="detail-label">{itemType === 'Document' ? 'Author(s):' : 'Designer(s):'}</span>
+                        {itemType === 'Document' ? itemData.authors?.join(', ') : itemData.designers?.join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-        <Dropdown.Menu>
-          <Dropdown.Item href="#/action-1">Check Out</Dropdown.Item>
-          <Dropdown.Item href="#/action-2">Check In</Dropdown.Item>
-          <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-      <ChangeRequestModal show={showModal} handleClose={handleCloseModal} />
-      <Tabs
-        id="item-tabs"
-        activeKey={key}
-        onSelect={(k) => setKey(k)}
-        className="mb-3"
-      >
-        
-        <Tab disabled eventKey="Title" title={<span style={{ color: '#287379', fontWeight: 'bold', fontSize: 'x-large' }}>Waveform DRD</span>}></Tab>
-        <Tab eventKey="details" title="Details" className="document-details">
-        <div className="detail-section">
-          <h2>General Details</h2>
-          <div className="detail-row">
-            <p className="detail-item"><span className="detail-label">Item Title:</span>{itemData.name}</p>
-            <p className="detail-item"><span className="detail-label">Item ID:</span> {itemData.ID}</p>
-          </div>
-          <div className="detail-row">
-            <p className="detail-item"><span className="detail-label">Version:</span> {itemData.version}</p>
-            <p className="detail-item"><span className="detail-label">Status:</span> {itemData.status}</p>
-          </div>
-          <div className="detail-row">
-            <p className="detail-item"><span className="detail-label">Creation Date:</span> {itemData.creationDate}</p>
-            <p className="detail-item"><span className="detail-label">Last Modified:</span> {itemData.lastModified}</p>
-          </div>
-          {/* Download button */}
-          <Button onClick={handleDownload} variant="primary">Download Item</Button>
-        </div>
-          <div className='row'>
-            <div className='col'>
-              <div className="detail-section">
-                <h2>Item Description</h2>
-                <div className="detail-row">
-                  <p className="detail-item"><span className="detail-label">Description:</span> {itemData.description}</p>
+            <div className='row'>
+              <div className='col'>
+                <div className="detail-section">
+                  <h2>Classification</h2>
+                  <div className="detail-row">
+                    <p className="detail-item"><span className="detail-label">Type:</span> {itemData.type}</p>
+                  </div>
+                </div>
+              </div>
+              <div className='col'>
+                <div className="detail-section">
+                  <h2>Access Control</h2>
+                  <div className="detail-row">
+                    <p className="detail-item"><span className="detail-label">Detail(s):</span> {itemData.accessDetails}</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className='col'>
-              <div className="detail-section">
-                <h2>Authorship & Ownership</h2>
-                <div className="detail-row">
-                  <p className="detail-item"><span className="detail-label">Author(s):</span> {itemData.Author}</p>
-                  <p className="detail-item"><span className="detail-label">Owner(s):</span> {itemData.Owners}</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className='row'>
-            <div className='col'>
-              <div className="detail-section">
-                <h2>Classification</h2>
-                <div className="detail-row">
-                  <p className="detail-item"><span className="detail-label">Type:</span> {itemData.classificationType}</p>
-                </div>
-              </div>
-            </div>
-            {/* <div className='col'>
-              <div className="detail-section">
-                <h2>Approval Workflow</h2>
-                <div className="detail-row">
-                  <p className="detail-item"><span className="detail-label">Author(s):</span> Approval stages and approvers</p>
-                </div>
-              </div>
-            </div> */}
-            <div className='col'>
-              <div className="detail-section">
-                <h2>Access Control</h2>
-                <div className="detail-row">
-                  <p className="detail-item"><span className="detail-label">Detail(s):</span> {itemData.accessDetails}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </Tab>
+          </Tab>
 
 
         <Tab eventKey="changes" title="Changes">

@@ -129,6 +129,7 @@ const NewUserForm = () => {
                         value={department}
                         onChange={e => setDepartment(e.target.value)}
                     >
+                        <option value="">Select a Department</option>
                         <option value="Engineering">Engineering</option>
                         <option value="Product Management">Product Management</option>
                         <option value="Manufacturing">Manufacturing</option>

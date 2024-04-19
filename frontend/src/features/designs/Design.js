@@ -55,22 +55,37 @@ const Design = () => {
   ];
 
   const designData = {
+    id:6,
+    projectId: "6621cb51b0e4321947c1b560",  // Example Project ObjectId
+    productID: "6621cb51b0e4321947c1b561",  // Example Product ObjectId
     name: "Main Interface Design",
-    ID: "DES456",
-    version: "2.0",
-    status: "In Review",
-    creationDate: "2023-02-15",
-    lastModified: "2023-02-20",
     description: "Design specifications for the main user interface, including wireframes and user flow diagrams.",
-    Author: "Alex Smith",
-    Owners: "UI/UX Department",
-    classificationType: "Confidential",
-    accessDetails: "Restricted to design and development teams",
+    type: "Technical",
+    revisionNumber: "A.2",
+    status: "In Review",
+    comments: [
+        {
+            text: "Needs more contrast in the color scheme.",
+            author: "6621cb51b0e4321947c1b562",  // Example User ObjectId
+            timestamp: new Date("2024-04-20T12:34:56Z")
+        }
+    ],
+    designers: [
+        "6621cb51b0e4321947c1b563",  // Example User ObjectId
+        "6621cb51b0e4321947c1b564"   // Another Example User ObjectId
+    ],
+    creationDate: new Date("2023-02-15T00:00:00Z"),
+    lastModifiedDate: new Date("2023-02-20T00:00:00Z"),
+    attachment: {
+        filePath: "/files/designs/main_interface_design_v2.pdf",
+        fileName: "main_interface_design_v2.pdf"
+    }
   };
+
   return (
     <>
       <Item 
-        taskType="document" 
+        itemType="Design" 
         itemData={designData} 
         changeRequests={changeRequests} 
         completedChangeRequests={completedChangeRequests}

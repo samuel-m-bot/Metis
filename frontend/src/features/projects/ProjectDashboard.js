@@ -26,8 +26,10 @@ const ProjectDashboard = () => {
   console.log(project)
 
   const handleViewDocument = (documentId) => {
-    navigate(`/documents/${documentId}`);
+    const documentData = documents.entities[documentId];  // Assuming documents.entities contains the full document data
+    navigate(`/documents/${documentId}`, { state: { documentData } });
   };
+  
 
   const viewAllTasks = () => {
     navigate('/tasks/all');

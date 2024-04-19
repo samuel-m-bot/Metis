@@ -19,7 +19,9 @@ const userSchema = new mongoose.Schema({
     },
     roles: [{
         type: String,
-        enum: ['Admin', 'Project Manager', 'Engineer', 'Quality Control', 'Sales Representative', 'Customer Support', 'IT Specialist'],
+        enum: ['Admin', 'Project Manager', 'Engineer', 'Quality Control', 
+        'Sales Representative', 'Customer Support', 
+        'IT Specialist'],
         required: true
     }],
     department: {

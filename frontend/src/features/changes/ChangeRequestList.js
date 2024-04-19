@@ -39,7 +39,6 @@ const ChangeRequestList = () => {
   if (isLoading) return <p>Loading...</p>;
   if (isLoading) return <p>Loading...</p>;
   if (isError) {
-    
     if (error.status === 400 && error.data.message === 'No Change Requests found') {
       return (
         <div className="container mt-5">

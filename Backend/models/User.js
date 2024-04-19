@@ -25,7 +25,9 @@ const userSchema = new mongoose.Schema({
     department: {
         type: String,
         required: true,
-        enum: ['Engineering', 'Product Management', 'Manufacturing', 'Quality Assurance', 'Supply Chain', 'Customer Support', 'Sales and Marketing', 'IT and Systems', 'Operations', 'Research and Development']
+        enum: ['Engineering', 'Product Management', 'Manufacturing', 'Quality Assurance', 
+        'Supply Chain', 'Customer Support', 'Sales and Marketing', 
+        'IT and Systems', 'Operations', 'Research and Development']
     }
 });
 

@@ -44,7 +44,7 @@ const createNewProduct = asyncHandler(async (req, res) => {
     // Create new product object
     const productObject = {
         name, description, category, lifecycleStatus, type,
-        physicalAttributes, digitalAttributes
+        physicalAttributes, digitalAttributes, classification
     }
 
     // Create and store new product
@@ -132,6 +132,17 @@ const listProductsByCategory = asyncHandler(async (req, res) => {
     res.json(products);
 });
 
+// @desc Get products by projectId
+// @route GET /products/project/:projectId
+// @access private
+const getProductsByProjectId = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const products = await Product.find({ projectId }).lean();
+    if (!products.length) {
+        return res.status(404).json({ message: 'No products found for this project' });
+    }
+    res.json(products);
+});
 
 //Search Product
 
@@ -143,5 +154,7 @@ module.exports = {
     getProductById,
     createNewProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    listProductsByCategory,
+    getProductsByProjectId
 }

@@ -313,6 +313,17 @@ const filterTasks = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc Get tasks by projectId
+// @route GET /tasks/project/:projectId
+// @access private
+const getTasksByProjectId = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const tasks = await Task.find({ projectId }).lean();
+    if (!tasks.length) {
+        return res.status(404).json({ message: 'No tasks found for this project' });
+    }
+    res.json(tasks);
+});
 
 module.exports = {
     createTask,
@@ -326,5 +337,6 @@ module.exports = {
     toggleChecklistItem,
     addCommentToTask,
     editTaskComment,
-    filterTasks
+    filterTasks,
+    getTasksByProjectId
 };

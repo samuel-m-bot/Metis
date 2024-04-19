@@ -66,6 +66,27 @@ export const productsApiSlice = apiSlice.injectEndpoints({
                 { type: 'Product', id: arg.id }
             ]
         }),
+        getProductsByProjectId: builder.query({
+            query: projectId => ({
+                url: `/products/project/${projectId}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const loadedProducts = responseData.map(product => {
+                    product.id = product._id;
+                    return product;
+                });
+                return productsAdapter.setAll(initialState, loadedProducts);
+            },
+            providesTags: (result, error, arg) => {
+                if (result?.ids) {
+                    return [
+                        { type: 'Product', id: 'LIST' },
+                        ...result.ids.map(id => ({ type: 'Product', id }))
+                    ]
+                } else return [{ type: 'Product', id: 'LIST' }];
+            }
+        }),
     }),
 })
 
@@ -74,7 +95,8 @@ export const {
     useAddNewProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
-    useLazyGetProductsQuery
+    useLazyGetProductsQuery,
+    useGetProductsByProjectIdQuery
 } = productsApiSlice
 
 // returns the query result object

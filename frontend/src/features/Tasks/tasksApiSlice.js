@@ -73,7 +73,28 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                 body: { taskIds, status }
             }),
             invalidatesTags: [{ type: 'Task', id: 'LIST' }]
-        }),        
+        }),   
+        getTasksByProjectId: builder.query({
+            query: projectId => ({
+                url: `/tasks/project/${projectId}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const loadedTasks = responseData.map(task => {
+                    task.id = task._id;
+                    return task;
+                });
+                return tasksAdapter.setAll(initialState, loadedTasks);
+            },
+            providesTags: (result, error, arg) => {
+                if (result?.ids) {
+                    return [
+                        { type: 'Task', id: 'LIST' },
+                        ...result.ids.map(id => ({ type: 'Task', id }))
+                    ]
+                } else return [{ type: 'Task', id: 'LIST' }];
+            }
+        }),     
     }),
 })
 
@@ -82,7 +103,8 @@ export const {
     useAddNewTaskMutation,
     useUpdateTaskMutation,
     useDeleteTaskMutation,
-    useFilterTasksByStatusMutation
+    useFilterTasksByStatusMutation,
+    useGetTasksByProjectIdQuery
 } = tasksApiSlice
 
 // returns the query result object

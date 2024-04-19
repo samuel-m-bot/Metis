@@ -14,4 +14,6 @@ router.route('/:id')
     .get(productController.getProductById)
     .patch(productController.updateProduct)
     .delete(productController.deleteProduct)
+
+router.get('/project/:projectId', productController.getProductsByProjectId);
 module.exports = router

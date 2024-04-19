@@ -13,11 +13,13 @@ const ProjectManageMembers = () => {
     const [removeTeamMember, { isLoading: isRemoving, isSuccess, error: removeError }] = useRemoveTeamMemberMutation();
     const [showModal, setShowModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [availableUsers, setAvailableUsers] = useState([]);
 
     useEffect(() => {
         if (allUsers && projectDetails) {
-            const currentMemberIds = new Set(projectDetails.teamMembers.map(member => member.id));
+            const currentMemberIds = new Set(projectDetails.teamMembers.map(member => member.userId));
             const filteredUsers = Object.values(allUsers.entities).filter(user => !currentMemberIds.has(user.id));
             setAvailableUsers(filteredUsers);
         }
@@ -33,19 +35,18 @@ const ProjectManageMembers = () => {
     };
 
     const handleAddMember = async () => {
-        if (selectedUser) {
+        if (selectedUser && selectedRole && selectedPermissions.length > 0) {
             try {
-                await addTeamMember({ projectId, userId: selectedUser }).unwrap();
+                await addTeamMember({ projectId, userId: selectedUser, role: selectedRole, permissions: selectedPermissions }).unwrap();
                 setShowModal(false);
             } catch (error) {
                 console.error('Failed to add the team member:', error);
             }
         }
     };
-    
 
     if (isLoadingProjectDetails || isLoadingUsers || isUpdating) return <p>Loading...</p>;
-    if (isError) return <p>Error: {error.message}</p>;
+    if (isError) return <p>Error: {error?.data.message}</p>;
     if (!projectDetails?.teamMembers.length) {
         return (
             <div className="container mt-3">
@@ -57,6 +58,10 @@ const ProjectManageMembers = () => {
                     availableUsers={availableUsers}
                     selectedUser={selectedUser}
                     setSelectedUser={setSelectedUser}
+                    selectedRole={selectedRole}
+                    setSelectedRole={setSelectedRole}
+                    selectedPermissions={selectedPermissions}
+                    setSelectedPermissions={setSelectedPermissions}
                     onAddMember={handleAddMember}
                 />
             </div>
@@ -67,10 +72,10 @@ const ProjectManageMembers = () => {
         <div className="container mt-3">
             <h2>Manage Team Members for {projectDetails.projectName}</h2>
             <ul className="list-group">
-                {projectDetails.teamMembers.map((user) => (
-                    <li key={user.id} className="list-group-item d-flex justify-content-between align-items-center">
-                        {user.firstName} {user.surname}
-                        <button className="btn btn-danger" onClick={() => handleRemoveMember(user.id)} disabled={isRemoving}>
+                {projectDetails.teamMembers.map((member) => (
+                    <li key={member.userId} className="list-group-item d-flex justify-content-between align-items-center">
+                        {member.userId.firstName} {member.userId.lastName} - {member.role}
+                        <button className="btn btn-danger" onClick={() => handleRemoveMember(member.userId)} disabled={isRemoving}>
                             Remove
                         </button>
                     </li>
@@ -83,6 +88,10 @@ const ProjectManageMembers = () => {
                 availableUsers={availableUsers}
                 selectedUser={selectedUser}
                 setSelectedUser={setSelectedUser}
+                selectedRole={selectedRole}
+                setSelectedRole={setSelectedRole}
+                selectedPermissions={selectedPermissions}
+                setSelectedPermissions={setSelectedPermissions}
                 onAddMember={handleAddMember}
             />
         </div>

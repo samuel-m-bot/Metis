@@ -13,7 +13,6 @@ const EditProjectForm = ({ project }) => {
     const [endDate, setEndDate] = useState(project.endDate ? project.endDate.split("T")[0] : '');
     const [description, setDescription] = useState(project.description);
     const [status, setStatus] = useState(project.status);
-    const [notes, setNotes] = useState(project.notes.join("; "));
 
     const onSaveChanges = async () => {
         console.log("Start of function")
@@ -24,7 +23,6 @@ const EditProjectForm = ({ project }) => {
             endDate,
             description,
             status,
-            notes: notes.split(";").map(note => note.trim()), // Convert string back to array
         };
 
         try {
@@ -68,10 +66,6 @@ const EditProjectForm = ({ project }) => {
                         <option value="Completed">Completed</option>
                         <option value="On Hold">On Hold</option>
                     </select>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="notes" className="form-label">Notes:</label>
-                    <textarea className="form-control" id="notes" value={notes} onChange={e => setNotes(e.target.value)} />
                 </div>
                 <div className="d-flex justify-content-between">
                     <button type="button" className="btn btn-primary" onClick={onSaveChanges} disabled={updateProject.isLoading}>

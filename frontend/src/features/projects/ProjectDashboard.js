@@ -9,6 +9,7 @@ import ProgressHorizontalBarChart from '../Tasks/ProgressHorizontalBarChart';
 import TimeChart from './TimeChart';
 import CostBarChart from './CostBarChart';
 import ProjectWorkloadChart from './ProjectWorkloadChart';
+import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
 import './ProjectDashboard.css'
 
 const ProjectDashboard = () => {
@@ -16,10 +17,13 @@ const ProjectDashboard = () => {
   const project = location.state?.project;
   const [key, setKey] = useState('overview');
   
+  const { data: documents, isLoading, isError, error } = useGetDocumentsByProjectIdQuery(project?.id);
+
   const navigate = useNavigate()
   if (!project) {
     return <div className="container mt-3">Project not found.</div>;
   }
+  console.log(project)
 
   const handleViewDocument = (documentId) => {
     navigate(`/documents/${documentId}`);
@@ -60,7 +64,7 @@ const ProjectDashboard = () => {
           </div>
           {/* Milestones */}
           <h3>Milestones</h3>
-          {project.milestones && project.milestones.length > 0 ? (
+          {project.milestones && project.milestones?.length > 0 ? (
             <ul>
               {project.milestones.map((milestone, index) => (
                 <li key={index}>
@@ -119,14 +123,19 @@ const ProjectDashboard = () => {
           </div>
         </Tab>
         <Tab eventKey="documents" title="Documents" className="project-documents">
-          {project.attachments && project.attachments.length > 0 ? (
+          {console.log(documents)}
+          {isLoading ? (
+            <p>Loading documents...</p>
+          ) : isError ? (
+            <p>Error: {error?.data?.message}</p>
+          ) : documents?.ids.length > 0 ? (
             <div className="attachments-list">
-              {project.attachments.map((attachment, index) => (
+              {documents?.ids.map((documentId, index) => (
                 <div key={index} className="attachment-item">
-                  <h5 className="attachment-title">{attachment.fileName}</h5>
-                  {attachment.description && <p className="attachment-description">{attachment.description}</p>}
-                  <p className="attachment-upload-date">{attachment.uploadDate ? new Date(attachment.uploadDate).toLocaleDateString() : ''}</p>
-                  <button onClick={() => handleViewDocument(attachment.id)} className="btn btn-primary">
+                  <h5 className="attachment-title">{documents.entities[documentId].title}</h5>
+                  <p className="attachment-description">{documents.entities[documentId].description}</p>
+                  <p className="attachment-upload-date">{documents.entities[documentId].creationDate ? new Date(documents.entities[documentId].creationDate).toLocaleDateString() : ''}</p>
+                  <button onClick={() => handleViewDocument(documentId)} className="btn btn-primary">
                     View Document
                   </button>
                 </div>
@@ -140,15 +149,15 @@ const ProjectDashboard = () => {
         <Tab eventKey="tasks" title="Tasks" className="tab-tasks">
           <div className="row">
             <div className="col-md-6">
-              {/* <TasksTable tasks={ongoingTasks} title="Ongoing Tasks" /> */}
+              <TasksTable taskIds={project.projectTasks} status="In Progress" title="Ongoing Tasks" />
             </div>
             <div className="col-md-6">
-              {/* <TasksTable tasks={completedTasks} title="Completed Tasks" /> */}
+              <TasksTable taskIds={project.projectTasks} status="Completed" title="Completed Tasks" />
             </div>
           </div>
           <div className="row mt-4">
             <div className="col">
-              {/* <TasksTable tasks={upcomingTasks} title="Upcoming Tasks" /> */}
+              <TasksTable taskIds={project.projectTasks} status="Not Started" title="Upcoming Tasks" />
             </div>
           </div>
           <div className="mt-4">
@@ -157,12 +166,12 @@ const ProjectDashboard = () => {
         </Tab>
         <Tab eventKey="changeRequests" title="Change Requests">
           <div className='row'>
-            <h3>On going Change request</h3>
-            {/* <ChangeRequestsTable changeRequests={ongoingChangeRequest} /> */}
+            <h3>Ongoing Change Request</h3>
+            <ChangeRequestsTable projectId={project.id} status="Reviewed" />
           </div>
           <div className='row'>
-            <h3>Completed Change request</h3>
-            {/* <ChangeRequestsTable changeRequests={completedChangeRequest} /> */}
+            <h3>Completed Change Request</h3>
+            <ChangeRequestsTable projectId={project.id} status="Closed" />
           </div>
         </Tab>
         <Tab eventKey="design" title="Design" className="design-tab-content">

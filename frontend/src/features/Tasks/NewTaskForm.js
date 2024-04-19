@@ -49,7 +49,7 @@ const NewTaskForm = () => {
     };
 
     const onSaveTaskClicked = async () => {
-        console.log(priority)
+        console.log(status)
         if (name && description && status && priority && assignedTo.length && taskType && projectId && relatedTo) {
             const taskData = {
                 projectId,

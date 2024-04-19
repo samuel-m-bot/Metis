@@ -99,10 +99,11 @@ const NewChangeRequestForm = () => {
                         onChange={e => setStatus(e.target.value)}
                     >
                         <option value="Requested">Requested</option>
+                        <option value="Reviewed">Reviewed</option>
                         <option value="Approved">Approved</option>
+                        <option value="Implemented">Implemented</option>
+                        <option value="Closed">Closed</option>
                         <option value="Rejected">Rejected</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
                     </select>
                 </div>
                 <div className="mb-3">

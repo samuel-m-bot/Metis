@@ -68,8 +68,7 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                 { type: 'Task', id: arg.id },
                 { type: 'Task', id: "LIST" }
             ]
-        }),
-                
+        }),      
         deleteTask: builder.mutation({
             query: ({ id }) => ({
                 url: `/tasks/${id}`,
@@ -80,6 +79,14 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                 { type: 'Task', id: arg.id }
             ]
         }),
+        filterTasksByStatus: builder.mutation({
+            query: ({ taskIds, status }) => ({
+                url: '/tasks/filter',
+                method: 'POST',
+                body: { taskIds, status }
+            }),
+            invalidatesTags: [{ type: 'Task', id: 'LIST' }]
+        }),        
     }),
 })
 
@@ -88,6 +95,7 @@ export const {
     useAddNewTaskMutation,
     useUpdateTaskMutation,
     useDeleteTaskMutation,
+    useFilterTasksByStatusMutation
 } = tasksApiSlice
 
 // returns the query result object

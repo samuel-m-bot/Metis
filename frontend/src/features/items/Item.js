@@ -9,6 +9,7 @@ import ChangeRequestModal from '../changes/ChangeRequestModal';
 const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
   const [showModal, setShowModal] = useState(false);
+  console.log(itemData)
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -54,8 +55,14 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
                 <p className="detail-item"><span className="detail-label">Item ID:</span> {itemData.id}</p>
                 <p className="detail-item"><span className="detail-label">Version:</span> {itemData.revisionNumber}</p>
                 <p className="detail-item"><span className="detail-label">Status:</span> {itemData.status}</p>
-                <p className="detail-item"><span className="detail-label">Creation Date:</span> {itemData.createdAt || itemData.creationDate}</p>
-                <p className="detail-item"><span className="detail-label">Last Modified:</span> {itemData.updatedAt || itemData.lastModifiedDate}</p>
+                <p className="detail-item">
+                  <span className="detail-label">Creation Date:</span>
+                  {new Date(itemData.createdAt || itemData.creationDate).toLocaleDateString()}
+                </p>
+                <p className="detail-item">
+                  <span className="detail-label">Last Modified:</span>
+                  {new Date(itemData.updatedAt || itemData.lastModifiedDate).toLocaleDateString()}
+                </p>
                 <Button onClick={handleDownload} variant="primary">Download Item</Button>
               </div>
             </div>
@@ -106,17 +113,7 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
 
 
         <Tab eventKey="changes" title="Changes">
-          <div className="changes-summary">
-            <h3>Summary of Changes</h3>
-            <p>Total Change Requests: <strong>10</strong></p>
-            <p>Approved: <strong>4</strong></p>
-            <p>Pending Approval: <strong>3</strong></p>
-            <p>Rejected: <strong>2</strong></p>
-            <p>In Review: <strong>1</strong></p>
-          </div>
-
-          
-          <ChangeRequestsTable/>
+          <ChangeRequestsTable type={itemType} itemId={itemData.id} />
 
           <div className="revision-log">
             <h3>Revision Log</h3>

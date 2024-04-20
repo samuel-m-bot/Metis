@@ -10,6 +10,7 @@ import TimeChart from './TimeChart';
 import CostBarChart from './CostBarChart';
 import ProjectWorkloadChart from './ProjectWorkloadChart';
 import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
+import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
 import './ProjectDashboard.css'
 
 const ProjectDashboard = () => {
@@ -17,7 +18,9 @@ const ProjectDashboard = () => {
   const project = location.state?.project;
   const [key, setKey] = useState('overview');
   
-  const { data: documents, isLoading, isError, error } = useGetDocumentsByProjectIdQuery(project?.id);
+  const { data: documents, isLoadingDocuments, isErrorDocuments, errorD } = useGetDocumentsByProjectIdQuery(project?.id);
+  const { data: tasks, isLoadingTasks, isErrorTasks, errorT } = useGetTasksByProjectIdQuery(project?.id);
+
 
   const navigate = useNavigate()
   if (!project) {
@@ -126,10 +129,10 @@ const ProjectDashboard = () => {
         </Tab>
         <Tab eventKey="documents" title="Documents" className="project-documents">
           {console.log(documents)}
-          {isLoading ? (
+          {isLoadingDocuments ? (
             <p>Loading documents...</p>
-          ) : isError ? (
-            <p>Error: {error?.data?.message}</p>
+          ) : isErrorDocuments ? (
+            <p>Error: {errorD?.data?.message}</p>
           ) : documents?.ids.length > 0 ? (
             <div className="attachments-list">
               {documents?.ids.map((documentId, index) => (
@@ -149,22 +152,32 @@ const ProjectDashboard = () => {
         </Tab>
 
         <Tab eventKey="tasks" title="Tasks" className="tab-tasks">
-          <div className="row">
-            <div className="col-md-6">
-              <TasksTable taskIds={project.projectTasks} status="In Progress" title="Ongoing Tasks" />
-            </div>
-            <div className="col-md-6">
-              <TasksTable taskIds={project.projectTasks} status="Completed" title="Completed Tasks" />
-            </div>
-          </div>
-          <div className="row mt-4">
-            <div className="col">
-              <TasksTable taskIds={project.projectTasks} status="Not Started" title="Upcoming Tasks" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <button onClick={viewAllTasks} className="btn btn-primary">View All Tasks</button>
-          </div>
+        {isLoadingTasks ? (
+            <p>Loading tasks...</p>
+          ) : isErrorTasks ? (
+            <p>Error: {errorT?.data?.message}</p>
+          ) : tasks?.ids.length > 0 ? (
+            <>
+              <div className="row">
+                <div className="col-md-6">
+                  <TasksTable taskIds={tasks.ids} status="In Progress" title="Ongoing Tasks" />
+                </div>
+                <div className="col-md-6">
+                  <TasksTable taskIds={tasks.ids} status="Completed" title="Completed Tasks" />
+                </div>
+              </div>
+              <div className="row mt-4">
+                <div className="col">
+                  <TasksTable taskIds={tasks.ids} status="Not Started" title="Upcoming Tasks" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <button onClick={viewAllTasks} className="btn btn-primary">View All Tasks</button>
+              </div>
+            </>
+          ) : (
+            <p>No tasks available.</p>
+          )}
         </Tab>
         <Tab eventKey="changeRequests" title="Change Requests">
           <div className='row'>

@@ -70,6 +70,10 @@ export const changeRequestsApiSlice = apiSlice.injectEndpoints({
             query: ({ projectId, status }) => `/changeRequests/project/${projectId}/${status}`,
             providesTags: (result, error, arg) => [{ type: 'ChangeRequest', id: 'LIST' }]
         }),
+        getChangeRequestsByRelatedItem: builder.query({
+            query: ({ type, itemId }) => `/changeRequests/${type}/${itemId}`,
+            providesTags: (result, error, arg) => [{ type: 'ChangeRequest', id: 'LIST' }]
+        }),
     }),
 })
 
@@ -79,7 +83,8 @@ export const {
     useUpdateChangeRequestMutation,
     useDeleteChangeRequestMutation,
     useLazyGetChangeRequestsQuery,
-    useGetChangeRequestsByProjectAndStatusQuery
+    useGetChangeRequestsByProjectAndStatusQuery,
+    useGetChangeRequestsByRelatedItemQuery
 } = changeRequestsApiSlice
 
 // returns the query result object

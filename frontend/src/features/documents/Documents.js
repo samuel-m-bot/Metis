@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 const Documents = () => {
   const location = useLocation();
-  // const documentData = location.state?.documentData;
+  const documentData = location.state?.documentData;
 
   const completedChangeRequests = [
     { id: 'CR001', title: 'Initial Creation', dateCompleted: '2022-01-10', status: 'Completed' },
@@ -95,13 +95,13 @@ const Documents = () => {
 
 
   // Use passed documentData or default data
-  //const finalDocumentData = documentData || defaultDocumentData;
+  const finalDocumentData = documentData || mockDocumentData;
   
   return (
     <>
       <Item 
         itemType="Document" 
-        itemData={mockDocumentData} 
+        itemData={finalDocumentData} 
         changeRequests={changeRequests} 
         completedChangeRequests={completedChangeRequests}
       />

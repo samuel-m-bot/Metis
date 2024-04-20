@@ -1,5 +1,31 @@
 const mongoose = require('mongoose');
 
+const reviewSchema = new mongoose.Schema({
+    reviewer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    role: {
+        type: String,
+        required: true
+    },
+    reviewDate: {
+        type: Date,
+        default: Date.now
+    },
+    feedback: {
+        type: String,
+        required: true
+    },
+    decision: {
+        type: String,
+        enum: ['Approved', 'Rejected', 'Pending'],
+        required: true
+    }
+});
+
+
 const changeRequestSchema = new mongoose.Schema({
     requestedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -9,6 +35,10 @@ const changeRequestSchema = new mongoose.Schema({
     projectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Project',
+        required: true
+    },
+    title: {
+        type: String,
         required: true
     },
     description: {
@@ -26,12 +56,15 @@ const changeRequestSchema = new mongoose.Schema({
         default: 'Medium',
         required: true
     },
-    creationDate: {
+    dateRequested: {
         type: Date,
         default: Date.now
     },
     estimatedCompletionDate: {
         type: Date
+    },
+    approvalDate: {
+        type: Date,
     },
     assignedTo: {
         type: mongoose.Schema.Types.ObjectId,
@@ -63,7 +96,8 @@ const changeRequestSchema = new mongoose.Schema({
     relatedProducts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
-    }]
+    }],
+    reviews: [reviewSchema]
 });
 
 module.exports = mongoose.model('ChangeRequest', changeRequestSchema);

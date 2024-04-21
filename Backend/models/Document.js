@@ -13,7 +13,7 @@ const documentSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: [ 'Requiremnts', 'Design', 'Devlopment', 'Manufacturing', 'Miantenance', 'End of Life']
+        enum: [ 'Requirements', 'Design', 'Devlopment', 'Manufacturing', 'Miantenance', 'End of Life']
     },
     description: {
         type: String,

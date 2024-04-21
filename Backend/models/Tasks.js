@@ -107,6 +107,10 @@ const taskSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     },
+    review: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    },
     subtasks: [subtaskSchema],
     checklist: [checklistItemSchema],
     comments: [commentSchema]

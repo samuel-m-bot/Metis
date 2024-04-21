@@ -326,6 +326,30 @@ const archiveProject = asyncHandler(async (req, res) => {
 });
 
 
+// @desc Fetch reviewers for a project who have "Read" permission
+// @route GET /projects/:id/reviewers
+// @access Private
+const getReviewers = asyncHandler(async (req, res) => {
+    const projectId = req.params.id; 
+    const userId = req.user._id; 
+
+    // Fetch the project by ID and populate the user details for team members
+    const project = await Project.findById(projectId)
+        .populate('teamMembers.userId', 'firstName surname email'); 
+
+    if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Filter team members who have "Read" permission and are not the requester
+    const reviewers = project.teamMembers.filter(member =>
+        member.permissions.includes('Read') && member.userId._id.toString() !== userId.toString()
+    );
+
+    // Map through the filtered reviewers to return only their user details
+    res.json(reviewers.map(({ userId }) => userId));
+});
+
 //GenerateProjectReport (complex endpoint tba)
 
 //ProjectTimelineUpdates (complex endpoint tba)
@@ -343,5 +367,6 @@ module.exports = {
     removeTeamMember,
     listProjectChangeRequests,
     updateProjectStatus,
-    archiveProject
+    archiveProject,
+    getReviewers
 }

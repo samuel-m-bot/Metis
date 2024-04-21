@@ -1,31 +1,5 @@
 const mongoose = require('mongoose');
 
-const reviewSchema = new mongoose.Schema({
-    reviewer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    role: {
-        type: String,
-        required: true
-    },
-    reviewDate: {
-        type: Date,
-        default: Date.now
-    },
-    feedback: {
-        type: String,
-        required: true
-    },
-    decision: {
-        type: String,
-        enum: ['Approved', 'Rejected', 'Pending'],
-        required: true
-    }
-});
-
-
 const changeRequestSchema = new mongoose.Schema({
     requestedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -97,7 +71,10 @@ const changeRequestSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],
-    reviews: [reviewSchema]
+    reviews: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }]
 });
 
 module.exports = mongoose.model('ChangeRequest', changeRequestSchema);

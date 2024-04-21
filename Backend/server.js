@@ -37,6 +37,7 @@ app.use('/documents', require('./routes/documentRoutes'))
 app.use('/designs', require('./routes/designRoutes'))
 app.use('/changeRequests', require('./routes/changeRequestRoutes'))
 app.use('/tasks', require('./routes/taskRoutes'))
+app.use('/reviews', require('./routes/reviewRoutes'))
 app.use('/activity', require('./routes/activityRoutes'))
 
 app.all('*', (req, res) => {

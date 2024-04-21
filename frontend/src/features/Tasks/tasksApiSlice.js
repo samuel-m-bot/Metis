@@ -33,6 +33,16 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'Task', id: 'LIST' }]
             }
         }),
+        getTaskById: builder.query({
+            query: (taskId) => `/tasks/${taskId}`,
+            transformResponse: responseData => {
+                responseData.id = responseData._id;
+                return responseData;
+            },
+            providesTags: (result, error, arg) => [
+                { type: 'Task', id: result?.id }
+            ]
+        }),        
         addNewTask: builder.mutation({
             query: initialTaskData => ({
                 url: '/tasks',
@@ -94,17 +104,37 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                     ]
                 } else return [{ type: 'Task', id: 'LIST' }];
             }
-        }),     
+        }), 
+        getUserTasks: builder.query({
+            query: (userId) => `/tasks/user/${userId}`, // Adjust the endpoint URL to match your backend route
+            transformResponse: responseData => {
+                const loadedTasks = responseData.map(task => {
+                    task.id = task._id; // Ensure tasks have an 'id' property for normalization
+                    return task;
+                });
+                return tasksAdapter.setAll(initialState, loadedTasks);
+            },
+            providesTags: (result, error, arg) => {
+                if (result?.ids) {
+                    return [
+                        { type: 'Task', id: 'LIST' },
+                        ...result.ids.map(id => ({ type: 'Task', id }))
+                    ]
+                } else return [{ type: 'Task', id: 'LIST' }]
+            }
+        }),    
     }),
 })
 
 export const {
     useGetTasksQuery,
+    useGetTaskByIdQuery,
     useAddNewTaskMutation,
     useUpdateTaskMutation,
     useDeleteTaskMutation,
     useFilterTasksByStatusMutation,
-    useGetTasksByProjectIdQuery
+    useGetTasksByProjectIdQuery,
+    useGetUserTasksQuery
 } = tasksApiSlice
 
 // returns the query result object

@@ -2,6 +2,7 @@ import React from 'react';
 import './Home.css';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import UserTasks from '../Tasks/UserTasks';
 
 const tasks = [
   {
@@ -26,11 +27,8 @@ const tasks = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth(); // Use useAuth to get the isAdmin status
-
-  const handleTaskClick = (taskId) => {
-    navigate(`/tasks/${taskId}`);
-  };
+  const { isAdmin, id } = useAuth();
+  
 
   return (
     <div className="container">
@@ -51,35 +49,9 @@ const Home = () => {
           <p>Your latest activities and updates will appear here...</p>
         </div>
       </div>
-      <div className='row' id='activity-row'>
-        <h1 className='text-center'>Assigned Tasks</h1>
-        <table className="table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Type</th>
-              <th scope="col">Task ID</th>
-              <th scope="col">Affected Item</th>
-              <th scope="col">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task, index) => (
-              <tr key={task.taskId}>
-                <th scope="row">{index + 1}</th>
-                <td>
-                  <a href="#" onClick={() => handleTaskClick(task.taskId)} style={{ cursor: 'pointer' }}>
-                    {task.taskType}
-                  </a>
-                </td>
-                <td>{task.taskId}</td>
-                <td>{task.affectedItem}</td>
-                <td>{task.details}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {id && (
+        <UserTasks userId={id}/>
+      )}
     </div>
   )
 }

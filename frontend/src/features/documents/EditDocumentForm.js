@@ -80,7 +80,7 @@ const EditDocumentForm = ({ document }) => {
 
     const onDeleteProjectClicked = async () => {
         await deleteDocument({ id: document.id });
-        navigate('/admin-dashboard/users')
+        navigate('/admin-dashboard/documents')
     };
 
     const validateRevisionNumber = () => {

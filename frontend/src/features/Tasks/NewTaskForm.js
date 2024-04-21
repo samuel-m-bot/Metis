@@ -8,8 +8,9 @@ import { useLazyGetProductsQuery } from "../products/productsApiSlice";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from "@fortawesome/free-solid-svg-icons";
+import useAuth from "../../hooks/useAuth";
 
-const NewTaskForm = () => {
+const NewTaskForm = ({ onClose }) => {
     const navigate = useNavigate();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
@@ -32,6 +33,7 @@ const NewTaskForm = () => {
     const [assignedDocument, setAssignedDocument] = useState('');
     const [assignedProduct, setAssignedProduct] = useState('');
 
+    const {isAdmin, isProjectManager} = useAuth()
 
     useEffect(() => {
         if (relatedTo === 'Document') {
@@ -67,7 +69,8 @@ const NewTaskForm = () => {
             };
             try {
                 await addNewTask(taskData).unwrap();
-                navigate('/admin-dashboard/tasks');
+                if(isAdmin) navigate('/admin-dashboard/tasks');
+                else if(isProjectManager)onClose();
             } catch (error) {
                 console.error('Failed to save the task', error);
             }
@@ -123,13 +126,18 @@ const NewTaskForm = () => {
                         value={status}
                         onChange={e => setStatus(e.target.value)}
                     >
+                        <option value="">Select status</option>
                         <option value="Not Started">Not Started</option>
                         <option value="In Progress">In Progress</option>
-                        <option value="On Hold">On Hold</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Reviewed">Reviewed</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Cancelled">Cancelled</option>
+                        {isAdmin && (
+                            <>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Reviewed">Reviewed</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Cancelled">Cancelled</option>
+                            </>
+                        )}
                     </select>
                 </div>
                 <div className="mb-3">
@@ -161,15 +169,20 @@ const NewTaskForm = () => {
                         value={taskType}
                         onChange={e => setTaskType(e.target.value)}
                     >
-                        <option value="Review">Review</option>
-                        <option value="Update">Update</option>
-                        <option value="Approve">Approve</option>
+                        <option value="">Select</option>
                         <option value="Create">Create</option>
-                        <option value="Verify">Verify</option>
-                        <option value="Revise">Revise</option>
-                        <option value="Release">Release</option>
+                        <option value="Update">Update</option>
                         <option value="Archive">Archive</option>
-                        <option value="Others">Others</option>
+                        {isAdmin && (
+                            <>
+                            <option value="Review">Review</option>
+                            <option value="Approve">Approve</option>
+                            <option value="Verify">Verify</option>
+                            <option value="Revise">Revise</option>
+                            <option value="Release">Release</option>
+                            <option value="Others">Others</option>
+                            </>
+                        )}
                     </select>
                 </div>
                 <div className="mb-3">
@@ -196,7 +209,7 @@ const NewTaskForm = () => {
                         <option value="Project">Project</option>
                     </select>
                 </div>
-                {relatedTo === 'Document' && (
+                {(relatedTo === 'Document' && taskType !== 'Create') && (
                     <div className="mb-3">
                         <label htmlFor="assignedDocument" className="form-label">Assigned Document:</label>
                         <select
@@ -213,7 +226,7 @@ const NewTaskForm = () => {
                     </div>
                 )}
 
-                {relatedTo === 'Design' && (
+                {(relatedTo === 'Design'&& taskType !== 'Create')  && (
                     <div className="mb-3">
                         <label htmlFor="assignedDesign" className="form-label">Assigned Design:</label>
                         <select
@@ -230,7 +243,7 @@ const NewTaskForm = () => {
                     </div>
                 )}
 
-                {relatedTo === 'Product' && (
+                {(relatedTo === 'Product'&& taskType !== 'Create')  && (
                     <div className="mb-3">
                         <label htmlFor="assignedProduct" className="form-label">Assigned Product:</label>
                         <select

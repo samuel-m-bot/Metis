@@ -1,168 +1,123 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
 import { useParams } from 'react-router-dom'; 
-import './Tasks.css'
+import './Tasks.css';
+import CreationModal from '../../components/CreationModal';
+import { useGetTaskByIdQuery } from './tasksApiSlice';
 
 const TaskDetails = () => {
-  const [key, setKey] = useState('details');
+  const { taskId } = useParams();
+  const { data: task, isLoading, isError, error } = useGetTaskByIdQuery(taskId);
 
-  const taskType = "Update"; // "Review", "Approve", or "Update"
+  const [key, setKey] = React.useState('details');
+  const [showModal, setShowModal] = React.useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
 
   const handleApproval = (isApproved) => {
-    if (isApproved) {
-      console.log("Change request approved");
-    } else {
-      console.log("Change request rejected");
-    }
+    console.log(isApproved ? "Change request approved" : "Change request rejected");
   };
 
   const handleSubmitUpdate = (e) => {
     e.preventDefault();
-    const updateDetails = document.getElementById('updateDetails').value;
-    const reasonForUpdate = document.getElementById('reasonForUpdate').value;
-  
-    console.log("Submitting update with details:", updateDetails, "and reason:", reasonForUpdate);
-
+    console.log("Update submitted");
   };
-  
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error: {error?.data?.message}</p>;
   return (
     <div className="tasks-container">
       <h2>Task Details</h2>
-      <Tabs
-        id="task-tabs"
-        activeKey={key}
-        onSelect={(k) => setKey(k)}
-        className="mb-3"
-      >
+      <Tabs id="task-tabs" activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="details" title="Details">
-            <div className="task-details">
-                <h3>Task Information</h3>
-                <div className="mb-3">
-                <strong>Task ID:</strong> <span>#12345</span>
-                </div>
-                <div className="mb-3">
-                <strong>Title:</strong> <span>Review Design Document</span>
-                </div>
-                <div className="mb-3">
-                <strong>Description:</strong>
-                <p>
-                    Review the latest version of the design document and provide feedback
-                    on sections 4.2 and 5.1 regarding user interface and experience.
-                </p>
-                </div>
-                <div className="mb-3">
-                <strong>Assigned To:</strong> <span>Jane Doe</span>
-                </div>
-                <div className="mb-3">
-                <strong>Status:</strong> <span>Pending Review</span>
-                </div>
-                <div className="mb-3">
-                <strong>Creation Date:</strong> <span>2023-01-15</span>
-                </div>
-                <div className="mb-3">
-                <strong>Due Date:</strong> <span>2023-01-22</span>
-                </div>
-                {/* Additional details as needed */}
-            </div>
+          <div className="task-details">
+            <h3>Task Information</h3>
+            <div><strong>Task ID:</strong> <span>{task._id}</span></div>
+            <div><strong>Title:</strong> <span>{task.name}</span></div>
+            <div><strong>Description:</strong> <p>{task.description}</p></div>
+            <div><strong>Assigned To:</strong> <span>{task.assignedTo.map(user => user.firstName).join(", ")}</span></div>
+            <div><strong>Status:</strong> <span>{task.status}</span></div>
+            <div><strong>Creation Date:</strong> <span>{new Date(task.creationDate).toLocaleDateString()}</span></div>
+            <div><strong>Due Date:</strong> <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</span></div>
+          </div>
         </Tab>
 
-
-        {taskType === "Approve" && (
-        <Tab eventKey="approve" title="Approve Request">
-            <div className="approve-request">
+        {task.taskType === "Review" && (
+        <Tab eventKey="review" title="Review Request">
+          <div className="review-request">
             <h3>Change Request Review</h3>
             <div className="request-summary">
-                <p><strong>Request ID:</strong> CR123</p>
-                <p><strong>Title:</strong> Update Project Specification</p>
-                <p><strong>Description:</strong> This change request involves updating the project specification documents to include new requirements for the security module.</p>
-                <p><strong>Submitted By:</strong> Jane Doe</p>
-                <p><strong>Submission Date:</strong> 2023-03-15</p>
+              <p><strong>Request ID:</strong> CR123</p>
+              <p><strong>Title:</strong> Update Project Specification</p>
+              <p><strong>Description:</strong> This change request involves updating the project specification documents to include new requirements for the security module.</p>
+              <p><strong>Submitted By:</strong> Jane Doe</p>
+              <p><strong>Submission Date:</strong> 2023-03-15</p>
             </div>
             <div className="review-comments">
-                <label htmlFor="comments">Your Comments</label>
-                <textarea id="comments" rows="3" placeholder="Enter your comments or feedback here..."></textarea>
+              <label htmlFor="comments">Your Comments</label>
+              <textarea id="comments" rows="3" placeholder="Enter your comments or feedback here..."></textarea>
             </div>
             <div className="approval-controls">
-                <button className="btn btn-success" onClick={() => handleApproval(true)}>Approve</button>
-                <button className="btn btn-danger" onClick={() => handleApproval(false)}>Reject</button>
+              <button className="btn btn-success" onClick={() => handleApproval(true)}>Approve</button>
+              <button className="btn btn-danger" onClick={() => handleApproval(false)}>Reject</button>
             </div>
-            </div>
+          </div>
         </Tab>
         )}
 
-
-        {taskType === "Update" && (
-        <Tab eventKey="update" title="Update Item">
-            <div className="update-item">
-                <h3>Item Update</h3>
-                <div className="item-info">
-                    <p><strong>Item ID:</strong> <a href={`/item-path/${"ITEM123"}`} target="_blank" rel="noopener noreferrer">ITEM123</a></p>
-                    <p><strong>Item Name:</strong> Project Specification Document</p>
-                    <p><strong>Current Version:</strong> 1.2</p>
-                </div>
-                <div className="update-steps">
-                    <h4>Steps to Update:</h4>
-                    <ol>
-                        <li>Click the link to navigate to the item.</li>
-                        <li>Once on the item page, click on the actions dropdown.</li>
-                        <li>Select "Check Out" item.</li>
-                        <li>Download and update the item as needed.</li>
-                        <li>Check the item back in with the updated version.</li>
-                        <li>Return to this task to write any comments and confirm the update for review.</li>
-                    </ol>
-                </div>
-                <form className="update-form" onSubmit={handleSubmitUpdate}>
-                    <div className="form-group">
-                    <label htmlFor="updateDetails">Update Details</label>
-                    <textarea id="updateDetails" rows="4" className="form-control" placeholder="Describe the updates being made..."></textarea>
-                    </div>
-                    <div className="form-group">
-                    <label htmlFor="reasonForUpdate">Reason for Update</label>
-                    <input type="text" id="reasonForUpdate" className="form-control" placeholder="Enter the reason for the update"></input>
-                    </div>
-                    <button type="submit" className="btn btn-primary mt-3">Submit Update</button>
-                </form>
+        {task.taskType === "Create" && (
+          <Tab eventKey="create" title="Create Item">
+            <div className="create-item">
+              <h3>Create New Item</h3>
+              <p>To create a new item, please follow the instructions below:</p>
+              <ol>
+                <li>Click on 'Create Item' to open the creation form.</li>
+                <li>Fill out the form with the necessary details.</li>
+                <li>Submit the form to finalize the creation of the new item.</li>
+              </ol>
+              <button className="btn btn-primary" onClick={handleOpenModal}>Create Item</button>
+              {console.log(task)}
+              <CreationModal show={showModal} taskType={task.relatedTo} closeModal={handleCloseModal} projectId={task.projectId._id} task={task}/>
             </div>
-        </Tab>
+          </Tab>
         )}
-
-
-
+        
         <Tab eventKey="history" title="History">
-        <div className="task-history">
-            <h3>Task History</h3>
-            <table className="table">
-            <thead>
-                <tr>
-                <th>Date</th>
-                <th>Event</th>
-                <th>User</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                <td>2023-01-16</td>
-                <td>Task Created</td>
-                <td>Admin</td>
-                </tr>
-                <tr>
-                <td>2023-01-17</td>
-                <td>Assigned to Jane Doe</td>
-                <td>Admin</td>
-                </tr>
-                <tr>
-                <td>2023-01-20</td>
-                <td>Comment added: "Starting review."</td>
-                <td>Jane Doe</td>
-                </tr>
-                <tr>
-                <td>2023-01-22</td>
-                <td>Status Updated: Completed</td>
-                <td>Jane Doe</td>
-                </tr>
-            </tbody>
-            </table>
-        </div>
+          <div className="task-history">
+              <h3>Task History</h3>
+              <table className="table">
+              <thead>
+                  <tr>
+                  <th>Date</th>
+                  <th>Event</th>
+                  <th>User</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                  <td>2023-01-16</td>
+                  <td>Task Created</td>
+                  <td>Admin</td>
+                  </tr>
+                  <tr>
+                  <td>2023-01-17</td>
+                  <td>Assigned to Jane Doe</td>
+                  <td>Admin</td>
+                  </tr>
+                  <tr>
+                  <td>2023-01-20</td>
+                  <td>Comment added: "Starting review."</td>
+                  <td>Jane Doe</td>
+                  </tr>
+                  <tr>
+                  <td>2023-01-22</td>
+                  <td>Status Updated: Completed</td>
+                  <td>Jane Doe</td>
+                  </tr>
+              </tbody>
+              </table>
+          </div>
         </Tab>
       </Tabs>
     </div>

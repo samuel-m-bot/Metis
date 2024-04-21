@@ -44,6 +44,7 @@ import ChangeRequestList from './features/changes/ChangeRequestList.js'
 import NewChangeRequestForm from './features/changes/NewChangeRequestForm.js'
 import EditChangeRequest from './features/changes/EditChangeRequest.js'
 import ProjectsDashboard from './features/projects/ProjectsDashboard.js'
+import UserTaskPage from './features/Tasks/UserTaskPage.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -114,7 +115,8 @@ function App() {
               </Route>
               <Route path="projects" element={<ProjectsDashboard />}/>
               <Route path="projects/project" element={<Project />}/>
-              <Route path="projects/:projectId" element={<ProjectDashboard />} />#
+              <Route path="projects/:projectId" element={<ProjectDashboard />} />
+              <Route path="tasks" element={<UserTaskPage />} />
               <Route path="tasks/:taskId" element={<TaskDetails />} />
               <Route path="documents/:documentId" element={<Documents />} />
               <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />

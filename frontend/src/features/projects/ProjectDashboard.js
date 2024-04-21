@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Tab, Tabs } from 'react-bootstrap';
+import { Tab, Tabs, Dropdown, Button, Modal, ButtonGroup  } from 'react-bootstrap';
 import TasksTable from '../Tasks/TasksTable';
 import ChangeRequestsTable from '../changes/ChangeRequestsTable';
 import DesignTable from '../designs/DesignTable';
@@ -12,11 +12,16 @@ import ProjectWorkloadChart from './ProjectWorkloadChart';
 import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
 import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
 import './ProjectDashboard.css'
+import useAuth from '../../hooks/useAuth';
+import NewTaskForm from '../Tasks/NewTaskForm';
 
 const ProjectDashboard = () => {
   const location = useLocation();
   const project = location.state?.project;
   const [key, setKey] = useState('overview');
+  const {isAdmin, isProjectManager} = useAuth()
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
   
   const { data: documents, isLoadingDocuments, isErrorDocuments, errorD } = useGetDocumentsByProjectIdQuery(project?.id);
   const { data: tasks, isLoadingTasks, isErrorTasks, errorT } = useGetTasksByProjectIdQuery(project?.id);
@@ -27,9 +32,15 @@ const ProjectDashboard = () => {
     return <div className="container mt-3">Project not found.</div>;
   }
   console.log(project)
+  const handleCreateTaskClicked = () => {
+      setShowTaskModal(true);
+  };
 
+  const handleCloseModal = () => {
+      setShowTaskModal(false);
+  };
   const handleViewDocument = (documentId) => {
-    const documentData = documents.entities[documentId];  // Assuming documents.entities contains the full document data
+    const documentData = documents.entities[documentId];  
     navigate(`/documents/${documentId}`, { state: { documentData } });
   };
   
@@ -45,8 +56,33 @@ const ProjectDashboard = () => {
   // const ongoingChangeRequest = project.changeRequests.filter(task => task.status !== 'Completed');
   // const completedChangeRequest = project.changeRequests.filter(task => task.status === 'Completed');
 
+  const handleManageTeamClicked = () => {
+    navigate('manage-team/');
+  };
+
   return (
     <div className="container-fluid">
+      {(isAdmin || isProjectManager) && (
+                <Dropdown as={ButtonGroup} className="actions-dropdown">
+                    <Button variant="secondary">Actions</Button>
+                    <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={handleManageTeamClicked}>Manage Team</Dropdown.Item>
+                        <Dropdown.Item onClick={handleCreateTaskClicked}>Create Task</Dropdown.Item>
+                        <Dropdown.Item>Edit Project</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            )}
+
+            <Modal show={showTaskModal} onHide={handleCloseModal} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Create New Task</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <NewTaskForm onClose={handleCloseModal} /> 
+                </Modal.Body>
+            </Modal>
+
       <Tabs
         id="controlled-tab-example"
         activeKey={key}

@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
             </div>
             <div className="sidebar-content">
                 <Link to="/change-requests" className="sidebar-item" onClick={closeSidebar}>My Change Requests</Link>
-                <Link to="/my-tasks" className="sidebar-item" onClick={closeSidebar}>My Tasks</Link>
+                <Link to="/tasks" className="sidebar-item" onClick={closeSidebar}>My Tasks</Link>
                 <Link to="/activity" className="sidebar-item" onClick={closeSidebar}>Activity</Link>
                 <Link to="/user-settings" className="sidebar-item" onClick={closeSidebar}>User Settings</Link>
                 <Link to="/support" className="sidebar-item" onClick={closeSidebar}>Support</Link>

@@ -22,6 +22,10 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
             query: projectId => `/projects/${projectId}/TeaMember`,
             providesTags: (result, error, arg) => [{ type: 'Project', id: arg }]
         }),
+        getProjectReviewers: builder.query({
+            query: projectId => `/projects/${projectId}/reviewers`,
+            providesTags: (result, error, arg) => [{ type: 'Project', id: arg }]
+        }),
         addNewProject: builder.mutation({
             query: initialProjectData => ({
                 url: '/projects',
@@ -71,6 +75,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 export const {
     useGetProjectsQuery,
     useGetProjectTeamMembersQuery,
+    useGetProjectReviewersQuery,
     useAddNewProjectMutation,
     useUpdateProjectMutation,
     useDeleteProjectMutation,

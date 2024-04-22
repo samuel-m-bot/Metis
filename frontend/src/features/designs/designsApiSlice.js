@@ -33,6 +33,17 @@ export const designsApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'Design', id: 'LIST' }]
             }
         }),
+        getDesignById: builder.query({
+            query: (id) => ({
+                url: `/designs/${id}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const design = { ...responseData, id: responseData._id };
+                return design;
+            },
+            providesTags: (result, error, arg) => [{ type: 'Design', id: result.id }]
+        }),
         addNewDesign: builder.mutation({
             query: (designData) => {
                 return {
@@ -99,6 +110,7 @@ export const designsApiSlice = apiSlice.injectEndpoints({
 
 export const {
     useGetDesignsQuery,
+    useLazyGetDesignByIdQuery,
     useAddNewDesignMutation,
     useUpdateDesignMutation,
     useDeleteDesignMutation,

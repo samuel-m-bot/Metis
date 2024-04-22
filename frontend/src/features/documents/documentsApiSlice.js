@@ -33,6 +33,17 @@ export const documentsApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'Document', id: 'LIST' }]
             }
         }),
+        getDocumentById: builder.query({
+            query: (id) => ({
+                url: `/documents/${id}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const document = { ...responseData, id: responseData._id };
+                return document;
+            },
+            providesTags: (result, error, arg) => [{ type: 'Document', id: result.id }]
+        }),
         addNewDocument: builder.mutation({
             query: (documentData) => {
                 return {
@@ -119,6 +130,8 @@ export const documentsApiSlice = apiSlice.injectEndpoints({
 
 export const {
     useGetDocumentsQuery,
+    useGetDocumentByIdQuery,
+    useLazyGetDocumentByIdQuery,
     useAddNewDocumentMutation,
     useUpdateDocumentMutation,
     useDeleteDocumentMutation,

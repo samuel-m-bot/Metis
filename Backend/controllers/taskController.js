@@ -9,7 +9,7 @@ const Project = require('../models/Project')
 const createTask = asyncHandler(async (req, res) => {
     const {
         name, description, status, priority, assignedTo, taskType,
-        projectId, dueDate, relatedTo,  assignedDesign, assignedDocument, assignedProduct
+        projectId, dueDate, relatedTo,  assignedDesign, assignedDocument, assignedProduct, review
     } = req.body;
 
     if (!name || !description || !status || !priority || !assignedTo || !taskType || !projectId || !relatedTo) {
@@ -33,6 +33,8 @@ const createTask = asyncHandler(async (req, res) => {
     if(relatedTo && relatedTo==="Design" && assignedDesign) task.assignedDesign = assignedDesign;
     if(relatedTo && relatedTo==="Document" && assignedDocument) task.assignedDocument = assignedDocument;
     if(relatedTo && relatedTo==="Product" && assignedProduct) task.assignedProduct = assignedProduct;
+    if(review) task.review = review;
+
     task.creationDate = Date.now();
 
     const savedTask = await task.save();
@@ -96,7 +98,7 @@ const getUserTasks = asyncHandler(async (req, res) => {
 const updateTask = asyncHandler(async (req, res) => {
     const {
         name, description, status, priority, assignedTo, taskType,
-        projectId, dueDate, relatedTo, assignedDesign, assignedDocument, assignedProduct
+        projectId, dueDate, relatedTo, assignedDesign, assignedDocument, assignedProduct, review
     } = req.body;
 
     const task = await Task.findById(req.params.id);
@@ -117,6 +119,7 @@ const updateTask = asyncHandler(async (req, res) => {
     task.assignedDesign = assignedDesign || task.assignedDesign;
     task.assignedDocument = assignedDocument || task.assignedDocument;
     task.assignedProduct = assignedProduct || task.assignedProduct;
+    task.review = review || task.review;
 
     const updatedTask = await task.save();
     res.status(200).json(updatedTask);

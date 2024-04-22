@@ -16,7 +16,7 @@ const getAllReviews = asyncHandler(async (req, res) => {
 // @route GET /reviews/:id
 // @access Private
 const getReviewById = asyncHandler(async (req, res) => {
-    const review = await Review.findById(req.params.id).populate('itemReviewed reviewer.userId');
+    const review = await Review.findById(req.params.id);
     if (!review) {
         return res.status(404).json({ message: 'No review found with that ID' });
     }
@@ -27,12 +27,12 @@ const getReviewById = asyncHandler(async (req, res) => {
 // @route POST /reviews
 // @access Private
 const createNewReview = asyncHandler(async (req, res) => {
-    const { itemReviewed, onModel, reviewer } = req.body;
-    if (!itemReviewed || !onModel || !reviewer) {
+    const { itemReviewed, onModel, reviewers } = req.body;
+    if (!itemReviewed || !onModel || !reviewers) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const review = new Review({ itemReviewed, onModel, reviewer });
+    const review = new Review({ itemReviewed, onModel, reviewers });
     const createdReview = await review.save();
 
     res.status(201).json(createdReview);

@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectsController');
+const verifyJWT = require('../middleware/verifyJWT')
+
+router.use(verifyJWT)
 
 // Routes for managing projects
 router.route('/')

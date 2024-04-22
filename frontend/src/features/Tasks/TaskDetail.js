@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom';
 import './Tasks.css';
 import CreationModal from '../../components/CreationModal';
 import { useGetTaskByIdQuery } from './tasksApiSlice';
+import ReviewerSelectionModal from '../../components/ReviewerSelectionModal';
+import ReviewTab from '../reviews/ReviewTab';
 
 const TaskDetails = () => {
   const { taskId } = useParams();
@@ -23,7 +25,39 @@ const TaskDetails = () => {
     e.preventDefault();
     console.log("Update submitted");
   };
-
+  const renderItemDetails = () => {
+    const itemId = task.assignedDocument || task.assignedDesign || task.assignedProduct;
+    
+    switch (task.relatedTo) {
+      case 'Document':
+        return (
+          <div className="item-details">
+            <p><strong>Document ID:</strong> {itemId}</p>
+            <p><strong>Title:</strong> {task.name}</p>
+            <p><strong>Description:</strong> {task.description}</p>
+          </div>
+        );
+      case 'Design':
+        return (
+          <div className="item-details">
+            <p><strong>Design ID:</strong> {itemId}</p>
+            <p><strong>Title:</strong> {task.name}</p>
+            <p><strong>Description:</strong> {task.description}</p>
+          </div>
+        );
+      case 'Product':
+        return (
+          <div className="item-details">
+            <p><strong>Product ID:</strong> {itemId}</p>
+            <p><strong>Title:</strong> {task.name}</p>
+            <p><strong>Description:</strong> {task.description}</p>
+          </div>
+        );
+      default:
+        return <p>Item type not recognized.</p>;
+    }
+  };
+  
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error: {error?.data?.message}</p>;
   return (
@@ -43,30 +77,13 @@ const TaskDetails = () => {
           </div>
         </Tab>
 
-        {task.taskType === "Review" && (
+        {task.taskType === "Review" && task.status !== 'Completed' && (
         <Tab eventKey="review" title="Review Request">
-          <div className="review-request">
-            <h3>Change Request Review</h3>
-            <div className="request-summary">
-              <p><strong>Request ID:</strong> CR123</p>
-              <p><strong>Title:</strong> Update Project Specification</p>
-              <p><strong>Description:</strong> This change request involves updating the project specification documents to include new requirements for the security module.</p>
-              <p><strong>Submitted By:</strong> Jane Doe</p>
-              <p><strong>Submission Date:</strong> 2023-03-15</p>
-            </div>
-            <div className="review-comments">
-              <label htmlFor="comments">Your Comments</label>
-              <textarea id="comments" rows="3" placeholder="Enter your comments or feedback here..."></textarea>
-            </div>
-            <div className="approval-controls">
-              <button className="btn btn-success" onClick={() => handleApproval(true)}>Approve</button>
-              <button className="btn btn-danger" onClick={() => handleApproval(false)}>Reject</button>
-            </div>
-          </div>
+          <ReviewTab task={task} />
         </Tab>
         )}
 
-        {task.taskType === "Create" && (
+        {task.taskType === "Create" && task.status !== 'Completed' (
           <Tab eventKey="create" title="Create Item">
             <div className="create-item">
               <h3>Create New Item</h3>
@@ -82,7 +99,24 @@ const TaskDetails = () => {
             </div>
           </Tab>
         )}
-        
+
+        {task.taskType === "Set up Review" &&  task.status !== 'Completed' && (
+          <Tab eventKey="set-up-review" title="Set up Review">
+            <div className="set-up-review">
+              <h3>Set up Document Review</h3>
+              <p>To set up the review for this document, please follow the instructions below:</p>
+              <ol>
+                <li>Review the document details provided below.</li>
+                <li>Click on 'Select Reviewers' to choose the individuals responsible for the review.</li>
+                <li>Confirm the selection to initiate the review process.</li>
+              </ol>
+              {renderItemDetails()}
+              <button className="btn btn-primary" onClick={handleOpenModal}>Select Reviewers</button>
+              <ReviewerSelectionModal show={showModal} handleClose={handleCloseModal} task={task} />
+            </div>
+          </Tab>
+        )}
+
         <Tab eventKey="history" title="History">
           <div className="task-history">
               <h3>Task History</h3>

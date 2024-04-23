@@ -45,6 +45,9 @@ import NewChangeRequestForm from './features/changes/NewChangeRequestForm.js'
 import EditChangeRequest from './features/changes/EditChangeRequest.js'
 import ProjectsDashboard from './features/projects/ProjectsDashboard.js'
 import UserTaskPage from './features/Tasks/UserTaskPage.js'
+import ReviewsList from './features/reviews/ReviewsList.js'
+import ReviewSuccessPage from './features/reviews/ReviewSuccessPage.js'
+import EditReview from './features/reviews/EditReview.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -112,12 +115,20 @@ function App() {
                   <Route path=":id" element={<EditUser />} />
                   <Route path="create" element={<NewUserForm />} />
                 </Route>
+
+                <Route path="reviews">
+                  <Route index element={<ReviewsList />} />
+                  <Route path=":id" element={<EditReview />} />
+                  <Route path="create" element={<NewChangeRequestForm />} />
+                </Route>
+
               </Route>
               <Route path="projects" element={<ProjectsDashboard />}/>
               <Route path="projects/project" element={<Project />}/>
               <Route path="projects/:projectId" element={<ProjectDashboard />} />
               <Route path="tasks" element={<UserTaskPage />} />
               <Route path="tasks/:taskId" element={<TaskDetails />} />
+              <Route path="/review-success" element={<ReviewSuccessPage />} />
               <Route path="documents/:documentId" element={<Documents />} />
               <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />
               <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />

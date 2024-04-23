@@ -1,7 +1,4 @@
-import {
-    createSelector,
-    createEntityAdapter
-} from "@reduxjs/toolkit";
+import { createSelector, createEntityAdapter } from "@reduxjs/toolkit";
 import { apiSlice } from "../../app/api/apiSlice";
 
 const reviewsAdapter = createEntityAdapter({})
@@ -11,12 +8,7 @@ const initialState = reviewsAdapter.getInitialState()
 export const reviewsApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         getReviews: builder.query({
-            query: () => ({
-                url: '/reviews',
-                validateStatus: (response, result) => {
-                    return response.status === 200 && !result.isError
-                },
-            }),
+            query: () => '/reviews',
             transformResponse: responseData => {
                 const loadedReviews = responseData.map(review => {
                     review.id = review._id
@@ -24,56 +16,44 @@ export const reviewsApiSlice = apiSlice.injectEndpoints({
                 });
                 return reviewsAdapter.setAll(initialState, loadedReviews)
             },
-            providesTags: (result, error, arg) => {
-                if (result?.ids) {
-                    return [
-                        { type: 'Review', id: 'LIST' },
-                        ...result.ids.map(id => ({ type: 'Review', id }))
-                    ]
-                } else return [{ type: 'Review', id: 'LIST' }]
-            }
+            providesTags: (result, error, arg) => result ? [...result.ids.map(id => ({ type: 'Review', id })), { type: 'Review', id: 'LIST' }] : [{ type: 'Review', id: 'LIST' }]
         }),
         getReviewById: builder.query({
-            query: (id) => ({
-                url: `/reviews/${id}`,
-                method: 'GET'
-            }),
-            transformResponse: responseData => {
-                const review = { ...responseData, id: responseData._id };
-                return review;
-            },
-            providesTags: (result, error, arg) => [{ type: 'Review', id: result.id }]
+            query: id => `/reviews/${id}`,
+            providesTags: (result, error, arg) => [{ type: 'Review', id: arg }]
         }),
         addNewReview: builder.mutation({
             query: initialReviewData => ({
                 url: '/reviews',
                 method: 'POST',
-                body: {
-                    ...initialReviewData,
-                }
+                body: initialReviewData,
             }),
-            invalidatesTags: [
-                { type: 'Review', id: "LIST" }
-            ]
+            invalidatesTags: [{ type: 'Review', id: 'LIST' }]
         }),
         updateReview: builder.mutation({
-            query: (reviewData) => ({
-                url: `/reviews/${reviewData.id}`,
+            query: ({ id, ...reviewData }) => ({
+                url: `/reviews/${id}`,
                 method: 'PATCH',
                 body: reviewData
             }),
-            invalidatesTags: (result, error, arg) => [
-                { type: 'Review', id: arg.id },
-                { type: 'Review', id: "LIST" }
-            ]
+            invalidatesTags: (result, error, arg) => [{ type: 'Review', id: arg.id }]
         }),
         deleteReview: builder.mutation({
-            query: ({ id }) => ({
+            query: id => ({
                 url: `/reviews/${id}`,
-                method: 'DELETE'
+                method: 'DELETE',
+            }),
+            invalidatesTags: (result, error, arg) => [{ type: 'Review', id: arg.id }]
+        }),
+        reviewSubmission: builder.mutation({
+            query: ({ id, reviewerId, feedback, decision }) => ({
+                url: `/reviews/${id}/submit`,
+                method: 'PATCH',
+                body: { reviewerId, feedback, decision }
             }),
             invalidatesTags: (result, error, arg) => [
-                { type: 'Review', id: arg.id }
+                { type: 'Review', id: arg.id },
+                { type: 'Review', id: 'LIST' }
             ]
         }),
     }),
@@ -85,16 +65,11 @@ export const {
     useAddNewReviewMutation,
     useUpdateReviewMutation,
     useDeleteReviewMutation,
+    useReviewSubmissionMutation,
 } = reviewsApiSlice
-
-const selectReviewsResult = reviewsApiSlice.endpoints.getReviews.select()
-const selectReviewsData = createSelector(
-    selectReviewsResult,
-    reviewsResult => reviewsResult.data
-)
 
 export const {
     selectAll: selectAllReviews,
     selectById: selectReviewById,
     selectIds: selectReviewIds
-} = reviewsAdapter.getSelectors(state => selectReviewsData(state) ?? initialState)
+} = reviewsAdapter.getSelectors(state => state.reviews ?? initialState)

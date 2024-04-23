@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './AdminDashboard.css';  // Ensure you have this CSS file in the same folder as your component
+import './AdminDashboard.css'; 
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -12,7 +12,8 @@ const AdminDashboard = () => {
         { name: 'Documents', route: '/admin-dashboard/documents' },
         { name: 'Designs', route: '/admin-dashboard/designs' },
         { name: 'Change Requests', route: '/admin-dashboard/change-requests' },
-        { name: 'Activities', route: '/admin-dashboard/activities' }
+        { name: 'Activities', route: '/admin-dashboard/activities' },
+        { name: 'Reviews', route: '/admin-dashboard/reviews' }
     ];
 
     const handleModelClick = (route) => {

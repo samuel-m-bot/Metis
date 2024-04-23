@@ -29,4 +29,5 @@ router.get('/user/:userId', taskController.getUserTasks); // Get tasks for a spe
 router.post('/filter', taskController.filterTasks);
 
 router.get('/project/:projectId', taskController.getTasksByProjectId);
+router.post('/manage-review-tasks', taskController.manageReviewTasks);
 module.exports = router;

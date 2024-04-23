@@ -77,7 +77,7 @@ const taskSchema = new mongoose.Schema({
     }],
     taskType: {
         type: String,
-        enum: ['Review', 'Set up Review', 'Update', 'Approve', 'Create', 'Verify', 'Revise', 'Release', 'Archive', 'Obsorve' , 'Others'],
+        enum: ['Review', 'Set up Review', 'Update', 'Approve', 'Create', 'Verify', 'Revise', 'Release', 'Archive', 'Observe', 'Others'],
         required: true
     },    
     dueDate: {

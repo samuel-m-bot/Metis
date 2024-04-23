@@ -37,7 +37,7 @@ const designSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Draft', 'In Review', 'Revised', 'Approved', 'Published', 'Archived', 'Checked Out', 'On Hold'],
+        enum: ['Draft', 'In Review', 'Revised', 'Approved', 'Published', 'Archived', 'Checked Out', 'Checked In', 'On Hold'],
         default: 'Draft'
     },
     comments: [{

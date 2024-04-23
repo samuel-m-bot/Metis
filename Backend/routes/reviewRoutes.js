@@ -12,4 +12,6 @@ router.route('/:id')
     .patch(reviewController.updateReview) // Update a review
     .delete(reviewController.deleteReview); // Delete a review
 
+router.patch('/:id/submit', reviewController.reviewSubmission);
+
 module.exports = router;

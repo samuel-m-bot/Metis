@@ -2,6 +2,7 @@ const Task = require('../models/Tasks');
 const ChangeRequest = require('../models/ChangeRequest');
 const asyncHandler = require('express-async-handler');
 const Project = require('../models/Project')
+const Activity = require('../models/Activity')
 
 // @desc Create a new task
 // @route POST /tasks
@@ -136,7 +137,8 @@ const deleteTask = asyncHandler(async (req, res) => {
     }
 
     const projectId = task.projectId;
-    await task.remove();
+    // Use findByIdAndDelete instead of remove
+    await Task.findByIdAndDelete(req.params.id);
 
     // Remove the task from the Project document
     await Project.findByIdAndUpdate(
@@ -156,8 +158,6 @@ const deleteTask = asyncHandler(async (req, res) => {
 
     res.status(200).json({ message: 'Task deleted successfully' });
 });
-
-
 
 // @desc Add a subtask to a task
 // @route POST /tasks/:id/subtasks
@@ -331,6 +331,54 @@ const getTasksByProjectId = asyncHandler(async (req, res) => {
     res.json(tasks);
 });
 
+// @desc Manages review related tasks including marking the setup task as complete, creating review tasks for each reviewer, and setting up an observation task
+// @route POST /tasks/manage-review-tasks
+// @access Private
+const manageReviewTasks = asyncHandler(async (req, res) => {
+    const { reviewId, projectId, reviewers, taskDetails } = req.body;
+
+    try {
+        // Complete the existing "Set Up Review" task
+        await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
+
+        // Create tasks for each reviewer
+        reviewers.forEach(async reviewer => {
+            const newTask = new Task({
+                projectId,
+                name: 'Review Task for ' + taskDetails.relatedTo,
+                description: 'Please review the ' + taskDetails.relatedTo.toLowerCase(),
+                status: 'Not Started',
+                priority: taskDetails.priority,
+                assignedTo: [reviewer.userId],
+                taskType: 'Review',
+                relatedTo: taskDetails.relatedTo,
+                dueDate: taskDetails.dueDate,
+                review: reviewId
+            });
+            await newTask.save();
+        });
+
+        // Create an observer task for the user who initiated the review
+        const observeTask = new Task({
+            projectId,
+            name: 'Observe item review',
+            description: 'Observe the review process.',
+            status: 'In Progress',
+            priority: taskDetails.priority,
+            assignedTo: taskDetails.assignedTo,
+            taskType: 'Observe',
+            relatedTo: taskDetails.relatedTo,
+            dueDate: taskDetails.dueDate,
+            review: reviewId
+        });
+        await observeTask.save();
+
+        res.status(200).json({ message: 'Tasks managed successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error managing review tasks', error: error.toString() });
+    }
+});
+
 module.exports = {
     createTask,
     getAllTasks,
@@ -344,5 +392,6 @@ module.exports = {
     addCommentToTask,
     editTaskComment,
     filterTasks,
-    getTasksByProjectId
+    getTasksByProjectId,
+    manageReviewTasks
 };

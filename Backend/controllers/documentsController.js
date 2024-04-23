@@ -75,7 +75,7 @@ const createNewDocument = asyncHandler(async (req, res) => {
 // @access private
 const updateDocument = asyncHandler(async (req, res) => {
     const documentId = req.params.id;
-    const document = await document.findById(documentId);
+    const document = await Document.findById(documentId);
 
     if (!document) {
         return res.status(404).json({ message: 'document not found' });

@@ -34,6 +34,7 @@ const UserTasks = ({ userId }) => {
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Type</th>
+                        <th scope="col">status</th>
                         <th scope="col">Task ID</th>
                         <th scope="col">Affected Item</th>
                         <th scope="col">Details</th>
@@ -48,6 +49,7 @@ const UserTasks = ({ userId }) => {
                                     {tasks.entities[taskId].taskType}
                                 </a>
                             </td>
+                            <td>{tasks.entities[taskId].status}</td>
                             <td>{taskId}</td>
                             <td>{tasks.entities[taskId].name}</td>
                             <td>{tasks.entities[taskId].description}</td>

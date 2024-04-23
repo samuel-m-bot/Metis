@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useGetProjectReviewersQuery } from '../features/projects/projectsApiSlice';
 import { useAddNewReviewMutation } from '../features/reviews/reviewsApiSlice';
-import { useUpdateTaskMutation, useAddNewTaskMutation } from '../features/Tasks/tasksApiSlice';
+import { useManageReviewTasksMutation } from '../features/Tasks/tasksApiSlice'; // Import the mutation
 
 const ReviewerSelectionModal = ({ show, handleClose, task }) => {
-  const projectId = task.projectId;  
+  const projectId = task.projectId;
   const { data: reviewers, isLoading, isError, error } = useGetProjectReviewersQuery(projectId._id);
-  const [addNewReview , {isLoadingR}]  = useAddNewReviewMutation();
-  const [updateTask, { isLoadingUpdateTask }] = useUpdateTaskMutation();
-  const [addNewTask, { isLoadingAddTask }] = useAddNewTaskMutation();
+  const [addNewReview , {isLoading: isLoadingR}]  = useAddNewReviewMutation();
+  const [manageReviewTasks, { isLoading: isLoadingManageTasks }] = useManageReviewTasksMutation(); // Use the mutation
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const handleCheckboxChange = (userId) => {
@@ -21,16 +20,16 @@ const ReviewerSelectionModal = ({ show, handleClose, task }) => {
       }
     });
   };
-  
+
   const handleSubmit = async () => {
     console.log('Selected reviewers:', selectedUsers);
-  
+
     const reviewers = selectedUsers.map(userId => ({
       userId,
       decision: 'Pending',
       feedback: ''
     }));
-  
+
     // Determine which item ID to use based on what the task is related to
     const getItemReviewedId = () => {
       switch (task.relatedTo) {
@@ -44,72 +43,39 @@ const ReviewerSelectionModal = ({ show, handleClose, task }) => {
           return null;
       }
     };
-  
+
     const reviewData = {
       itemReviewed: getItemReviewedId(),
       onModel: task.relatedTo,
       reviewers
     };
-  
+
     try {
       const newReview = await addNewReview(reviewData).unwrap();
       console.log('Review created:', newReview);
-  
-      // Complete the "Set Up Review" task
-      const updatedTaskData = {
-        id: task.id,
-        status: 'Completed'
-      };
-      await updateTask(updatedTaskData).unwrap();
-  
-      // Create individual review tasks for each reviewer
-      for (const reviewer of reviewers) {
-        const taskData = {
-          projectId: task.projectId._id,
-          name: 'Review Task for ' + task.relatedTo,
-          description: 'Please review the ' + task.relatedTo.toLowerCase(),
-          status: 'Not Started',
-          priority: task.priority,
-          assignedTo: [reviewer.userId],
-          taskType: 'Review',
-          relatedTo: task.relatedTo,
-          dueDate: task.dueDate,
-          assignedDocument: task.assignedDocument,
-          assignedDesign: task.assignedDesign,
-          assignedProduct: task.assignedProduct,
-          review: newReview._id
-        };
-  
-        await addNewTask(taskData).unwrap();
-      }
-  
-      // Give the user who set up the review an observe task
-      const observeTaskData = {
+
+      const taskData = {
         projectId: task.projectId._id,
-        name: 'Observe item review',
-        description: 'To watch over the review of the item and follow up on reviews',
-        status: 'In Progress',
-        priority: task.priority,
-        assignedTo: task.assignedTo,
-        taskType: 'Observe',
-        relatedTo: task.relatedTo,
-        dueDate: task.dueDate,
-        assignedDocument: task.assignedDocument,
-        assignedDesign: task.assignedDesign,
-        assignedProduct: task.assignedProduct,
-        review: newReview._id
+        reviewId: newReview._id,
+        reviewers,
+        taskDetails: {
+          id: task.id,
+          relatedTo: task.relatedTo,
+          priority: task.priority,
+          dueDate: task.dueDate,
+          assignedTo: task.assignedTo,
+        }
       };
-      await addNewTask(observeTaskData).unwrap();
-  
+
+      await manageReviewTasks(taskData).unwrap();
+
       handleClose(); // Close the modal on successful creation
     } catch (error) {
-      console.error('Error creating review and tasks:', error);
+      console.error('Error creating review and managing tasks:', error);
     }
   };
-  
-  
 
-  if (isLoading) return <p>Loading reviewers...</p>;
+  if (isLoading || isLoadingR || isLoadingManageTasks) return <p>Loading...</p>;
   if (isError) return <p>Error loading reviewers: {error?.data?.message}</p>;
 
   return (

@@ -148,6 +148,7 @@ const NewTaskForm = ({ onClose }) => {
                         value={priority}
                         onChange={e => setPriority(e.target.value)}
                     >
+                        <option value="">Selecte Priority...</option>
                         <option value="High">High</option>
                         <option value="Medium">Medium</option>
                         <option value="Low">Low</option>
@@ -169,7 +170,7 @@ const NewTaskForm = ({ onClose }) => {
                         value={taskType}
                         onChange={e => setTaskType(e.target.value)}
                     >
-                        <option value="">Select</option>
+                        <option value="">Select Task Type...</option>
                         <option value="Create">Create</option>
                         <option value="Update">Update</option>
                         <option value="Archive">Archive</option>
@@ -203,6 +204,7 @@ const NewTaskForm = ({ onClose }) => {
                         value={relatedTo}
                         onChange={e => setRelatedTo(e.target.value)}
                     >
+                        <option value="">Select relate to...</option>
                         <option value="Design">Design</option>
                         <option value="Document">Document</option>
                         <option value="Product">Product</option>

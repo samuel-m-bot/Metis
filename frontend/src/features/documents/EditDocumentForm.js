@@ -94,7 +94,7 @@ const EditDocumentForm = ({ document }) => {
     };
 
     if (isFetchingUsers || isFetchingProducts || isLoading) return <p>Loading...</p>;
-    if (isUsersError || isProductsError || isError) return <p>Error loading data.</p>;
+    if (isUsersError || isError) return <p>Error loading data.</p>;
 
     return (
         <div classTitle="container mt-3">
@@ -150,11 +150,14 @@ const EditDocumentForm = ({ document }) => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="associatedProductID" className="form-label">Associated Products:</label>
-                    <select multiple className="form-select" id="associatedProductID" value={associatedProductIDs} onChange={(e) => handleMultiSelectChange(e, setAssociatedProductIDs)}>
-                        {products?.ids.map(productId => (
-                            <option key={productId} value={productId}>{products.entities[productId].name}</option>
-                        ))}
-                    </select>
+                    {isProductsError ?
+                        <p>No available products to select</p> :
+                        <select multiple className="form-select" id="associatedProductID" value={associatedProductIDs} onChange={(e) => handleMultiSelectChange(e, setAssociatedProductIDs)}>
+                            {products.ids.map(productId => (
+                                <option key={productId} value={productId}>{products.entities[productId].name}</option>
+                            ))}
+                        </select>
+                    }
                 </div>
                 <div className="mb-3">
                     <label htmlFor="authors" className="form-label">Authors:</label>
@@ -167,6 +170,7 @@ const EditDocumentForm = ({ document }) => {
                 <div classTitle="mb-3">
                     <label htmlFor="status" classTitle="form-label">Status:</label>
                     <select classTitle="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
+                        <option value="">Select Status...</option>
                         <option value="Draft">Draft</option>
                         <option value="In Review">In Review</option>
                         <option value="Revised">Revised</option>
@@ -174,6 +178,7 @@ const EditDocumentForm = ({ document }) => {
                         <option value="Published">Published</option>
                         <option value="Archived">Archived</option>
                         <option value="Checked Out">Checked Out</option>
+                        <option value="Checked In">Checked In</option>
                         <option value="On Hold">On Hold</option>
                     </select>
                 </div>

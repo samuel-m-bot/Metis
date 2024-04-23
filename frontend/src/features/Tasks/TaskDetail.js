@@ -83,7 +83,7 @@ const TaskDetails = () => {
         </Tab>
         )}
 
-        {task.taskType === "Create" && task.status !== 'Completed' (
+        {task.taskType === "Create" && task.status !== 'Completed' && (
           <Tab eventKey="create" title="Create Item">
             <div className="create-item">
               <h3>Create New Item</h3>

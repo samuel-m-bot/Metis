@@ -18,5 +18,6 @@ router.get('/status/:status', changeRequestController.listChangeRequestsByStatus
 router.get('/:id/assign', changeRequestController.assignChangeRequest); // Assign CR to a user
 router.get('/:id/approveReject', changeRequestController.approveRejectChangeRequest); // Approving or rejecting a CR
 router.get('/project/:projectId/:status', changeRequestController.getChangeRequestsByProjectAndStatus);
-router.get('/:type/:itemId', changeRequestController.getChangeRequestsByRelatedItem);
+// router.get('/:type/:itemId', changeRequestController.getChangeRequestsByRelatedItem);
+router.get('/main-item/:mainItemId', changeRequestController.getChangeRequestsByMainItem); // Get all change requests for a mainItem
 module.exports = router

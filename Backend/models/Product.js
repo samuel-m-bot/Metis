@@ -71,6 +71,11 @@ const productSchema = new Schema({
         enum: ['Confidential', 'Restricted', 'Public', 'Private'],
         required: true
     },
+    status: {
+        type: String,
+        enum: ['Draft', 'In Review', 'Revised', 'Published', 'Archived', 'Checked Out', 'Checked In'],
+        default: 'Draft'
+    },
 });
 
 module.exports = mongoose.model('Product', productSchema);

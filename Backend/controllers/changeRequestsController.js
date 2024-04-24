@@ -14,16 +14,28 @@ const getAllChangeRequests = asyncHandler(async (req, res) => {
     res.json(changeRequests)
 })
 
-// @desc Get specific changeRequests
-// @route GET /changeRequests
-// @access private
+// @desc Get specific change request by ID
+// @route GET /changeRequests/:id
+// @access Private
 const getChangeRequestById = asyncHandler(async (req, res) => {
-    const changeRequests = await ChangeRequest.findById(req.params.id).lean()
-    if(!changeRequests){
-        return res.status(400).json({ message: 'No changeRequest found with that ID'})
+    const changeRequestId = req.params.id; 
+    const changeRequest = await ChangeRequest.findById(changeRequestId)
+        .populate({
+            path: 'assignedTo',
+            select: 'firstName surname' 
+        })
+        .populate({
+            path: 'requestedBy',
+            select: 'firstName surname' 
+        })
+        .lean(); 
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'No change request found with that ID' });
     }
-    res.json(changeRequests)
-})
+
+    res.json(changeRequest);
+});
 
 /// @desc Create a new change request
 // @route POST /changeRequests
@@ -31,22 +43,31 @@ const getChangeRequestById = asyncHandler(async (req, res) => {
 const createNewChangeRequest = asyncHandler(async (req, res) => {
     const {
         requestedBy, projectId, title, description, status, priority, estimatedCompletionDate,
-        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts,
+        mainItem, onModel, changeType, riskAssessment, impactLevel
     } = req.body;
 
     // Validate required fields
-    if (!requestedBy || !projectId || !title ||  !description || !status || !priority) {
+    if (!requestedBy || !projectId || !title ||  !description || !status 
+        || !priority || !mainItem || !onModel || !changeType || !riskAssessment
+        || !impactLevel) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
     // Create new change request
     const changeRequest = new ChangeRequest({
         requestedBy, projectId, title,  description, status, priority, estimatedCompletionDate,
-        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+        assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts,
+        mainItem, onModel, changeType, riskAssessment, impactLevel
     });
 
     const createdChangeRequest = await changeRequest.save();
-    res.status(201).json(createdChangeRequest);
+
+    // Populate the 'assignedTo' field
+    const populatedChangeRequest = await ChangeRequest.findById(createdChangeRequest._id)
+        .populate('assignedTo', 'firstName surname'); // only populate firstName and surname
+
+    res.status(201).json(populatedChangeRequest);
 });
 
 
@@ -55,8 +76,10 @@ const createNewChangeRequest = asyncHandler(async (req, res) => {
 // @access private
 const updateChangeRequest = asyncHandler(async (req, res) => {
     const {
-        description, status, title, priority, estimatedCompletionDate, approvalDate, assignedTo, comments,
-        relatedDocuments, relatedDesigns, associatedTasks, relatedProducts
+        description, status, title, priority, estimatedCompletionDate, 
+        approvalDate, assignedTo, comments,relatedDocuments, 
+        relatedDesigns, associatedTasks, relatedProducts, mainItem, 
+        onModel, changeType, riskAssessment, impactLevel
     } = req.body;
     const changeRequestId = req.params.id;
 
@@ -77,6 +100,11 @@ const updateChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.relatedDesigns = relatedDesigns || changeRequest.relatedDesigns;
     changeRequest.associatedTasks = associatedTasks || changeRequest.associatedTasks;
     changeRequest.relatedProducts = relatedProducts || changeRequest.relatedProducts;
+    changeRequest.mainItem = mainItem || changeRequest.mainItem;
+    changeRequest.onModel = onModel || changeRequest.onModel;
+    changeRequest.changeType = changeType || changeRequest.changeType;
+    changeRequest.riskAssessment = riskAssessment || changeRequest.riskAssessment;
+    changeRequest.impactLevel = impactLevel || changeRequest.impactLevel;
 
     const updatedChangeRequest = await changeRequest.save();
     res.json(updatedChangeRequest);
@@ -93,12 +121,10 @@ const deleteChangeRequest = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'ChangeRequest not found' });
     }
 
-    const result = await changeRequest.deleteOne()
+    await ChangeRequest.findByIdAndDelete(req.params.id);
 
-    const reply = `ChangeRequest ${result.name} with ID ${result._id} deleted`
-
-    res.json(reply)
-})
+    res.status(200).json({ message: `Change request : ${changeRequest._id} deleted successfully` });
+});
 
 // @desc List change requests by status
 // @route GET /changeRequests/status/:status
@@ -245,133 +271,23 @@ const getChangeRequestsByRelatedItem = asyncHandler(async (req, res) => {
     res.json(changeRequests);
 });
 
-// @desc Submit a review for a change request
-// @route POST /changeRequests/:id/review
+// @desc Get change requests by main item ID
+// @route GET /change-requests/main-item/:mainItemId
 // @access Private
-const submitReview = asyncHandler(async (req, res) => {
-    const { id } = req.params;  // Change request ID
-    const { reviewData } = req.body;  // Review data from request body
+const getChangeRequestsByMainItem = asyncHandler(async (req, res) => {
+    const { mainItemId } = req.params;
 
-    const changeRequest = await ChangeRequest.findById(id);
-    let passedReview = false
-    if (!changeRequest) {
-        return res.status(404).json({ message: 'Change request not found' });
+    const changeRequests = await ChangeRequest.find({ mainItem: mainItemId })
+        .populate('requestedBy', 'firstName surname')
+        .populate('assignedTo', 'firstName surname');
+
+    if (!changeRequests.length) {
+        return res.status(404).json({ message: 'No change requests found for this main item' });
     }
 
-    // Construct the review object based on the schema
-    const newReview = {
-        reviewer: req.user._id,  
-        role: req.user.role, 
-        reviewDate: new Date(),  
-        feedback: reviewData.feedback,
-        decision: reviewData.decision
-    };
-
-    // Add the review to the change request's reviews array
-    changeRequest.reviews.push(newReview);
-
-    // Check if all reviews are positive and it's the last needed review
-    const allReviewsPositive = changeRequest.reviews.every(review => review.decision === 'Approved');
-    if (allReviewsPositive) {
-        changeRequest.status = 'Completed';
-        passedReview = true
-    }
-
-    await changeRequest.save();
-
-    // Create an activity log entry for the review
-    const reviewActivity = new Activity({
-        actionType: newReview.decision, 
-        description: `Review submitted for change request ${id} by ${req.user._id}. Decision: ${newReview.decision}. Status updated to ${changeRequest.status}.`,
-        createdBy: req.user._id,
-        relatedTo: id,
-        onModel: 'ChangeRequest',
-    });
-    await reviewActivity.save();
-
-    if(passedReview){
-        // Create an activity log entry for the review
-        const completeReviewActivity = new Activity({
-            actionType:'Completed', 
-            description: `Review completed and all approved for CR: ${id}  Status updated to ${changeRequest.status}.`,
-            createdBy: req.user._id,
-            relatedTo: id,
-            onModel: 'ChangeRequest',
-        });
-        await completeReviewActivity.save();
-    }
-
-    res.status(201).json({
-        message: 'Review submitted successfully',
-        review: newReview,
-        changeRequest,
-        activity: reviewActivity
-    });
+    res.json(changeRequests);
 });
 
-
-// @desc Send a change request out for review
-// @route PATCH /changeRequests/:id/sendForReview
-// @access Private
-const sendOutForReview = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Change request ID
-    const { reviewers } = req.body; // Array of reviewer IDs
-
-    const changeRequest = await ChangeRequest.findById(id).populate('projectId');
-
-    if (!changeRequest) {
-        return res.status(404).json({ message: 'Change request not found' });
-    }
-
-    // Update the change request's status to 'In Review'
-    changeRequest.status = 'In Review';
-    await changeRequest.save();
-
-    // Create tasks for each reviewer
-    const tasks = await Promise.all(reviewers.map(async (reviewerId) => {
-        const taskData = {
-            projectId: changeRequest.projectId._id,
-            name: 'Review Item',
-            description: 'Tasked to download item and either approve or reject this review',
-            status: 'In Progress',
-            priority: changeRequest.priority,
-            assignedTo: [reviewerId],
-            taskType: 'Review',
-            dueDate: changeRequest.estimatedCompletionDate,
-            relatedTo: 'ChangeRequest',
-        };
-
-        const newTask = new Task(taskData);
-        await newTask.save();
-
-        return newTask;
-    }));
-
-    // if (reviewers && reviewers.length > 0) {
-    //     reviewers.forEach(async (reviewerId) => {
-    //         const user = await User.findById(reviewerId);
-    //         if (user) {
-    //             sendNotification(user.email, `You have been selected to review the change request: ${changeRequest.title}. A review task has been created for you.`);
-    //         }
-    //     });
-    // }
-
-    // Log activity
-    const activity = new Activity({
-        actionType: 'Sent for Review',
-        description: `Change request ${id} sent out for review. Tasks created for reviewers.`,
-        createdBy: req.user._id,
-        relatedTo: id,
-        onModel: 'ChangeRequest',
-    });
-    await activity.save();
-
-    res.json({
-        message: 'Change request sent out for review, tasks created for all reviewers',
-        changeRequest,
-        tasks
-    });
-});
 
 
 module.exports = {
@@ -385,6 +301,5 @@ module.exports = {
     approveRejectChangeRequest,
     getChangeRequestsByProjectAndStatus,
     getChangeRequestsByRelatedItem,
-    submitReview,
-    sendOutForReview
+    getChangeRequestsByMainItem
 }

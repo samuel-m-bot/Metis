@@ -22,7 +22,7 @@ const changeRequestSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Requested', 'Reviewed', 'Approved', 'Implemented', 'Closed', 'Rejected']
+        enum: ['Requested', 'Revise' , 'Approved', 'Implemented', 'Rejected']
     },
     priority: {
         type: String,
@@ -74,7 +74,31 @@ const changeRequestSchema = new mongoose.Schema({
     reviews: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
-    }]
+    }],
+    mainItem: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: 'onModel'
+    },
+    onModel: {
+        type: String,
+        required: true,
+        enum: ['Document', 'Product', 'Design']
+    },
+    changeType: {
+        type: String,
+        required: true,
+        enum: ['Corrective', 'Preventive', 'Enhancement']
+    },
+    riskAssessment: {
+        type: String,
+        required: true
+    },
+    impactLevel: {
+        type: String,
+        enum: ['High', 'Medium', 'Low'],
+        required: true
+    }
 });
 
 module.exports = mongoose.model('ChangeRequest', changeRequestSchema);

@@ -1,11 +1,12 @@
 const Review = require('../models/Review');
-const Task = require('../models/Tasks')
+const Task = require('../models//Tasks')
 const asyncHandler = require('express-async-handler');
 
 const models = {
     Document: require('../models/Document'),
     Design: require('../models/Design'),
-    Product: require('../models/Product')
+    Product: require('../models/Product'),
+    ChangeRequest: require('../models/ChangeRequest')
 };
 // @desc Get all reviews
 // @route GET /reviews
@@ -18,14 +19,22 @@ const getAllReviews = asyncHandler(async (req, res) => {
     res.json(reviews);
 });
 
-// @desc Get specific review
+// @desc Get specific review by ID
 // @route GET /reviews/:id
 // @access Private
 const getReviewById = asyncHandler(async (req, res) => {
-    const review = await Review.findById(req.params.id);
+    const reviewId = req.params.id; 
+    const review = await Review.findById(reviewId)
+        .populate({
+            path: 'reviewers.userId', 
+            select: 'firstName surname' 
+        })
+        .lean(); 
+
     if (!review) {
         return res.status(404).json({ message: 'No review found with that ID' });
     }
+
     res.json(review);
 });
 
@@ -169,27 +178,55 @@ const reviewSubmission = asyncHandler(async (req, res) => {
         // Check if all reviewers have made a decision and update review status
         const allReviewed = review.reviewers.every(r => r.decision !== 'Pending');
         if (allReviewed) {
-            review.status = 'Completed'; 
-            
-            const Model = models[review.onModel]; // Dynamically select the model
-            if (Model) {
+            review.status = 'Completed';
+            await review.save();
+
+            const Model = models[review.onModel];
+
+            if (review.onModel === 'ChangeRequest') {
+                console.log("This is a change requets")
+                console.log(Model)
+                if (Model) {
+                    await Model.findByIdAndUpdate(review.itemReviewed, { status: 'Approved' });
+    
+                    // Retrieve the change request details
+                    const changeRequest = await Model.findById(review.itemReviewed);
+    
+                    console.log("Here")
+                    // Set up the update task
+                    const updateTask = new Task({
+                        projectId: changeRequest.projectId,
+                        name: 'Update main item in change request',
+                        description: 'Update the main item to match the changes described within the change request as well as any other related items.',
+                        status: 'In Progress',
+                        priority: changeRequest.priority,
+                        assignedTo: changeRequest.assignedTo,
+                        taskType: 'Update',
+                        relatedTo: changeRequest.onModel,
+                        dueDate: changeRequest.estimatedCompletionDate,
+                        assignedChangeRequest: changeRequest._id
+                    });
+    
+                    await updateTask.save();
+                    console.log("Saved update task")
+                }
+            } else if (Model) {
+                // For other models, just check them in
                 await Model.findByIdAndUpdate(review.itemReviewed, { status: 'Checked In' });
             }
-
-            await review.save();
-    
-            // Also, find and update the observer task to 'Completed'
+            // Update observer task to 'Completed'
             const observeTask = await Task.findOne({
                 'review': review._id, 
                 'taskType': 'Observe'
             });
-    
+
             if (observeTask) {
                 observeTask.status = 'Completed';
                 await observeTask.save();
             }
-    
-            res.json({review, observeTask: observeTask ? observeTask : 'No observe task found'});
+
+            res.json({ review, observeTask: observeTask ? observeTask : 'No observe task found' });
+
         } else {
             await review.save();
             res.json(review);

@@ -335,11 +335,14 @@ const getTasksByProjectId = asyncHandler(async (req, res) => {
 // @route POST /tasks/manage-review-tasks
 // @access Private
 const manageReviewTasks = asyncHandler(async (req, res) => {
-    const { reviewId, projectId, reviewers, taskDetails } = req.body;
+    const { reviewId, projectId, reviewers, taskDetails, isChangeRequest } = req.body;
 
+    const requestUserId = req.user._id; 
     try {
-        // Complete the existing "Set Up Review" task
-        await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
+        if (!isChangeRequest) {
+            // Mark the setup task as completed if it's not a change request
+            await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
+        }
 
         // Create tasks for each reviewer
         reviewers.forEach(async reviewer => {
@@ -358,14 +361,17 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             await newTask.save();
         });
 
-        // Create an observer task for the user who initiated the review
+        // Determine the observer based on whether it's a change request
+        const observerId = isChangeRequest ? requestUserId : taskDetails.assignedTo;
+
+        // Create an observer task
         const observeTask = new Task({
             projectId,
             name: 'Observe item review',
             description: 'Observe the review process.',
             status: 'In Progress',
             priority: taskDetails.priority,
-            assignedTo: taskDetails.assignedTo,
+            assignedTo: observerId,
             taskType: 'Observe',
             relatedTo: taskDetails.relatedTo,
             dueDate: taskDetails.dueDate,
@@ -376,6 +382,50 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
         res.status(200).json({ message: 'Tasks managed successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error managing review tasks', error: error.toString() });
+    }
+});
+
+// @desc Updates staus of create task as well as creating a set up review task
+// @route POST /tasks/complete-and-setup-review
+// @access Private
+const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
+    const { projectId, task, createdItemId } = req.body;
+
+    try {
+        // Update the existing task to 'Completed'
+        const updatedTask = await Task.findByIdAndUpdate(task.id, {
+            status: 'Completed',
+            // Dynamically assign the document, design, or product ID based on the type of item
+            [`assigned${task.relatedTo}`]: createdItemId
+        }, { new: true });
+
+        // Create a new task for setting up the review
+        const reviewTaskData = {
+            projectId: projectId,
+            name: `Set up review for newly created ${task.relatedTo.toLowerCase()}`,
+            description: `Choose from a list of users who will review the ${task.relatedTo.toLowerCase()}`,
+            status: 'In Progress',
+            priority: task.priority,
+            assignedTo: task.assignedTo,
+            taskType: 'Set up Review',
+            relatedTo: task.relatedTo,
+            dueDate: task.dueDate || undefined,
+            [`assigned${task.relatedTo}`]: createdItemId,
+        };
+
+        const newReviewTask = new Task(reviewTaskData);
+        await newReviewTask.save();
+
+        res.status(201).json({
+            message: 'Task completed and review setup task created successfully',
+            updatedTask,
+            newReviewTask
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Failed to complete task and setup review',
+            error: error.message
+        });
     }
 });
 
@@ -393,5 +443,6 @@ module.exports = {
     editTaskComment,
     filterTasks,
     getTasksByProjectId,
-    manageReviewTasks
+    manageReviewTasks,
+    completeTaskAndSetupReview
 };

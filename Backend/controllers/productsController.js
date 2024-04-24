@@ -30,11 +30,11 @@ const getProductById = asyncHandler(async (req, res) => {
 const createNewProduct = asyncHandler(async (req, res) => {
     const {
         projectId, name, description, category, lifecycleStatus, type,
-        revisionNumber, physicalAttributes, digitalAttributes, classification
+        revisionNumber, physicalAttributes, digitalAttributes, classification, status
     } = req.body
 
     // Confirm mandatory data is provided
-    if (!projectId ||!name || !description || !category || !lifecycleStatus || !type || !revisionNumber || !classification) {
+    if (!projectId ||!name || !description || !category || !lifecycleStatus || !type || !revisionNumber || !classification || !status) {
         return res.status(400).json({ message: 'All required fields are not provided' })
     }
 
@@ -47,14 +47,14 @@ const createNewProduct = asyncHandler(async (req, res) => {
     // Create new product object
     const productObject = {
         projectId, name, description, category, lifecycleStatus, type,
-        revisionNumber, physicalAttributes, digitalAttributes, classification
+        revisionNumber, physicalAttributes, digitalAttributes, classification, status
     }
 
     // Create and store new product
     const product = await Product.create(productObject)
 
     if (product) {
-        res.status(201).json({ message: `New product ${name} created` })
+        res.status(201).json(product);
     } else {
         res.status(400).json({ message: 'Invalid product data received' })
     }
@@ -88,6 +88,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.physicalAttributes = req.body.physicalAttributes || product.physicalAttributes
     product.digitalAttributes = req.body.digitalAttributes || product.digitalAttributes
     product.classification = req.body.classification || product.classification
+    product.status = req.body.status || product.status
 
     // Handle updates to related entities if provided
     if (req.body.documents) {

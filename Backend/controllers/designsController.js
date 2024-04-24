@@ -85,7 +85,6 @@ const updateDesign = asyncHandler(async (req, res) => {
     design.description = req.body.description || design.description;
     design.type = req.body.type || design.type;
     design.revisionNumber = req.body.revisionNumber || design.revisionNumber;
-    design.version = req.body.version || design.version;
     design.status = req.body.status || design.status;
     design.comments = req.body.comments || design.comments;
     design.designers = req.body.designers || design.designers;

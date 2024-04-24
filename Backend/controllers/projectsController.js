@@ -349,6 +349,24 @@ const getReviewers = asyncHandler(async (req, res) => {
     // Map through the filtered reviewers to return only their user details
     res.json(reviewers.map(({ userId }) => userId));
 });
+// @desc Get project manager's ID by ID
+// @route GET /projects/:id/manager
+// @access Private
+const getProjectManagerById = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const project = await Project.findById(id).select('projectManagerID').lean();
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        res.json({ projectManagerID: project.projectManagerID });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.toString() });
+    }
+});
+
 
 //GenerateProjectReport (complex endpoint tba)
 
@@ -368,5 +386,6 @@ module.exports = {
     listProjectChangeRequests,
     updateProjectStatus,
     archiveProject,
-    getReviewers
+    getReviewers,
+    getProjectManagerById
 }

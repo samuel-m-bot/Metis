@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
+const verifyJWT = require('../middleware/verifyJWT')
 
+router.use(verifyJWT)
 // Routes for managing tasks
 router.route('/')
     .get(taskController.getAllTasks) // Get all tasks
@@ -30,4 +32,5 @@ router.post('/filter', taskController.filterTasks);
 
 router.get('/project/:projectId', taskController.getTasksByProjectId);
 router.post('/manage-review-tasks', taskController.manageReviewTasks);
+router.post('/complete-and-setup-review', taskController.completeTaskAndSetupReview);
 module.exports = router;

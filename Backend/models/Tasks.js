@@ -92,7 +92,7 @@ const taskSchema = new mongoose.Schema({
     },
     relatedTo: {
         type: String,
-        enum: ['Design', 'Document', 'Product', 'Project'],
+        enum: ['Design', 'Document', 'Product', 'Project', 'ChangeRequest'],
         required: true
     },
     assignedDesign: {
@@ -110,6 +110,10 @@ const taskSchema = new mongoose.Schema({
     review: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
+    },
+    assignedChangeRequest: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ChangeRequest'
     },
     subtasks: [subtaskSchema],
     checklist: [checklistItemSchema],

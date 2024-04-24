@@ -98,10 +98,13 @@ const EditDesignForm = ({ design }) => {
                 </div>
                 <div className="mb-3">
                     {console.log(design)}
-                    <label htmlFor="productId" className="form-label">Product:</label>
-                    <select 
+                    <label htmlFor="productID" className="form-label">Product:</label>
+                    {isProductsError ?
+                        <p>No available products to select</p> :
+                        
+                        <select 
                         className="form-select" 
-                        id="productId" 
+                        id="productID" 
                         value={productID} 
                         onChange={e => setProductID(e.target.value)} 
                         required
@@ -111,6 +114,7 @@ const EditDesignForm = ({ design }) => {
                             <option key={id} value={id}>{products.entities[id].name}</option>
                         ))}
                     </select>
+                    }
                 </div>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">Design Name:</label>

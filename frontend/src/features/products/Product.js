@@ -1,7 +1,9 @@
-import React from 'react';
 import Item from '../items/Item';
+import { useLocation } from 'react-router-dom';
 
 const Product = () => {
+  const location = useLocation();
+  const itemData = location.state?.itemData;
   
   const completedChangeRequests = [
     { id: 'CR001', title: 'Initial Creation', dateCompleted: '2022-01-10', status: 'Completed' },
@@ -54,35 +56,35 @@ const Product = () => {
     },
   ];
 
-  const productData = {
-    id: 4,
-    projectId: "6621cb51b0e4321947c1b560",  // Example Project ObjectId
-    name: "New Software Tool",
-    description: "A new tool designed to improve workflow efficiency by automating repetitive tasks.",
-    category: "Productivity Software",
-    lifecycleStatus: "Development",
-    version: "1.0",
-    partNumber: "PN7890",
-    createdAt: new Date("2023-03-05T00:00:00Z"),
-    updatedAt: new Date("2023-03-12T00:00:00Z"),
-    documents: [],  // Array of ObjectIds linking to related documents
-    type: "Software",
-    digitalAttributes: {
-        softwareType: "Desktop",
-        version: "1.0",
-    },
-    physicalAttributes: {
-        material: null, // Not applicable for software
-        color: null,
-        dimensions: null,
-    }
-};
+//   const productData = {
+//     id: 4,
+//     projectId: "6621cb51b0e4321947c1b560",  // Example Project ObjectId
+//     name: "New Software Tool",
+//     description: "A new tool designed to improve workflow efficiency by automating repetitive tasks.",
+//     category: "Productivity Software",
+//     lifecycleStatus: "Development",
+//     version: "1.0",
+//     partNumber: "PN7890",
+//     createdAt: new Date("2023-03-05T00:00:00Z"),
+//     updatedAt: new Date("2023-03-12T00:00:00Z"),
+//     products: [],  // Array of ObjectIds linking to related products
+//     type: "Software",
+//     digitalAttributes: {
+//         softwareType: "Desktop",
+//         version: "1.0",
+//     },
+//     physicalAttributes: {
+//         material: null, // Not applicable for software
+//         color: null,
+//         dimensions: null,
+//     }
+// };
   
   return (
     <>
       <Item 
         taskType="Product" 
-        itemData={productData} 
+        itemData={itemData} 
         changeRequests={changeRequests} 
         completedChangeRequests={completedChangeRequests}
       />

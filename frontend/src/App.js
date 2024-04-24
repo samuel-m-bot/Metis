@@ -48,6 +48,7 @@ import UserTaskPage from './features/Tasks/UserTaskPage.js'
 import ReviewsList from './features/reviews/ReviewsList.js'
 import ReviewSuccessPage from './features/reviews/ReviewSuccessPage.js'
 import EditReview from './features/reviews/EditReview.js'
+import ChangeRequestPage from './features/changes/ChangeRequestPage.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -130,7 +131,7 @@ function App() {
               <Route path="tasks/:taskId" element={<TaskDetails />} />
               <Route path="/review-success" element={<ReviewSuccessPage />} />
               <Route path="documents/:documentId" element={<Documents />} />
-              <Route path="change-requests/:changeRequestID" element={<ChangeRequestTabs />} />
+              <Route path="change-requests/:changeRequestID" element={<ChangeRequestPage />} />
               <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
               <Route path="products" element={<ProductList />} />
               <Route path="products/:productId" element={<Product />} />

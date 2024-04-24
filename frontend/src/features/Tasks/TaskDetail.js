@@ -6,6 +6,8 @@ import CreationModal from '../../components/CreationModal';
 import { useGetTaskByIdQuery } from './tasksApiSlice';
 import ReviewerSelectionModal from '../../components/ReviewerSelectionModal';
 import ReviewTab from '../reviews/ReviewTab';
+import ObserveTab from '../reviews/ObserveTab';
+import UpdateTaskTab from '../../components/UpdateTaskTab';
 
 const TaskDetails = () => {
   const { taskId } = useParams();
@@ -65,22 +67,42 @@ const TaskDetails = () => {
       <h2>Task Details</h2>
       <Tabs id="task-tabs" activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="details" title="Details">
-          <div className="task-details">
-            <h3>Task Information</h3>
-            <div><strong>Task ID:</strong> <span>{task._id}</span></div>
-            <div><strong>Title:</strong> <span>{task.name}</span></div>
-            <div><strong>Description:</strong> <p>{task.description}</p></div>
-            <div><strong>Assigned To:</strong> <span>{task.assignedTo.map(user => user.firstName).join(", ")}</span></div>
-            <div><strong>Status:</strong> <span>{task.status}</span></div>
-            <div><strong>Creation Date:</strong> <span>{new Date(task.creationDate).toLocaleDateString()}</span></div>
-            <div><strong>Due Date:</strong> <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</span></div>
-          </div>
+            <div className="task-details mt-3">
+                <div className="card">
+                    <div className="card-header">
+                        Task Information
+                    </div>
+                    <div className="card-body">
+                        <h5 className="card-title">Name: {task.name}</h5>
+                        <p className="card-text">{task.description}</p>
+                        <ul className="list-group list-group-flush">
+                            <li className="list-group-item"><strong>Task ID:</strong> {task._id}</li>
+                            <li className="list-group-item"><strong>Assigned To:</strong> {task.assignedTo.map(user => `${user.firstName} ${user.surname}`).join(", ")}</li>
+                            <li className="list-group-item"><strong>Status:</strong> {task.status}</li>
+                            <li className="list-group-item"><strong>Creation Date:</strong> {new Date(task.creationDate).toLocaleDateString()}</li>
+                            <li className="list-group-item"><strong>Due Date:</strong> {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </Tab>
 
         {task.taskType === "Review" && task.status !== 'Completed' && (
         <Tab eventKey="review" title="Review Request">
           <ReviewTab task={task} />
         </Tab>
+        )}
+
+        {task.taskType === "Update" && task.status !== 'Completed' && (
+          <Tab eventKey="update" title="Update Task">
+            <UpdateTaskTab task={task} />
+          </Tab>
+        )}
+
+        {task.taskType === "Observe" && task.status !== 'Completed' && (
+          <Tab eventKey="Observe" title="Observe Request">
+            <ObserveTab task={task} />
+          </Tab>
         )}
 
         {task.taskType === "Create" && task.status !== 'Completed' && (
@@ -110,6 +132,7 @@ const TaskDetails = () => {
                 <li>Click on 'Select Reviewers' to choose the individuals responsible for the review.</li>
                 <li>Confirm the selection to initiate the review process.</li>
               </ol>
+              {console.log(task)}
               {renderItemDetails()}
               <button className="btn btn-primary" onClick={handleOpenModal}>Select Reviewers</button>
               <ReviewerSelectionModal show={showModal} handleClose={handleCloseModal} task={task} />

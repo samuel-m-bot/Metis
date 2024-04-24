@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateChangeRequestMutation } from './changeRequestsApiSlice';
+import { useUpdateChangeRequestMutation, useDeleteChangeRequestMutation } from './changeRequestsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { useGetProjectsQuery } from '../projects/projectsApiSlice';
 import { useGetDocumentsQuery } from '../documents/documentsApiSlice';
 import { useGetDesignsQuery } from '../designs/designsApiSlice';
 import { useGetProductsQuery } from '../products/productsApiSlice';
 import useAuth from '../../hooks/useAuth';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 const EditChangeRequestForm = ({ changeRequest }) => {
     const navigate = useNavigate();
     const [updateChangeRequest, { isLoading }] = useUpdateChangeRequestMutation();
+    const [deleteChangeRequest] = useDeleteChangeRequestMutation();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError  } = useGetUsersQuery();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
     const { data: documents, isFetching: isFetchingDocuments, isError: isDocumentsError } = useGetDocumentsQuery();
@@ -68,6 +71,11 @@ const EditChangeRequestForm = ({ changeRequest }) => {
         } catch (error) {
             console.error('Failed to update changeRequest:', error);
         }
+    };
+
+    const onDeleteChangeRequestClicked = async () => {
+        await deleteChangeRequest({ id: changeRequest.id });
+        navigate('/admin-dashboard/change-requests');
     };
 
     if (isFetchingUsers || isFetchingProjects ) return <p>Loading...</p>;
@@ -209,6 +217,9 @@ const EditChangeRequestForm = ({ changeRequest }) => {
                 <button type="button" className="btn btn-primary" onClick={onSaveChangeRequestClicked} disabled={isLoading}>
                     Save Change Request
                 </button>
+                <button type="button" className="btn btn-danger" onClick={onDeleteChangeRequestClicked}>
+                        <FontAwesomeIcon icon={faTrashCan} /> Delete
+                    </button>
             </form>
         </div>
     );

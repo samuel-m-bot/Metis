@@ -133,6 +133,16 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
                 { type: 'Task', id: "LIST" },
                 { type: 'Review', id: "LIST" }
             ]
+        }),
+        completeTaskAndSetupReview: builder.mutation({
+            query: taskSetupData => ({
+                url: '/tasks/complete-and-setup-review',
+                method: 'POST',
+                body: taskSetupData
+            }),
+            invalidatesTags: [
+                { type: 'Task', id: "LIST" }
+            ]
         }),    
     }),
 })
@@ -146,7 +156,8 @@ export const {
     useFilterTasksByStatusMutation,
     useGetTasksByProjectIdQuery,
     useGetUserTasksQuery,
-    useManageReviewTasksMutation
+    useManageReviewTasksMutation,
+    useCompleteTaskAndSetupReviewMutation
 } = tasksApiSlice
 
 // returns the query result object

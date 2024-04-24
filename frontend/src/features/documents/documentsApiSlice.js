@@ -138,6 +138,7 @@ export const {
     useDownloadDocumentQuery,
     useLazyDownloadDocumentQuery,
     useGetDocumentsByProjectIdQuery,
+    useLazyGetDocumentsByProjectIdQuery,
     useLazyGetDocumentsQuery
 } = documentsApiSlice
 

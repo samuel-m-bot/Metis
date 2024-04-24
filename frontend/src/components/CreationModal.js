@@ -8,9 +8,9 @@ const CreationModal = ({ show, taskType, closeModal, projectId, task }) => {
     const renderForm = () => {
         switch (taskType) {
             case 'Product':
-                return <NewProductForm />;
+                return <NewProductForm projectId={projectId} task={task} closeModal={closeModal}/>;
             case 'Design':
-                return <NewDesignForm />;
+                return <NewDesignForm projectId={projectId} task={task} closeModal={closeModal}/>;
             case 'Document':
                 console.log(projectId)
                 return <NewDocumentForm projectId={projectId} task={task} closeModal={closeModal}/>;

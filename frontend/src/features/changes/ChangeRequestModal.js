@@ -1,147 +1,45 @@
-// ChangeRequestModal.js
-import React, { useState } from 'react';
-import { Button, Modal, Form } from 'react-bootstrap';
+import { useState } from 'react';
+import { Modal } from 'react-bootstrap';
+import NewChangeRequestForm from './NewChangeRequestForm';
+import ReviewerSelectionModal from '../../components/ReviewerSelectionModal';
 
-const ChangeRequestModal = ({ show, handleClose }) => {
+const ChangeRequestModal = ({ show, handleClose, projectId, mainItemId, itemType }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [changeRequestData, setChangeRequestData] = useState({
-    title: '',
-    description: '',
-    priority: '',
-    estimatedCompletionDate: '',
-    relatedItems: [] 
-  });
+  const [createdChangeRequest, setCreatedChangeRequest] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setChangeRequestData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-
-  const handleDownload = () => {
-    console.log("Downloading affected item...");
-  };
-  
-  const handleNext = () => {
-    setCurrentStep(currentStep + 1);
-  };
-
-  const handleBack = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  const handleRelatedItemChange = (e) => {
-    const { value, checked } = e.target;
-    setChangeRequestData(prevData => ({
-      ...prevData,
-      relatedItems: checked 
-        ? [...prevData.relatedItems, value]
-        : prevData.relatedItems.filter(item => item !== value)
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(changeRequestData);
-    handleClose();
+  const handleCreateSuccess = (changeRequest) => {
+    setCreatedChangeRequest(changeRequest);
+    setCurrentStep(2); // Move to reviewer selection step after successful creation
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={() => {
+      handleClose();
+      setCurrentStep(1);
+      setCreatedChangeRequest(null);
+    }} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Make a Change Request</Modal.Title>
+        <Modal.Title>{currentStep === 1 ? 'Make a Change Request' : 'Select Reviewers'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {currentStep === 1 && (
-          <Form>
-            <Form.Group className="mb-3">
-            <Form.Label>Title</Form.Label>
-            <Form.Control
-              type="text"
-              name="title"
-              value={changeRequestData.title}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          
-          {/* Description */}
-          <Form.Group className="mb-3">
-            <Form.Label>Description</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="description"
-              value={changeRequestData.description}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-          
-          {/* Priority */}
-          <Form.Group className="mb-3">
-            <Form.Label>Priority</Form.Label>
-            <Form.Select
-              name="priority"
-              value={changeRequestData.priority}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Priority</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </Form.Select>
-          </Form.Group>
-          
-          {/* Affected Item */}
-          <Form.Group className="mb-3">
-            <Form.Label>Affected Item</Form.Label>
-            <div className="d-flex align-items-center">
-              <span className="me-2">sample.pdf</span>
-              <Button variant="outline-primary" size="sm" onClick={handleDownload}>Download</Button>
-            </div>
-          </Form.Group>
-          
-          <Form.Group className="mb-3">
-            <Form.Label>Estimated Completion Date</Form.Label>
-            <Form.Control
-              type="date"
-              name="estimatedCompletionDate"
-              value={changeRequestData.estimatedCompletionDate}
-              onChange={handleChange}
-              required
-            />
-          </Form.Group>
-            <Button variant="secondary" onClick={handleNext}>Next</Button>
-          </Form>
-        )}
-
-        {currentStep === 2 && (
-          <Form onSubmit={handleSubmit}>
-            <h5>Specify Related Items</h5>
-            <Form.Check 
-              type="checkbox" 
-              label="Item 1" 
-              name="relatedItems" 
-              value="Item1"
-              onChange={handleRelatedItemChange} 
-            />
-            <Form.Check 
-              type="checkbox" 
-              label="Item 2" 
-              name="relatedItems" 
-              value="Item2"
-              onChange={handleRelatedItemChange} 
-            />
-            
-            <div className="mt-3">
-              <Button variant="secondary" onClick={handleBack} className="me-2">Back</Button>
-              <Button variant="primary" type="submit">Submit Request</Button>
-            </div>
-          </Form>
+        {currentStep === 1 ? (
+          <NewChangeRequestForm
+            projectId={projectId}
+            mainItemId={mainItemId}
+            itemType={itemType}
+            closeModal={handleClose}
+            onSuccess={handleCreateSuccess}
+          />
+        ) : (
+          <ReviewerSelectionModal
+            show={currentStep === 2}
+            handleClose={() => {
+              handleClose();
+              setCurrentStep(1);
+            }}
+            changeRequestData={createdChangeRequest}
+            isChangeRequest={true}
+          />
         )}
       </Modal.Body>
     </Modal>

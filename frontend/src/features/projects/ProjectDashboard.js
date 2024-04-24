@@ -40,8 +40,8 @@ const ProjectDashboard = () => {
       setShowTaskModal(false);
   };
   const handleViewDocument = (documentId) => {
-    const documentData = documents.entities[documentId];  
-    navigate(`/documents/${documentId}`, { state: { documentData } });
+    const itemData = documents.entities[documentId];  
+    navigate(`/documents/${documentId}`, { state: { itemData } });
   };
   
 

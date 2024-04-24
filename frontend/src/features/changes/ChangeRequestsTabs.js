@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
 import './ChangeRequest.css'
 
-const ChangeRequestTabs = () => {
+const ChangeRequestTabs = ({changeRequestData}) => {
   const [key, setKey] = useState('details');
 
+  console.log(changeRequestData)
   const changeRequests = [
     {
       id: 'CR001',
@@ -38,42 +39,48 @@ const ChangeRequestTabs = () => {
         onSelect={(k) => setKey(k)}
         className="mb-3"
       >
-        <Tab disabled eventKey="Title" title={<span style={{ color: '#287379', fontWeight: 'bold', fontSize: 'x-large' }}>CR001 - CWF</span>}></Tab>
+        <Tab disabled eventKey="Title" title={<span style={{ color: '#287379', fontWeight: 'bold', fontSize: 'x-large' }}>CR - {changeRequestData.title}</span>}></Tab>
         <Tab eventKey="details" title="Details">
           <div className="change-request-details">
-            <div className="general-information">
-              <h3>General Information</h3>
-              <p><strong>ID:</strong> CR001</p>
-              <p><strong>Title:</strong> Implement New Compliance Standards</p>
-              <p><strong>Item Affected:</strong> Safety Protocols (Design)</p>
-              <p><strong>Status:</strong> Pending Approval</p>
-              <p><strong>Request Date:</strong> 2022-09-15</p>
-              <p><strong>Requested By:</strong> Jane Doe</p>
-            </div>
+              <div className="general-information">
+                  <h3>General Information</h3>
+                  <p><strong>ID:</strong> {changeRequestData._id}</p>
+                  <p><strong>Title:</strong> {changeRequestData.title}</p>
+                  <p><strong>Item Affected:</strong> {changeRequestData.onModel} (ID: {changeRequestData.mainItem})</p>
+                  <p><strong>Status:</strong> {changeRequestData.status}</p>
+                  <p><strong>Request Date:</strong> {new Date(changeRequestData.dateRequested).toLocaleDateString()}</p>
+                  <p><strong>Requested By:</strong> {changeRequestData.requestedBy.firstName} {changeRequestData.requestedBy.surname}</p>
+                  <p><strong>Assigned To:</strong> {changeRequestData.assignedTo ? `${changeRequestData.assignedTo.firstName} ${changeRequestData.assignedTo.surname}` : 'Unassigned'}</p>
+                  <p><strong>Priority:</strong> {changeRequestData.priority}</p>
+                  <p><strong>Estimated Completion Date:</strong> {new Date(changeRequestData.estimatedCompletionDate).toLocaleDateString()}</p>
+              </div>
 
-            <div className="rationale">
-              <h3>Rationale for Change</h3>
-              <p>The change is necessitated by updated compliance standards affecting our main product line. Adherence to these standards ensures continued market competitiveness.</p>
-            </div>
+              <div className="rationale">
+                  <h3>Rationale for Change</h3>
+                  <p>{changeRequestData.description}</p>
+              </div>
 
-            <div className="impact-analysis">
-              <h3>Impact Analysis</h3>
-              <p>The change will have the following impacts:</p>
-              <ul>
-                <li>Product Design: Requires redesign of core components.</li>
-                <li>Manufacturing: Adjustments to the manufacturing process.</li>
-                <li>Estimated Costs: Expected to increase project budget by 10%.</li>
-              </ul>
-            </div>
+              <div className="impact-analysis">
+                  <h3>Impact Analysis</h3>
+                  <p><strong>Risk Assessment:</strong> {changeRequestData.riskAssessment}</p>
+                  <p><strong>Impact Level:</strong> {changeRequestData.impactLevel}</p>
+              </div>
 
-            <div className="approvals">
-              <h3>Approvals</h3>
-              <p><strong>Design Lead:</strong> Pending</p>
-              <p><strong>Production Manager:</strong> Approved</p>
-              <p><strong>Finance Department:</strong> Reviewing</p>
-            </div>
+              <div className="change-type">
+                  <h3>Change Type</h3>
+                  <p>{changeRequestData.changeType}</p>
+              </div>
+
+              <div className="approvals">
+                  <h3>Approvals</h3>
+                  {/* Dynamic rendering based on approval status, dummy values used here */}
+                  <p><strong>Design Lead:</strong> Pending</p>
+                  <p><strong>Production Manager:</strong> Approved</p>
+                  <p><strong>Finance Department:</strong> Reviewing</p>
+              </div>
           </div>
-        </Tab>
+      </Tab>
+
 
         <Tab eventKey="impactAnalysis" title="Impact Analysis">
         </Tab>

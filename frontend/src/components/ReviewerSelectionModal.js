@@ -4,11 +4,10 @@ import { useGetProjectReviewersQuery } from '../features/projects/projectsApiSli
 import { useAddNewReviewMutation } from '../features/reviews/reviewsApiSlice';
 import { useManageReviewTasksMutation } from '../features/Tasks/tasksApiSlice'; // Import the mutation
 
-const ReviewerSelectionModal = ({ show, handleClose, task }) => {
-  const projectId = task.projectId;
-  const { data: reviewers, isLoading, isError, error } = useGetProjectReviewersQuery(projectId._id);
+const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, isChangeRequest = false }) => {
+  const { data: reviewers, isLoading, isError, error } = useGetProjectReviewersQuery(changeRequestData?.projectId || task?.projectId);
   const [addNewReview , {isLoading: isLoadingR}]  = useAddNewReviewMutation();
-  const [manageReviewTasks, { isLoading: isLoadingManageTasks }] = useManageReviewTasksMutation(); // Use the mutation
+  const [manageReviewTasks, { isLoading: isLoadingManageTasks }] = useManageReviewTasksMutation();
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const handleCheckboxChange = (userId) => {
@@ -32,22 +31,22 @@ const ReviewerSelectionModal = ({ show, handleClose, task }) => {
 
     // Determine which item ID to use based on what the task is related to
     const getItemReviewedId = () => {
-      switch (task.relatedTo) {
-        case 'Document':
-          return task.assignedDocument;
-        case 'Design':
-          return task.assignedDesign;
-        case 'Product':
-          return task.assignedProduct;
-        default:
-          return null;
+        switch (task.relatedTo) {
+          case 'Document':
+            return task.assignedDocument;
+          case 'Design':
+            return task.assignedDesign;
+          case 'Product':
+            return task.assignedProduct;
+          default:
+            return null;
+        }
       }
-    };
-
+  
     const reviewData = {
-      itemReviewed: getItemReviewedId(),
-      onModel: task.relatedTo,
-      reviewers
+      itemReviewed: isChangeRequest ? changeRequestData._id : getItemReviewedId(),
+      onModel: isChangeRequest ? 'ChangeRequest' : task.relatedTo,
+      reviewers,
     };
 
     try {
@@ -55,20 +54,20 @@ const ReviewerSelectionModal = ({ show, handleClose, task }) => {
       console.log('Review created:', newReview);
 
       const taskData = {
-        projectId: task.projectId._id,
+        projectId: changeRequestData?.projectId || task.projectId,
         reviewId: newReview._id,
         reviewers,
         taskDetails: {
-          id: task.id,
-          relatedTo: task.relatedTo,
-          priority: task.priority,
-          dueDate: task.dueDate,
-          assignedTo: task.assignedTo,
-        }
+          id: isChangeRequest ? undefined : task.id,
+          relatedTo: isChangeRequest ? 'ChangeRequest' : task.relatedTo,
+          priority: changeRequestData?.priority || task.priority,
+          dueDate: changeRequestData?.estimatedCompletionDate || task.dueDate,
+          assignedTo: changeRequestData?.assignedTo || task.assignedTo,
+        },
+        isChangeRequest
       };
 
       await manageReviewTasks(taskData).unwrap();
-
       handleClose(); // Close the modal on successful creation
     } catch (error) {
       console.error('Error creating review and managing tasks:', error);

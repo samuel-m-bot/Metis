@@ -33,6 +33,17 @@ export const changeRequestsApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'ChangeRequest', id: 'LIST' }]
             }
         }),
+        getChangeRequestById: builder.query({
+            query: (id) => ({
+                url: `/changeRequests/${id}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const changeRequest = { ...responseData, id: responseData._id };
+                return changeRequest;
+            },
+            providesTags: (result, error, arg) => [{ type: 'ChangeRequest', id: result.id }]
+        }),
         addNewChangeRequest: builder.mutation({
             query: initialChangeRequestData => ({
                 url: '/changeRequests',
@@ -74,17 +85,25 @@ export const changeRequestsApiSlice = apiSlice.injectEndpoints({
             query: ({ type, itemId }) => `/changeRequests/${type}/${itemId}`,
             providesTags: (result, error, arg) => [{ type: 'ChangeRequest', id: 'LIST' }]
         }),
+        getChangeRequestsByMainItem: builder.query({
+            query: (mainItemId) => `/changeRequests/main-item/${mainItemId}`,
+            providesTags: (result, error, mainItemId) => [{ type: 'ChangeRequest', mainItemId: mainItemId }],
+        }),
     }),
 })
 
 export const {
     useGetChangeRequestsQuery,
+    useGetChangeRequestByIdQuery,
+    useLazyGetChangeRequestByIdQuery,
     useAddNewChangeRequestMutation,
     useUpdateChangeRequestMutation,
     useDeleteChangeRequestMutation,
     useLazyGetChangeRequestsQuery,
     useGetChangeRequestsByProjectAndStatusQuery,
-    useGetChangeRequestsByRelatedItemQuery
+    useGetChangeRequestsByRelatedItemQuery,
+    useGetChangeRequestsByMainItemQuery,
+    useLazyGetChangeRequestsByMainItemQuery
 } = changeRequestsApiSlice
 
 // returns the query result object

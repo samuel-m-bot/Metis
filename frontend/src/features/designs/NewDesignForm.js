@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAddNewDesignMutation } from './designsApiSlice';
 import { useGetProductsQuery } from '../products/productsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
+import { useCompleteTaskAndSetupReviewMutation } from '../Tasks/tasksApiSlice';
+import useAuth from '../../hooks/useAuth';
 
-const NewDesignForm = () => {
+const NewDesignForm = ({ projectId: initialProjectId, task, closeModal }) => {
     const navigate = useNavigate();
+    const { isAdmin } = useAuth();
     const [addNewDesign, { isLoading }] = useAddNewDesignMutation();
+    const [completeTaskAndSetupReview, { isLoading: isTaskLoading }] = useCompleteTaskAndSetupReviewMutation();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
@@ -19,11 +23,16 @@ const NewDesignForm = () => {
     const [type, setType] = useState('');
     const [revisionNumber, setRevisionNumber] = useState('');
     const [revisionError, setRevisionError] = useState('');
-    const [version, setVersion] = useState('');
-    const [status, setStatus] = useState('Draft');
+    const [status, setStatus] = useState('');
     const [designers, setDesigners] = useState('');
     const [file, setFile] = useState(null);
     const [classification, setClassification] = useState('');
+
+    useEffect(() => {
+        if (initialProjectId) {
+            setProjectId(initialProjectId);
+        }
+    }, [initialProjectId]);
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -40,15 +49,30 @@ const NewDesignForm = () => {
         formData.append('description', description);
         formData.append('type', type);
         formData.append('revisionNumber', revisionNumber);
-        formData.append('version', version);
         formData.append('status', status);
         formData.append('designers', designers);
         formData.append('designImage', file);
         formData.append('classification', classification);
 
         try {
-            await addNewDesign({formData}).unwrap();
-            navigate('/admin-dashboard/designs');
+            const createdDesign = await addNewDesign({formData}).unwrap();
+
+            if (task) {
+                const reviewSetupData = {
+                    projectId: projectId,
+                    task,
+                    createdItemId: createdDesign._id
+                };
+                await completeTaskAndSetupReview(reviewSetupData).unwrap();
+                console.log('Task completed and review setup task created successfully');
+            }
+            closeModal(); 
+
+            if(isAdmin) {
+                navigate('/admin-dashboard/designs');
+            } else {
+                navigate('/home');
+            }
         } catch (error) {
             console.error('Failed to create design:', error);
         }
@@ -65,30 +89,48 @@ const NewDesignForm = () => {
     };
     
     if (isFetchingUsers || isFetchingProducts) return <p>Loading...</p>;
-    if (isUsersError || isProductsError) return <p>Error loading data.</p>;
+    if (isUsersError) return <p>Error loading data.</p>;
     return (
         <div className="container mt-3">
             <h1>Create New Design</h1>
             <form onSubmit={handleSubmit} encType="multipart/form-data">
-            <div className="mb-3">
-                    <label htmlFor="projectId" className="form-label">Project:</label>
-                    <select
-                        className="form-select"
-                        id="projectId"
-                        value={projectId}
-                        onChange={e => setProjectId(e.target.value)}
-                    >
-                        <option value="">Select a project</option>
-                        {projects?.ids.map(id => (
-                            <option key={id} value={id}>
-                                {projects.entities[id].name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {isAdmin && (
+                    <div className="mb-3">
+                        <label htmlFor="projectId" className="form-label">Project:</label>
+                        <select
+                            className="form-select"
+                            id="projectId"
+                            value={projectId}
+                            onChange={e => setProjectId(e.target.value)}
+                            required={!initialProjectId}
+                        >
+                            <option value="">Select a project</option>
+                            {projects?.map(project => (
+                                <option key={project._id} value={project._id}>
+                                    {project.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                {!isAdmin && initialProjectId && (
+                    <div className="mb-3">
+                        <label htmlFor="projectName" className="form-label">Project:</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="projectName"
+                            value={projects.entities[projectId]?.name || ''}
+                            readOnly
+                        />
+                    </div>
+                )}
                 <div className="mb-3">
                     <label htmlFor="productId" className="form-label">Product:</label>
-                    <select 
+                    {isProductsError ?
+                        <p>No available products to select</p> :
+
+                        <select 
                         className="form-select" 
                         id="productId" 
                         value={productId} 
@@ -100,6 +142,7 @@ const NewDesignForm = () => {
                             <option key={id} value={id}>{products.entities[id].name}</option>
                         ))}
                     </select>
+                    }
                 </div>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name:</label>
@@ -138,14 +181,11 @@ const NewDesignForm = () => {
                 <div className="mb-3">
                     <label htmlFor="status" className="form-label">Status:</label>
                     <select className="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
+                       <option value="">Select Status...</option>
                         <option value="Draft">Draft</option>
-                        <option value="In Review">In Review</option>
-                        <option value="Revised">Revised</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Published">Published</option>
-                        <option value="Archived">Archived</option>
-                        <option value="Checked Out">Checked Out</option>
-                        <option value="On Hold">On Hold</option>
+                        {isAdmin && ['In Review', 'Revised', 'Approved', 'Published', 'Archived', 'Checked Out', 'On Hold'].map(statusOption => (
+                            <option key={statusOption} value={statusOption}>{statusOption}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="mb-3">

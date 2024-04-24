@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Tab, Tabs, ButtonGroup, Dropdown, Button } from 'react-bootstrap';
 import './Item.css'
-import ChangeRequestsTable from '../../components/ChangeRequestsTable ';
+// import ChangeRequestsTable from '../../components/ChangeRequestsTable ';
+import ChangeRequestsTable from '../changes/ChangeRequestsTable';
 import HistoryGraph from '../../components/HistoryGraph';
 import RelatedObjects from '../../components/RelatedObjects';
 import ChangeRequestModal from '../changes/ChangeRequestModal';
@@ -39,7 +40,13 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
             <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-        <ChangeRequestModal show={showModal} handleClose={handleCloseModal} />
+        <ChangeRequestModal
+          show={showModal}
+          handleClose={handleCloseModal}
+          projectId={itemData.projectId}
+          mainItemId={itemData.id}
+          itemType={itemType}
+        />
 
         <Tabs
           id="item-tabs"
@@ -113,7 +120,14 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
 
 
         <Tab eventKey="changes" title="Changes">
-          <ChangeRequestsTable type={itemType} itemId={itemData.id} />
+          {console.log(itemData.id)}
+          {itemData.id && (
+            <>
+             {console.log("Before table")}
+             <ChangeRequestsTable mainItemId={itemData.id} />
+            </>
+
+          )}
 
           <div className="revision-log">
             <h3>Revision Log</h3>

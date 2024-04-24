@@ -8,7 +8,11 @@ const UserTasks = ({ userId }) => {
         isLoading,
         isError,
         error
-    } = useGetUserTasksQuery(userId);
+    } = useGetUserTasksQuery(userId, {
+        pollingInterval: 60000,
+        refetchOnFocus: true,
+        refetchOnMountOrArgChange: true
+    });
 
     const handleTaskClick = (taskId) => {
         navigate(`/tasks/${taskId}`);

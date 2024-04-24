@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAddNewDocumentMutation } from './documentsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
-import { useUpdateTaskMutation, useAddNewTaskMutation } from '../Tasks/tasksApiSlice';
+import { useCompleteTaskAndSetupReviewMutation } from '../Tasks/tasksApiSlice';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import useAuth from '../../hooks/useAuth';
 
@@ -11,8 +11,7 @@ const NewDocumentForm = ({ projectId: initialProjectId, task, closeModal }) => {
     const navigate = useNavigate();
     const { isAdmin } = useAuth();
     const [addNewDocument, { isLoading }] = useAddNewDocumentMutation();
-    const [updateTask, { isLoadingUpdateTask }] = useUpdateTaskMutation();
-    const [addNewTask, { isLoadingAddTask }] = useAddNewTaskMutation();
+    const [completeTaskAndSetupReview, { isLoading: isTaskLoading }] = useCompleteTaskAndSetupReviewMutation();
     const { data: users } = useGetUsersQuery();
     const { data: projects } = useGetProjectsQuery();
 
@@ -57,33 +56,15 @@ const NewDocumentForm = ({ projectId: initialProjectId, task, closeModal }) => {
 
             console.log('Task data:', task);
 
-            if(task){
-
-
-                const updatedTaskData = {
-                    id: task.id,
-                    status: 'Completed',
-                    assignedDocument: createdDocument._id
-                };
-                await updateTask(updatedTaskData).unwrap();
-        
-                const taskData = {
+            if (task) {
+                const reviewSetupData = {
                     projectId: projectId,
-                    name: 'Set up review for newly created document',
-                    description: 'Choose from a list of users who will review the document',
-                    status: 'In Progress',
-                    priority: task.priority,
-                    assignedTo: task.assignedTo,
-                    taskType: 'Set up Review',
-                    relatedTo: task.relatedTo,
-                    dueDate: task.dueDate || undefined,
-                    assignedDocument: createdDocument._id,
+                    task,
+                    createdItemId: createdDocument._id
                 };
-                // Create a new task for document review setup
-                await addNewTask(taskData).unwrap();
+                await completeTaskAndSetupReview(reviewSetupData).unwrap();
+                console.log('Task completed and review setup task created successfully');
             }
-    
-
             closeModal(); 
 
             if(isAdmin) {
@@ -109,7 +90,7 @@ const NewDocumentForm = ({ projectId: initialProjectId, task, closeModal }) => {
         }
     };
 
-    if (isLoading || isLoadingAddTask || isLoadingUpdateTask ) return <LoadingSpinner />;
+    if (isLoading  ) return <LoadingSpinner />;
     return (
         <div className="container mt-3">
             <h1>Create New Document</h1>

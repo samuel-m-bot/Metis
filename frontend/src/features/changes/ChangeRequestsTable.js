@@ -1,19 +1,30 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGetChangeRequestsByProjectAndStatusQuery } from './changeRequestsApiSlice';
+import { useEffect } from 'react';
+import { useNavigate, usee } from 'react-router-dom';
+import { useLazyGetChangeRequestsByMainItemQuery } from './changeRequestsApiSlice';
 
-const ChangeRequestsTable = ({ projectId, status }) => {
+const ChangeRequestsTable = ({ mainItemId }) => {
+  console.log("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
   const navigate = useNavigate();
-  const {
-    data: changeRequests,
-    isLoading,
-    isError,
-    error
-  } = useGetChangeRequestsByProjectAndStatusQuery({ projectId, status });
+  const [triggerQuery, { data: changeRequests, isLoading, isError, error }] = useLazyGetChangeRequestsByMainItemQuery();
+
+  useEffect(() => {
+    if (mainItemId) {
+      console.log(mainItemId)
+      triggerQuery(mainItemId);
+      console.log("Triegered")
+    }
+  }, [mainItemId, triggerQuery]);
 
   const handleViewChangeRequest = (changeRequestID) => {
-    navigate(`/change-requests/${changeRequestID}`);
+    const changeRequestData = changeRequests.find(request => request._id === changeRequestID);
+  
+    if (changeRequestData) {
+      navigate(`/change-requests/${changeRequestID}`, { state: { changeRequestData } });
+    } else {
+      console.error("No change request found with ID:", changeRequestID);
+    }
   };
+  
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error: {error?.data?.message}</p>;
@@ -34,28 +45,25 @@ const ChangeRequestsTable = ({ projectId, status }) => {
         </tr>
       </thead>
       <tbody>
-        {console.log(changeRequests)}
-        {changeRequests.map((request) => {
-          return (
-            <tr key={request.id}>
-              <td>
-                <a href="#" onClick={(e) => {
-                  e.preventDefault();
-                  handleViewChangeRequest(request.id);
-                }}>{request.id}</a>
-              </td>
-              <td>{request.requestedBy.firstName} {request.requestedBy.surname}</td>
-              <td>{request.description}</td>
-              <td>{request.status}</td>
-              <td>{request.priority}</td>
-              <td>{new Date(request.creationDate).toLocaleDateString()}</td>
-              <td>{request.assignedTo ? `${request.assignedTo.firstName} ${request.assignedTo.surname}` : 'Unassigned'}</td>
-              <td>
-                <button onClick={() => handleViewChangeRequest(request.id)} className="btn btn-primary">View</button>
-              </td>
-            </tr>
-          );
-        })}
+        {changeRequests.map((request) => (
+          <tr key={request._id}>
+            <td>
+              <a href="#" onClick={(e) => {
+                e.preventDefault();
+                handleViewChangeRequest(request._id);
+              }}>{request._id}</a>
+            </td>
+            <td>{request.requestedBy.firstName} {request.requestedBy.surname}</td>
+            <td>{request.description}</td>
+            <td>{request.status}</td>
+            <td>{request.priority}</td>
+            <td>{new Date(request.creationDate).toLocaleDateString()}</td>
+            <td>{request.assignedTo ? `${request.assignedTo.firstName} ${request.assignedTo.surname}` : 'Unassigned'}</td>
+            <td>
+              <button onClick={() => handleViewChangeRequest(request._id)} className="btn btn-primary">View</button>
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );

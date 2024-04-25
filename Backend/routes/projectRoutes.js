@@ -26,6 +26,7 @@ router.patch('/:id/archive', projectController.archiveProject); // Archive a pro
 router.get('/assigned/:userId', projectController.getAssignedProjects); // Getting assigned projects for the user
 router.get('/:id/reviewers', projectController.getReviewers); // Fetch reviewers for a project
 router.get('/:id/manager', projectController.getProjectManagerById);
+router.get('/:projectId/my-permissions', projectController.getUserPermissions);
 
 
 module.exports = router;

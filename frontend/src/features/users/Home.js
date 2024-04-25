@@ -4,27 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import UserTasks from '../Tasks/UserTasks';
 
-const tasks = [
-  {
-    taskId: 'T001',
-    taskType: 'Review Document',
-    affectedItem: 'Document A',
-    details: 'Review the latest changes.'
-  },
-  {
-    taskId: 'T002',
-    taskType: 'Update Design',
-    affectedItem: 'Design X',
-    details: 'Incorporate feedback from latest review.'
-  },
-  {
-    taskId: 'T003',
-    taskType: 'Approve change request',
-    affectedItem: 'Test Case 5',
-    details: 'Ensure test covers all new scenarios.'
-  }
-];
-
 const Home = () => {
   const navigate = useNavigate();
   const { isAdmin, id } = useAuth();
@@ -38,8 +17,8 @@ const Home = () => {
           <h2>Quick Links</h2>
           <ul className="list-group">
             <li className="list-group-item"><a href="/projects">Projects Dashboard</a></li>
-            <li className="list-group-item"><a href="/products">Product List</a></li>
-            <li className="list-group-item"><a href="/designs">Design management</a></li>
+            <li className="list-group-item"><a href="/products">Products List</a></li>
+            <li className="list-group-item"><a href="/designs">Designs List</a></li>
             <li className="list-group-item"><a href="/documents">Document Library</a></li>
             {isAdmin && <li className="list-group-item"><a href="/admin-dashboard">Admin Dashboard</a></li>} 
           </ul>

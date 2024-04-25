@@ -1,50 +1,30 @@
-import React from 'react';
 import { useNavigate } from "react-router-dom";
-import { useGetProjectsQuery } from './projectsApiSlice';
 import Project from './Project';
-import LoadingSpinner from "../../components/LoadingSpinner";
 import useAuth from '../../hooks/useAuth';
 
-const ProjectsList = () => {
+const ProjectsList = ({ projects }) => {
     const navigate = useNavigate();
-    const {isAdmin, isProjectManager} = useAuth()
-    const { 
-        data: projects, 
-        isLoading, 
-        isError, 
-        error } = useGetProjectsQuery('projectList', {
-            pollingInterval: 60000,
-            refetchOnFocus: true,
-            refetchOnMountOrArgChange: true
-        })
+    const { isAdmin, isProjectManager } = useAuth();
 
     const handleCreateNewProject = () => {
         navigate('/admin-dashboard/projects/create');
     };
 
-    if (isLoading) return <LoadingSpinner />;
-    if (isError) {
-      if (error.status === 400 && error.data.message === 'No projects found') {
+    const canEdit = (isAdmin || isProjectManager);
+
+    if (!projects.length) {
         return (
-          <div className="container mt-5">
-            <h2>{error.data.message}</h2>
-            {(isAdmin || isProjectManager) && (
-              <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/projects/create')}>
-                Create New Change Request
-              </button>
-            )}
-          </div>
+          <div>No projects to display</div>
         );
-      }
-      return <p>Error: {error.data.message}</p>;
     }
-      
-    const canEdit = (isAdmin || isProjectManager)
+
     return (
         <div>
-            <button onClick={handleCreateNewProject} className="btn btn-success mb-3">
-                Create New Project
-            </button>
+            {(isAdmin || isProjectManager) && (
+                <button onClick={handleCreateNewProject} className="btn btn-success mb-3">
+                    Create New Project
+                </button>
+            )}
             <table className="table">
                 <thead className="thead-dark">
                     <tr>
@@ -58,7 +38,9 @@ const ProjectsList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {projects.ids.map(projectId => <Project key={projectId} project={projects.entities[projectId]} canEdit={canEdit} />)}
+                    {projects.map(project => (
+                        <Project key={project._id} project={project} canEdit={canEdit} />
+                    ))}
                 </tbody>
             </table>
         </div>

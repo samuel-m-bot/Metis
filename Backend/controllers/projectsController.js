@@ -389,6 +389,41 @@ const getProjectManagerById = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc Get user permissions for a specific project
+// @route GET /projects/:projectId/my-permissions
+// @access Private
+const getUserPermissions = asyncHandler(async (req, res) => {
+    const userId = req.user._id; 
+    const projectId = req.params.projectId; 
+
+    // Attempt to find the specific project where the user is a team member
+    const project = await Project.findOne({
+        _id: projectId,
+        'teamMembers.userId': userId
+    }).populate({
+        path: 'teamMembers.userId',
+        select: 'firstName surname'
+    }).lean();
+
+    if (!project) {
+        return res.status(404).json({ message: 'Project not found or user is not a team member of this project' });
+    }
+
+    // Extract the specific team member's permissions
+    const teamMember = project.teamMembers.find(member => member.userId._id.toString() === userId.toString());
+    const permissions = {
+        projectId: project._id,
+        projectName: project.name,
+        permissions: teamMember ? teamMember.permissions : []
+    };
+
+    if (!permissions.permissions.length) {
+        return res.status(404).json({ message: 'No permissions found for the user in this project' });
+    }
+
+    res.json(permissions);
+});
+
 
 //GenerateProjectReport (complex endpoint tba)
 
@@ -409,5 +444,6 @@ module.exports = {
     updateProjectStatus,
     archiveProject,
     getReviewers,
-    getProjectManagerById
+    getProjectManagerById,
+    getUserPermissions
 }

@@ -6,12 +6,17 @@ const bcrypt = require('bcrypt')
 // @route GET /products
 // @access private
 const getAllProducts = asyncHandler(async (req, res) => {
-    const products = await Product.find().lean()
-    if(!products?.length){
-        return res.status(400).json({ message: 'No products found'})
+    const products = await Product.find().populate({
+        path: 'projectId', 
+        select: 'name'       
+    }).lean();
+
+    if (!products.length) {
+        return res.status(400).json({ message: 'No products found' });
     }
-    res.json(products)
-})
+    res.json(products);
+});
+
 
 // @desc Get specific products
 // @route GET /products
@@ -142,7 +147,10 @@ const listProductsByCategory = asyncHandler(async (req, res) => {
 // @access private
 const getProductsByProjectId = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
-    const products = await Product.find({ projectId }).lean();
+    const products = await Product.find({ projectId }).populate({
+        path: 'projectId', 
+        select: 'name'       
+    }).lean();
     if (!products.length) {
         return res.status(404).json({ message: 'No products found for this project' });
     }

@@ -50,6 +50,8 @@ import ReviewSuccessPage from './features/reviews/ReviewSuccessPage.js'
 import EditReview from './features/reviews/EditReview.js'
 import ChangeRequestPage from './features/changes/ChangeRequestPage.js'
 import ProjectDesignsPage from './features/designs/ProjectDesignsPage.js'
+import ProductListPage from './features/products/ProductListPage.js'
+import DesignsListPage from './features/designs/DesignsListPage.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -136,9 +138,9 @@ function App() {
               <Route path="documents/:documentId" element={<Documents />} />
               <Route path="change-requests/:changeRequestID" element={<ChangeRequestPage />} />
               <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
-              <Route path="products" element={<ProductList />} />
+              <Route path="products" element={<ProductListPage />} />
               <Route path="products/:productId" element={<Product />} />
-              <Route path="designs" element={<DesignManagement />} />
+              <Route path="designs" element={<DesignsListPage />} />
               <Route path="designs/:designId" element={<Design />} />
               <Route path="change-requests" element={<ChangeRequests />} />
               <Route path="documents" element={<DocumentLibrary />} />

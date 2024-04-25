@@ -6,7 +6,10 @@ const bcrypt = require('bcrypt')
 // @route GET /documents
 // @access private
 const getAllDocuments = asyncHandler(async (req, res) => {
-    const documents = await Document.find().lean()
+    const documents = await Document.find().populate({
+        path: 'projectId',
+        select: 'name'  
+    }).lean();
     if(!documents?.length){
         return res.status(400).json({ message: 'No documents found'})
     }

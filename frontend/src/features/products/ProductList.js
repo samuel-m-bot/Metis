@@ -40,8 +40,12 @@ const ProductList = ({ products, isLoading, isError, error }) => {
     return <p>Error: {error?.message}</p>;
   }
 
-  const handleNavigate = (productId) => {
+  const handleProductNavigate = (productId) => {
     navigate(`/products/${productId}`);
+  };
+
+  const handleProjectNavigate = (projectId) => {
+    navigate(`/projects/${projectId}`);
   };
   
   return (
@@ -58,6 +62,9 @@ const ProductList = ({ products, isLoading, isError, error }) => {
             <th onClick={() => requestSort('name')}>
               Name {sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
             </th>
+            <th onClick={() => requestSort('projectId')}>
+              Project {sortConfig.key === 'projectId' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
+            </th>
             <th onClick={() => requestSort('category')}>
               Category {sortConfig.key === 'category' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
             </th>
@@ -72,8 +79,11 @@ const ProductList = ({ products, isLoading, isError, error }) => {
         <tbody>
           {sortedProducts.map((product) => (
             <tr key={product.id}>
-              <td onClick={() => handleNavigate(product.id)} style={{ cursor: 'pointer' }}>
+              <td onClick={() => handleProductNavigate(product.id)} style={{ cursor: 'pointer' }}>
                 {product.name}
+              </td>
+              <td onClick={() => handleProjectNavigate(product.projectId._id)} style={{ cursor: 'pointer' }}>
+                {product.projectId.name}
               </td>
               <td>{product.category}</td>
               <td>{new Date(product.createdAt).toLocaleDateString()}</td>

@@ -29,6 +29,17 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
             },
             providesTags: (result, error, arg) => [{ type: 'Project', id: result.id }]
         }),
+        getAssignedProjects: builder.query({
+            query: (userId) => `/projects/assigned/${userId}`,
+            transformResponse: responseData => {
+                const assignedProjects = responseData.map(project => ({
+                    ...project,
+                    id: project._id, 
+                }));
+                return projectsAdapter.setAll(initialState, assignedProjects);
+            },
+            providesTags: (result, error, arg) => result?.ids ? result.ids.map(id => ({ type: 'Project', id })) : [{ type: 'Project', id: 'LIST' }]
+        }),
         getProjectTeamMembers: builder.query({
             query: projectId => `/projects/${projectId}/TeaMember`,
             providesTags: (result, error, arg) => [{ type: 'Project', id: arg }]
@@ -80,19 +91,31 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
                 { type: 'Project', id: arg.projectId }
             ],
         }),
+        getUserPermissions: builder.query({
+            query: (projectId) => `/projects/${projectId}/my-permissions`, 
+            transformResponse: responseData => {
+                return {
+                    ...responseData,
+                    id: responseData.projectId 
+                };
+            },
+            providesTags: (result, error, arg) => [{ type: 'Permission', id: result ? result.id : 'LIST' }]
+        }),               
     }),
 });
 
 export const {
     useGetProjectsQuery,
     useGetProjectByIdQuery,
+    useGetAssignedProjectsQuery,
     useGetProjectTeamMembersQuery,
     useGetProjectReviewersQuery,
     useAddNewProjectMutation,
     useUpdateProjectMutation,
     useDeleteProjectMutation,
     useAddTeamMemberMutation,
-    useRemoveTeamMemberMutation
+    useRemoveTeamMemberMutation,
+    useGetUserPermissionsQuery
 } = projectsApiSlice;
 
 // Selectors

@@ -7,29 +7,12 @@ import HistoryGraph from '../../components/HistoryGraph';
 import RelatedObjects from '../../components/RelatedObjects';
 import ItemActions from './ItemActions';
 import ReviewsApprovalsTab from '../reviews/ReviewsApprovalsTab';
+import ItemDetails from './ItemDetails';
 
 
 const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
-  const [showModal, setShowModal] = useState(false);
   console.log(itemData)
-
-
-  const handleOpenModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
-
-  const handleDownload = () => {
-    // Depending on the item type, the path may differ
-    // const basePath = `${process.env.PUBLIC_URL}/path/to/your/files`;
-    // const documentUrl = `${basePath}/${itemData.attachment?.fileName || 'default.pdf'}`;
-
-    // const link = document.createElement("a");
-    // link.href = documentUrl;
-    // link.setAttribute("download", "");
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-  };
 
   return (
     <div className="item-container">
@@ -43,70 +26,7 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
           className="mb-3"
         >
           <Tab eventKey="details" title="Details" className="document-details">
-            <div className="detail-section">
-              <h2>General Details</h2>
-              <div className="detail-row">
-                <p className="detail-item"><span className="detail-label">Item Title:</span>{itemData.name || itemData.title}</p>
-                <p className="detail-item"><span className="detail-label">Item ID:</span> {itemData.id}</p>
-                <p className="detail-item"><span className="detail-label">Version:</span> {itemData.revisionNumber}</p>
-                <p className="detail-item"><span className="detail-label">Status:</span> {itemData.status}</p>
-                <p className="detail-item">
-                  <span className="detail-label">Creation Date:</span>
-                  {new Date(itemData.createdAt || itemData.creationDate).toLocaleDateString()}
-                </p>
-                <p className="detail-item">
-                  <span className="detail-label">Last Modified:</span>
-                  {new Date(itemData.updatedAt || itemData.lastModifiedDate).toLocaleDateString()}
-                </p>
-                <Button onClick={handleDownload} variant="primary">Download Item</Button>
-              </div>
-            </div>
-            <div className='row'>
-              <div className='col'>
-                <div className="detail-section">
-                  <h2>Item Description</h2>
-                  <div className="detail-row">
-                    <p className="detail-item"><span className="detail-label">Description:</span> {itemData.description}</p>
-                  </div>
-                </div>
-              </div>
-              {['Document', 'Design'].includes(itemType) && (
-                <div className='col'>
-                  <div className="detail-section">
-                    <h2>{itemType === 'Document' ? 'Authors' : 'Designers'}</h2>
-                    <div className="detail-row">
-                      <p className="detail-item">
-                        <span className="detail-label">{itemType === 'Document' ? 'Author(s):' : 'Designer(s):'}</span>
-                        {itemType === 'Document' ? 
-                          itemData.authors?.map(author => `${author.firstName} ${author.surname}`).join(', ') 
-                          : 
-                          itemData.designers?.map(designer => `${designer.firstName} ${designer.surname}`).join(', ')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className='row'>
-              <div className='col'>
-                <div className="detail-section">
-                  <h2>Classification</h2>
-                  <div className="detail-row">
-                    <p className="detail-item"><span className="detail-label">Type:</span> {itemData.type}</p>
-                  </div>
-                </div>
-              </div>
-              <div className='col'>
-                <div className="detail-section">
-                  <h2>Access Control</h2>
-                  <div className="detail-row">
-                    <p className="detail-item"><span className="detail-label">Detail(s):</span> {itemData.accessDetails}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            <ItemDetails itemData={itemData} itemType={itemType} />
           </Tab>
 
 
@@ -114,7 +34,7 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
           {console.log(itemData.id)}
           {itemData.id && (
             <>
-             {console.log("Before table")}
+             <h2>Change Request for Item</h2>
              <ChangeRequestsTable mainItemId={itemData.id} />
             </>
 

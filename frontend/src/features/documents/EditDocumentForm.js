@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateDocumentMutation, useGetDocumentsByProjectIdQuery, useDeleteDocumentMutation } from './documentsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
@@ -6,11 +6,13 @@ import { useGetProductsQuery } from '../products/productsApiSlice';
 import { useGetProjectsQuery } from "../projects/projectsApiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import useAuth from '../../hooks/useAuth';
 
-const EditDocumentForm = ({ document }) => {
+const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal }) => {
     const navigate = useNavigate();
     const [updateDocument] = useUpdateDocumentMutation();
     const [deleteDocument] = useDeleteDocumentMutation();
+    const {isAdmin} = useAuth()
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
@@ -28,10 +30,16 @@ const EditDocumentForm = ({ document }) => {
     const [revisionError, setRevisionError] = useState('');
     const [associatedProductIDs, setAssociatedProductIDs] = useState(document.associatedProductIDs);
     const [authors, setAuthors] = useState(document.authors || []);
-    const [status, setStatus] = useState(document.status);
+    const [status, setStatus] = useState('Checked In');
     const [relatedDocuments, setRelatedDocuments] = useState(document.relatedDocuments || []);
     const [file, setFile] = useState(null);
     const [classification, setClassification] = useState(document.classification);
+
+    useEffect(() => {
+        if (initialProjectId) {
+            setProjectId(initialProjectId);
+        }
+    }, [initialProjectId]);
 
     const handleRevisionChange = (e) => {
         // Allows input changes without immediate validation for flexibility
@@ -100,22 +108,37 @@ const EditDocumentForm = ({ document }) => {
         <div classTitle="container mt-3">
             <h2>Edit Document</h2>
             <form onSubmit={onSaveChanges} encType="multipart/form-data">
-                <div className="mb-3">
-                    <label htmlFor="projectId" className="form-label">Project:</label>
-                    <select
-                        className="form-select"
-                        id="projectId"
-                        value={projectId}
-                        onChange={e => setProjectId(e.target.value)}
-                    >
-                        <option value="">Select a project</option>
-                        {projects?.ids.map(id => (
-                            <option key={id} value={id}>
-                                {projects.entities[id].name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            {isAdmin && (
+                    <div className="mb-3">
+                        <label htmlFor="projectId" className="form-label">Project:</label>
+                        <select
+                            className="form-select"
+                            id="projectId"
+                            value={projectId}
+                            onChange={e => setProjectId(e.target.value)}
+                            required={!initialProjectId}
+                        >
+                            <option value="">Select a project</option>
+                            {projects?.ids.map(projectId => (
+                                <option key={projectId} value={projectId}>
+                                    {projects.entities[projectId]?.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                {!isAdmin && initialProjectId && (
+                    <div className="mb-3">
+                        <label htmlFor="projectName" className="form-label">Project:</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="projectName"
+                            value={projects.entities[projectId]?.name || ''}
+                            readOnly
+                        />
+                    </div>
+                )}
                 <div classTitle="mb-3">
                     <label htmlFor="title" classTitle="form-label">Title:</label>
                     <input type="text" classTitle="form-control" id="title" value={title} onChange={e => setTitle(e.target.value)} required />
@@ -124,7 +147,7 @@ const EditDocumentForm = ({ document }) => {
                     <label htmlFor="type" classTitle="form-label">Type:</label>
                     <select classTitle="form-select" id="type" value={type} onChange={e => setType(e.target.value)} required>
                         <option value="">Select Type</option>
-                        <option value="Requiremnts">Requiremnts</option>
+                        <option value="Requirements">Requirements</option>
                         <option value="Design">Design</option>
                         <option value="Devlopment">Devlopment</option>
                         <option value="Manufacturing">Manufacturing</option>
@@ -136,7 +159,7 @@ const EditDocumentForm = ({ document }) => {
                     <label htmlFor="description" classTitle="form-label">Description:</label>
                     <textarea classTitle="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)} required></textarea>
                 </div>
-                <div className="mb-3">
+                {isAdmin && (<div className="mb-3">
                     <label htmlFor="revisionNumber">Revision Number:</label>
                     <input
                         type="text"
@@ -148,6 +171,7 @@ const EditDocumentForm = ({ document }) => {
                     />
                     {revisionError && <div style={{ color: 'red' }}>{revisionError}</div>}
                 </div>
+                )}
                 <div className="mb-3">
                     <label htmlFor="associatedProductID" className="form-label">Associated Products:</label>
                     {isProductsError ?
@@ -167,7 +191,7 @@ const EditDocumentForm = ({ document }) => {
                         ))}
                     </select>
                 </div>
-                <div classTitle="mb-3">
+                {isAdmin && (<div classTitle="mb-3">
                     <label htmlFor="status" classTitle="form-label">Status:</label>
                     <select classTitle="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
                         <option value="">Select Status...</option>
@@ -182,6 +206,7 @@ const EditDocumentForm = ({ document }) => {
                         <option value="On Hold">On Hold</option>
                     </select>
                 </div>
+                )}
                 <div className="mb-3">
                     <label htmlFor="relatedDocuments" className="form-label">Related Documents:</label>
                     <select multiple className="form-select" id="relatedDocuments" value={relatedDocuments} onChange={(e) => handleMultiSelectChange(e, setRelatedDocuments)}>

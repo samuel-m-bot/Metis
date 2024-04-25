@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useGetChangeRequestByIdQuery, useLazyGetChangeRequestByIdQuery } from '../features/changes/changeRequestsApiSlice';
+import { Button } from 'react-bootstrap';
 import { useLazyGetDocumentByIdQuery } from '../features/documents/documentsApiSlice';
 import { useLazyGetDesignByIdQuery } from '../features/designs/designsApiSlice';
 import { useLazyGetProductByIdQuery } from '../features/products/productsApiSlice';
+import { useCompleteTaskAndSetupReviewMutation } from '../features/Tasks/tasksApiSlice';
 
 const UpdateTaskTab = ({ task }) => {
   const navigate = useNavigate();
@@ -11,6 +13,21 @@ const UpdateTaskTab = ({ task }) => {
   const [getDesign] = useLazyGetDesignByIdQuery();
   const [getProduct] = useLazyGetProductByIdQuery();
   const [getChangeRequest] = useLazyGetChangeRequestByIdQuery();
+  const [completeTaskAndSetupReview, { isLoading: isTaskLoading }] = useCompleteTaskAndSetupReviewMutation();
+
+  const handleCompleteUpdate = async () => {
+    try {
+        const reviewSetupData = {
+            projectId: task.projectId,
+            task: task,
+            createdItemId: changeRequest.id 
+        };
+        await completeTaskAndSetupReview(reviewSetupData).unwrap();
+        alert("Update completed and review process initiated.");
+    } catch (error) {
+        alert("Failed to complete the update: " + error.message);
+    }
+};
 
   const handleNavigateToItem = async (itemId, itemType) => {
     let itemData;
@@ -82,7 +99,32 @@ const UpdateTaskTab = ({ task }) => {
           ))}
         </ul>
       </div>
+
+      <div className="instructions card mt-3">
+        <div className="card-header">Update Steps</div>
+        <ul className="list-group list-group-flush">
+          <li className="list-group-item">
+            Follow the links to main and related items.
+          </li>
+          <li className="list-group-item">
+            In the action dropdown, select 'Check Out' to start editing.
+          </li>
+          <li className="list-group-item">
+            Download and make necessary changes to the item.
+          </li>
+          <li className="list-group-item">
+            Return to the item page, select 'Check In' from the dropdown, and update any necessary fields.
+          </li>
+          <li className="list-group-item">
+            Go back to this task tab and mark the update as complete.
+          </li>
+        </ul>
+      </div>
+      <Button variant="primary" onClick={handleCompleteUpdate}>
+          Complete Update
+      </Button>
     </div>
+
   );
 };
 

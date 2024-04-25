@@ -2,51 +2,28 @@ import { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { useGetProjectReviewersQuery } from '../features/projects/projectsApiSlice';
 import { useAddNewReviewMutation } from '../features/reviews/reviewsApiSlice';
-import { useManageReviewTasksMutation } from '../features/Tasks/tasksApiSlice'; // Import the mutation
+import { useManageReviewTasksMutation } from '../features/Tasks/tasksApiSlice';
 
 const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, isChangeRequest = false }) => {
-  const { data: reviewers, isLoading, isError, error } = useGetProjectReviewersQuery(changeRequestData?.projectId || task?.projectId);
-  const [addNewReview , {isLoading: isLoadingR}]  = useAddNewReviewMutation();
+  const projectId = changeRequestData?.projectId || task?.projectId._id;
+  const { data: reviewers, isLoading, isError, error } = useGetProjectReviewersQuery(projectId);
+  const [addNewReview, { isLoading: isLoadingR }] = useAddNewReviewMutation();
   const [manageReviewTasks, { isLoading: isLoadingManageTasks }] = useManageReviewTasksMutation();
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const handleCheckboxChange = (userId) => {
-    setSelectedUsers(prev => {
-      if (prev.includes(userId)) {
-        return prev.filter(id => id !== userId);
-      } else {
-        return [...prev, userId];
-      }
-    });
+    setSelectedUsers(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
   };
 
   const handleSubmit = async () => {
-    console.log('Selected reviewers:', selectedUsers);
+    const reviewers = selectedUsers.map(userId => ({ userId, decision: 'Pending', feedback: '' }));
+    const getItemReviewedId = () => task?.relatedTo === 'Document' ? task.assignedDocument : task?.relatedTo === 'Design' ? task.assignedDesign : task?.relatedTo === 'Product' ? task.assignedProduct : null;
 
-    const reviewers = selectedUsers.map(userId => ({
-      userId,
-      decision: 'Pending',
-      feedback: ''
-    }));
-
-    // Determine which item ID to use based on what the task is related to
-    const getItemReviewedId = () => {
-        switch (task.relatedTo) {
-          case 'Document':
-            return task.assignedDocument;
-          case 'Design':
-            return task.assignedDesign;
-          case 'Product':
-            return task.assignedProduct;
-          default:
-            return null;
-        }
-      }
-  
     const reviewData = {
       itemReviewed: isChangeRequest ? changeRequestData._id : getItemReviewedId(),
-      onModel: isChangeRequest ? 'ChangeRequest' : task.relatedTo,
+      onModel: isChangeRequest ? 'ChangeRequest' : task?.relatedTo,
       reviewers,
+      ...(task?.assignedChangeRequest && { reviewType: 'Update' })
     };
 
     try {
@@ -54,15 +31,16 @@ const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, is
       console.log('Review created:', newReview);
 
       const taskData = {
-        projectId: changeRequestData?.projectId || task.projectId,
+        projectId,
         reviewId: newReview._id,
         reviewers,
         taskDetails: {
-          id: isChangeRequest ? undefined : task.id,
-          relatedTo: isChangeRequest ? 'ChangeRequest' : task.relatedTo,
-          priority: changeRequestData?.priority || task.priority,
-          dueDate: changeRequestData?.estimatedCompletionDate || task.dueDate,
-          assignedTo: changeRequestData?.assignedTo || task.assignedTo,
+          id: isChangeRequest ? undefined : task?.id,
+          relatedTo: isChangeRequest ? 'ChangeRequest' : task?.relatedTo,
+          priority: changeRequestData?.priority || task?.priority,
+          dueDate: changeRequestData?.estimatedCompletionDate || task?.dueDate,
+          assignedTo: changeRequestData?.assignedTo || task?.assignedTo,
+          ...(task?.assignedChangeRequest && { assignedChangeRequest: task.assignedChangeRequest })
         },
         isChangeRequest
       };

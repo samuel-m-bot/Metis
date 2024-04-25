@@ -32,6 +32,7 @@ const NewChangeRequestForm = ({ projectId, closeModal, mainItemId, itemType, onS
     const [changeType, setChangeType] = useState('');
     const [riskAssessment, setRiskAssessment] = useState('');
     const [impactLevel, setImpactLevel] = useState('');
+    const [revisionType, setRevisionType] = useState('');
 
     useEffect(() => {
         setMainItem(mainItemId);
@@ -60,7 +61,8 @@ const NewChangeRequestForm = ({ projectId, closeModal, mainItemId, itemType, onS
             relatedProducts,
             changeType,
             riskAssessment,
-            impactLevel
+            impactLevel,
+            revisionType
         };
 
         try {
@@ -112,6 +114,16 @@ const NewChangeRequestForm = ({ projectId, closeModal, mainItemId, itemType, onS
                         <option value="">Select Status...</option>
                         <option value="Requested">Requested</option>
                         {isAdmin && ['Approved', 'Rejected'].map(statusOption => (
+                            <option key={statusOption} value={statusOption}>{statusOption}</option>
+                        ))}
+                    </select>
+                </div>
+                {/* revisionType */}
+                <div className="mb-3">
+                    <label htmlFor="revisionType" className="form-label">Revision Type:</label>
+                    <select className="form-select" id="revisionType" value={revisionType} onChange={e => setRevisionType(e.target.value)}>
+                        <option value="">Select Revision Type...</option>
+                        {['Major', 'Minor'].map(statusOption => (
                             <option key={statusOption} value={statusOption}>{statusOption}</option>
                         ))}
                     </select>

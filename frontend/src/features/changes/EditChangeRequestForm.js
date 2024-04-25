@@ -36,6 +36,7 @@ const EditChangeRequestForm = ({ changeRequest }) => {
     const [relatedDocuments, setRelatedDocuments] = useState(changeRequest.relatedDocuments);
     const [relatedDesigns, setRelatedDesigns] = useState(changeRequest.relatedDesigns);
     const [relatedProducts, setRelatedProducts] = useState(changeRequest.relatedProducts);
+    const [revisionType, setRevisionType] = useState(changeRequest.revisionType);
 
     const handleMultiSelectChange = (event, setState) => {
         const values = Array.from(event.target.selectedOptions, option => option.value);
@@ -58,7 +59,8 @@ const EditChangeRequestForm = ({ changeRequest }) => {
             status,
             priority,
             assignedTo,
-            estimatedCompletionDate
+            estimatedCompletionDate,
+            revisionType
         };
 
         if(relatedDocuments!=='' && type ==='Document' ) updatedChangeRequest.relatedDocuments = relatedDocuments
@@ -124,6 +126,16 @@ const EditChangeRequestForm = ({ changeRequest }) => {
                         <option value="Rejected">Rejected</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                {/* revisionType */}
+                <div className="mb-3">
+                    <label htmlFor="revisionType" className="form-label">Revision Type:</label>
+                    <select className="form-select" id="revisionType" value={revisionType} onChange={e => setRevisionType(e.target.value)}>
+                        <option value="">Select Revision Type...</option>
+                        {['Major', 'Minor'].map(statusOption => (
+                            <option key={statusOption} value={statusOption}>{statusOption}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="mb-3">

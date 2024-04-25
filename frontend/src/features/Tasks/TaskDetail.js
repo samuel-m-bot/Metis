@@ -99,7 +99,7 @@ const TaskDetails = () => {
           </Tab>
         )}
 
-        {task.taskType === "Observe" && task.status !== 'Completed' && (
+        {task.taskType === "Observe" && (
           <Tab eventKey="Observe" title="Observe Request">
             <ObserveTab task={task} />
           </Tab>

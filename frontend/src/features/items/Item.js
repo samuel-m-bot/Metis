@@ -5,7 +5,7 @@ import './Item.css'
 import ChangeRequestsTable from '../changes/ChangeRequestsTable';
 import HistoryGraph from '../../components/HistoryGraph';
 import RelatedObjects from '../../components/RelatedObjects';
-import ChangeRequestModal from '../changes/ChangeRequestModal';
+import ItemActions from './ItemActions';
 
 const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
@@ -31,22 +31,7 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
   return (
     <div className="item-container">
       <div className="actions-and-tabs-container">
-        <Dropdown as={ButtonGroup} className="actions-dropdown">
-          <Button variant="secondary">Actions</Button>
-          <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
-          <Dropdown.Menu>
-            <Dropdown.Item href="#/action-1">Check Out</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">Check In</Dropdown.Item>
-            <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        <ChangeRequestModal
-          show={showModal}
-          handleClose={handleCloseModal}
-          projectId={itemData.projectId}
-          mainItemId={itemData.id}
-          itemType={itemType}
-        />
+        <ItemActions itemType={itemType} itemData={itemData} />
 
         <Tabs
           id="item-tabs"

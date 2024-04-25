@@ -66,6 +66,10 @@ const designSchema = new mongoose.Schema({
         enum: ['Confidential', 'Restricted', 'Public', 'Private'],
         required: true
     },
+    isFeatured: {
+        type: Boolean,
+        default: false // Most designs will not be featured by default
+    }
 });
 
 module.exports = mongoose.model('Design', designSchema);

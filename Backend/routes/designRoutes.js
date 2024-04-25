@@ -17,5 +17,7 @@ router.route('/:id')
     
 router.get('/download/:id', designController.downloadDesignFile);
 router.get('/project/:projectId', designController.getDesignsByProjectId);
+router.patch('/:id/toggle-featured', designController.toggleFeaturedDesign);
+
 
 module.exports = router

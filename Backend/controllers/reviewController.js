@@ -314,7 +314,22 @@ const reviewSubmission = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc Get reviews by itemReviewed
+// @route GET /reviews/item/:itemReviewed
+// @access Private
+const getReviewsByItemReviewed = asyncHandler(async (req, res) => {
+    const { itemReviewed } = req.params;
+    const reviews = await Review.find({ itemReviewed }).populate({
+        path: 'reviewers.userId',
+        select: 'firstName surname'
+    }).lean();
 
+    if (!reviews.length) {
+        return res.status(404).json({ message: 'No reviews found for the specified item' });
+    }
+
+    res.json(reviews);
+});
 
 module.exports = {
     getAllReviews,
@@ -322,6 +337,7 @@ module.exports = {
     createNewReview,
     updateReview,
     deleteReview,
-    reviewSubmission
+    reviewSubmission,
+    getReviewsByItemReviewed
 };
   

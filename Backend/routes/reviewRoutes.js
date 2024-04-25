@@ -13,5 +13,7 @@ router.route('/:id')
     .delete(reviewController.deleteReview); // Delete a review
 
 router.patch('/:id/submit', reviewController.reviewSubmission);
+router.get('/item/:itemReviewed', reviewController.getReviewsByItemReviewed);
+
 
 module.exports = router;

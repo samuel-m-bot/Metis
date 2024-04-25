@@ -156,6 +156,25 @@ const getDesignsByProjectId = asyncHandler(async (req, res) => {
     res.json(designs);
 });
 
+// @desc Toggle the 'isFeatured' status of a design
+// @route PATCH /designs/:id/toggle-featured
+// @access private
+const toggleFeaturedDesign = asyncHandler(async (req, res) => {
+    const designId = req.params.id;
+    const design = await Design.findById(designId);
+
+    if (!design) {
+        return res.status(404).json({ message: 'Design not found' });
+    }
+
+    // Toggle the isFeatured status
+    design.isFeatured = !design.isFeatured;
+
+    const updatedDesign = await design.save();
+    res.json({
+        message: `Design '${updatedDesign.name}' is now ${updatedDesign.isFeatured ? 'featured' : 'not featured'}.`
+    });
+});
 
 module.exports = {
     getAllDesigns,
@@ -164,5 +183,6 @@ module.exports = {
     updateDesign,
     deleteDesign,
     downloadDesignFile,
-    getDesignsByProjectId
+    getDesignsByProjectId,
+    toggleFeaturedDesign
 }

@@ -17,7 +17,10 @@ const getAllDocuments = asyncHandler(async (req, res) => {
 // @route GET /documents
 // @access private
 const getDocumentById = asyncHandler(async (req, res) => {
-    const documents = await Document.findById(req.params.id).lean()
+    const documents = await Document.findById(req.params.id).populate({
+        path: 'authors',
+        select: 'firstName surname'  
+    }).lean();
     if(!documents){
         return res.status(400).json({ message: 'No document found with that ID'})
     }

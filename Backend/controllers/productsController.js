@@ -137,8 +137,8 @@ const listProductsByCategory = asyncHandler(async (req, res) => {
     res.json(products);
 });
 
-// @desc Get products by projectId
-// @route GET /products/project/:projectId
+// @desc Get products by projectId and status
+// @route GET /products/project/:projectId/:status
 // @access private
 const getProductsByProjectId = asyncHandler(async (req, res) => {
     const { projectId } = req.params;

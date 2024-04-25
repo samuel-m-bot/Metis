@@ -328,7 +328,7 @@ const filterTasks = asyncHandler(async (req, res) => {
 // @access private
 const getTasksByProjectId = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
-    const tasks = await Task.find({ projectId }).lean();
+    const tasks = await Task.find({ projectId }).populate('assignedTo', 'firstName surname').lean();
     if (!tasks.length) {
         return res.status(404).json({ message: 'No tasks found for this project' });
     }

@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Tab, Tabs, Dropdown, Button, Modal, ButtonGroup  } from 'react-bootstrap';
 import TasksTable from '../Tasks/TasksTable';
-import ChangeRequestsTable from '../changes/ChangeRequestsTable';
-import DesignTable from '../designs/DesignTable';
-import TasksDoughnutChart from '../Tasks/TasksDoughnutChart';
 import ProgressHorizontalBarChart from '../Tasks/ProgressHorizontalBarChart';
 import TimeChart from './TimeChart';
 import CostBarChart from './CostBarChart';
 import ProjectWorkloadChart from './ProjectWorkloadChart';
+import { useGetProjectByIdQuery } from './projectsApiSlice';
 import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
 import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
 import './ProjectDashboard.css'
 import useAuth from '../../hooks/useAuth';
 import NewTaskForm from '../Tasks/NewTaskForm';
 import ProductsTab from '../products/ProductsTab';
+import DesignTab from '../designs/DesignTab';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ProjectCharts from './ProjectCharts';
 
 const ProjectDashboard = () => {
-  const location = useLocation();
-  const project = location.state?.project;
+
+  const { projectId } = useParams();
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error
+  } = useGetProjectByIdQuery(projectId, {
+    pollingInterval: 300000, // Polling every 5 minutes
+    refetchOnFocus: true, // Refetch when the window gains focus
+    refetchOnMountOrArgChange: true // Refetch on component mount or argument changes
+  });
+  console.log(project)
   const [key, setKey] = useState('overview');
   const {isAdmin, isProjectManager} = useAuth()
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -41,8 +53,7 @@ const ProjectDashboard = () => {
       setShowTaskModal(false);
   };
   const handleViewDocument = (documentId) => {
-    const itemData = documents.entities[documentId];  
-    navigate(`/documents/${documentId}`, { state: { itemData } });
+    navigate(`/documents/${documentId}`);
   };
   
 
@@ -61,6 +72,7 @@ const ProjectDashboard = () => {
     navigate('manage-team/');
   };
 
+  if (isLoading) return <LoadingSpinner />
   return (
     <div className="container-fluid">
       {(isAdmin || isProjectManager) && (
@@ -121,49 +133,9 @@ const ProjectDashboard = () => {
 
 
         <Tab eventKey="charts" title="Charts">
-          {/* First row of charts */}
-          <div className="row mb-4">
-            <div className="col-md-4">
-              <h5>Health Indicators</h5>
-              <ul>
-                <li>Time: 14% ahead of schedule</li>
-                <li>Tasks: 12 tasks to be completed</li>
-                <li>Workload: 0 Tasks overdue</li>
-                <li>Progress: 14 complete</li>
-                <li>Cost: 42% under budget</li>
-              </ul>
-            </div>
-            <div className="col-md-4">
-              {/* <TasksDoughnutChart tasks={project.tasks} /> */}
-            </div>
-            <div className="col-md-4">
-              <div className="chart-container">
-                <ProgressHorizontalBarChart/>
-              </div>
-            </div>
-          </div>
-          {/* Second row of charts */}
-          <div className="row">
-            <div className="col-md-4">
-              <div className="chart-container">
-                <h3>Time</h3>
-                <TimeChart/>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="chart-container">
-                <h3>Cost Chart</h3>
-                <CostBarChart/>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="chart-container">
-                <h3>Workload Chart</h3>
-                <ProjectWorkloadChart/>
-              </div>
-            </div>
-          </div>
+          <ProjectCharts projectId={project.id} />
         </Tab>
+        
         <Tab eventKey="documents" title="Documents" className="project-documents">
           {console.log(documents)}
           {isLoadingDocuments ? (
@@ -216,45 +188,16 @@ const ProjectDashboard = () => {
             <p>No tasks available.</p>
           )}
         </Tab>
-        {/* <Tab eventKey="changeRequests" title="Change Requests">
-          <div className='row'>
-            <h3>Ongoing Change Request</h3>
-            <ChangeRequestsTable projectId={project.id} status="Reviewed" />
-          </div>
-          <div className='row'>
-            <h3>Completed Change Request</h3>
-            <ChangeRequestsTable projectId={project.id} status="Closed" />
-          </div>
-        </Tab> */}
-        <ProductsTab projectId={project.id} />
+
         <Tab eventKey="products" title="Products">
           <ProductsTab projectId={project.id} />
         </Tab>
+
+        
         <Tab eventKey="design" title="Design" className="design-tab-content">
-          <h2 className="design-tab-title">Project Design Overview</h2>
-          <p className="design-tab-summary">Here's a brief overview of the current design phase, including key objectives and recent updates.</p>
-
-          <div className="design-updates">
-            <h3>Latest Design Updates</h3>
-          </div>
-
-          <div className="design-approval-status">
-            <h3>Design Approval Status</h3>
-            {/* PieChart or List showing approval statuses */}
-          </div>
-
-          <div className="featured-designs">
-            <h3>Featured Designs</h3>
-            {/* Thumbnails or links to featured designs */}
-          </div>
-
-          <div className="design-actions mb-4">
-            <button className="btn btn-primary me-2">Add New Design</button>
-            <button className="btn btn-secondary">View All Designs</button>
-          </div>
-
-          {/* <DesignTable designs={project.designs} /> */}
+          <DesignTab projectId={project.id} />
         </Tab>
+
 
       </Tabs>
     </div>

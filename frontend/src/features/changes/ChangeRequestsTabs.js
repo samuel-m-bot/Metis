@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
 import './ChangeRequest.css'
+import RelatedItems from '../../components/RelatedItems';
+import ChangeRequestDetails from '../../components/ChangeRequestDetails';
 
 const ChangeRequestTabs = ({changeRequestData}) => {
   const [key, setKey] = useState('details');
@@ -41,49 +43,9 @@ const ChangeRequestTabs = ({changeRequestData}) => {
       >
         <Tab disabled eventKey="Title" title={<span style={{ color: '#287379', fontWeight: 'bold', fontSize: 'x-large' }}>CR - {changeRequestData.title}</span>}></Tab>
         <Tab eventKey="details" title="Details">
-          <div className="change-request-details">
-              <div className="general-information">
-                  <h3>General Information</h3>
-                  <p><strong>ID:</strong> {changeRequestData._id}</p>
-                  <p><strong>Title:</strong> {changeRequestData.title}</p>
-                  <p><strong>Item Affected:</strong> {changeRequestData.onModel} (ID: {changeRequestData.mainItem})</p>
-                  <p><strong>Status:</strong> {changeRequestData.status}</p>
-                  <p><strong>Request Date:</strong> {new Date(changeRequestData.dateRequested).toLocaleDateString()}</p>
-                  <p><strong>Requested By:</strong> {changeRequestData.requestedBy.firstName} {changeRequestData.requestedBy.surname}</p>
-                  <p><strong>Assigned To:</strong> {changeRequestData.assignedTo ? `${changeRequestData.assignedTo.firstName} ${changeRequestData.assignedTo.surname}` : 'Unassigned'}</p>
-                  <p><strong>Priority:</strong> {changeRequestData.priority}</p>
-                  <p><strong>Estimated Completion Date:</strong> {new Date(changeRequestData.estimatedCompletionDate).toLocaleDateString()}</p>
-              </div>
-
-              <div className="rationale">
-                  <h3>Rationale for Change</h3>
-                  <p>{changeRequestData.description}</p>
-              </div>
-
-              <div className="impact-analysis">
-                  <h3>Impact Analysis</h3>
-                  <p><strong>Risk Assessment:</strong> {changeRequestData.riskAssessment}</p>
-                  <p><strong>Impact Level:</strong> {changeRequestData.impactLevel}</p>
-              </div>
-
-              <div className="change-type">
-                  <h3>Change Type</h3>
-                  <p>{changeRequestData.changeType}</p>
-              </div>
-
-              <div className="approvals">
-                  <h3>Approvals</h3>
-                  {/* Dynamic rendering based on approval status, dummy values used here */}
-                  <p><strong>Design Lead:</strong> Pending</p>
-                  <p><strong>Production Manager:</strong> Approved</p>
-                  <p><strong>Finance Department:</strong> Reviewing</p>
-              </div>
-          </div>
-      </Tab>
-
-
-        <Tab eventKey="impactAnalysis" title="Impact Analysis">
+          <ChangeRequestDetails changeRequestData={changeRequestData} />
         </Tab>
+
         <Tab eventKey="reviewsApprovals" title="Reviews & Approvals">
           <div className="reviews-approvals">
             <h3>Change Request Reviews</h3>
@@ -120,8 +82,6 @@ const ChangeRequestTabs = ({changeRequestData}) => {
           </div>
         </Tab>
 
-        <Tab eventKey="implementationPlan" title="Implementation Plan">
-        </Tab>
         <Tab eventKey="historyComments" title="History & Comments">
           <div className="change-request-history-comments">
             <div className="history-log">
@@ -155,19 +115,7 @@ const ChangeRequestTabs = ({changeRequestData}) => {
         </Tab>
 
         <Tab eventKey="relatedDocuments" title="Related Documents & Items">
-          <div className="related-documents-items">
-            <h3>Related Documents</h3>
-            <ul className="related-documents-list">
-              <li>Project Proposal (Document ID: DOC-001)</li>
-              <li>Safety Protocol Revision (Document ID: DOC-002)</li>
-            </ul>
-
-            <h3>Related Items</h3>
-            <ul className="related-items-list">
-              <li>New Product Design (Design ID: DES-001)</li>
-              <li>Compliance Checklist (Product ID: PROD-001)</li>
-            </ul>
-          </div>
+          <RelatedItems changeRequestData={changeRequestData} />
         </Tab>
 
       </Tabs>

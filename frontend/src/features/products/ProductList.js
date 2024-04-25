@@ -40,6 +40,10 @@ const ProductList = ({ products, isLoading, isError, error }) => {
     return <p>Error: {error?.message}</p>;
   }
 
+  const handleNavigate = (productId) => {
+    navigate(`/products/${productId}`);
+  };
+  
   return (
     <div className="container mt-5">
       {/* <h2 className="mb-4">Product List</h2> */}
@@ -68,8 +72,8 @@ const ProductList = ({ products, isLoading, isError, error }) => {
         <tbody>
           {sortedProducts.map((product) => (
             <tr key={product.id}>
-              <td>
-                <Link to={`/products/${product.id}`}>{product.name}</Link>
+              <td onClick={() => handleNavigate(product.id)} style={{ cursor: 'pointer' }}>
+                {product.name}
               </td>
               <td>{product.category}</td>
               <td>{new Date(product.createdAt).toLocaleDateString()}</td>

@@ -49,6 +49,7 @@ import ReviewsList from './features/reviews/ReviewsList.js'
 import ReviewSuccessPage from './features/reviews/ReviewSuccessPage.js'
 import EditReview from './features/reviews/EditReview.js'
 import ChangeRequestPage from './features/changes/ChangeRequestPage.js'
+import ProjectDesignsPage from './features/designs/ProjectDesignsPage.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -127,6 +128,8 @@ function App() {
               <Route path="projects" element={<ProjectsDashboard />}/>
               <Route path="projects/project" element={<Project />}/>
               <Route path="projects/:projectId" element={<ProjectDashboard />} />
+              <Route path="projects/:projectId/designs" element={<ProjectDesignsPage />} />
+              <Route path="projects/:projectId/manage-team" element={<ProjectManageMembers />} />
               <Route path="tasks" element={<UserTaskPage />} />
               <Route path="tasks/:taskId" element={<TaskDetails />} />
               <Route path="/review-success" element={<ReviewSuccessPage />} />

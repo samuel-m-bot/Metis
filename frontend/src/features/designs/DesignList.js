@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useGetDesignsQuery, useLazyDownloadDesignQuery } from './designsApiSlice';
 import useAuth from '../../hooks/useAuth';
+import { useLazyDownloadDesignQuery } from './designsApiSlice';
 
-const DesignList = () => {
-  const { data: designs, isLoading, isError, error } = useGetDesignsQuery();
-  const [triggerDownload, { isLoading: isDownloading }] = useLazyDownloadDesignQuery();
+const DesignList = ({ designs }) => {
   const [sortedDesigns, setSortedDesigns] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
-  const { isAdmin, isProjectManager, email } = useAuth();
-  const navigate = useNavigate()
+  const { isAdmin, isProjectManager } = useAuth();
+  const [triggerDownload, { isLoading: isDownloading }] = useLazyDownloadDesignQuery();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (designs && designs.ids.length > 0) {
-      let sorted = designs.ids.map(id => designs.entities[id]);
+    if (designs && designs.length > 0) {
+      let sorted = [...designs];
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -51,8 +50,6 @@ const DesignList = () => {
     window.URL.revokeObjectURL(url);
     link.remove();
   };
-  
-  
 
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -64,71 +61,58 @@ const DesignList = () => {
 
   const handleCreateNewDesign = () => {
     navigate('/admin-dashboard/designs/create');
-};
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) {
-    if (error.status === 400 && error?.data?.message === 'No designs found') {
-      return (
-        <div className="container mt-5">
-          <h2>{error.data.message}</h2>
-          {(isAdmin || isProjectManager) && (
-            <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/designs/create')}>
-              Create New Change Request
-            </button>
-          )}
-        </div>
-      );
-    }
-    return <p>Error: {error?.data?.message}</p>;
-  }
+  };
 
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Design List</h2>
-      <button onClick={handleCreateNewDesign} className="btn btn-success mb-3">
-                Create New Task
-    </button>
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            <th onClick={() => requestSort('name')}>
-              Name {sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
-            </th>
-            <th onClick={() => requestSort('status')}>
-                Status {sortConfig.key === 'status' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
-            </th>
-            <th onClick={() => requestSort('productID')}>
-                productID {sortConfig.key === 'productID' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
-            </th>
-            <th>Actions</th>
-            <th>Download</th>
-          </tr>
-        </thead>
-        <tbody>
-            {console.log(sortedDesigns)}
-          {sortedDesigns.map((design) => (
-            <tr key={design.id}>
-              <td>
-                <Link to={`/designs/${design.id}`}>{design.name}</Link>
-              </td>
-              <td>{design.status}</td>
-              <td>{design.productID}</td>
-              <td>
-                <Link to={`${design.id}`}>Edit</Link> {/* Adjust link as needed */}
-              </td>
-              <td>
-              <button 
-                    className="btn btn-secondary" 
-                    onClick={() => handleDownload(design)}
-                    disabled={isDownloading}>
-                    Download
-            </button>
-            </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {(isAdmin || isProjectManager) && (
+          <button onClick={handleCreateNewDesign} className="btn btn-success mb-3">
+              Create New Design
+          </button>
+      )}
+      <div className="table-responsive">
+          <table className="table table-striped table-hover">
+              <thead>
+                  <tr>
+                      <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
+                          Name {sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
+                      </th>
+                      <th onClick={() => requestSort('status')} style={{ cursor: 'pointer' }}>
+                          Status {sortConfig.key === 'status' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
+                      </th>
+                      <th onClick={() => requestSort('productID')} style={{ cursor: 'pointer' }}>
+                          Product ID {sortConfig.key === 'productID' ? (sortConfig.direction === 'ascending' ? '▼' : '▲') : ''}
+                      </th>
+                      <th>Actions</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {sortedDesigns.map((design) => (
+                      <tr key={design.id}>
+                          <td>
+                              <Link to={`/designs/${design.id}`}>{design.name}</Link>
+                          </td>
+                          <td>{design.status}</td>
+                          <td>{design.productID}</td>
+                          <td>
+                              <div className="btn-group">
+                                {(isAdmin || isProjectManager) && (
+                                  <Link to={`/admin-dashboard/designs/edit/${design.id}`} className="btn btn-primary btn-sm">
+                                    Edit
+                                  </Link>
+                                )}
+                                  <button className="btn btn-secondary btn-sm" onClick={() => handleDownload(design)}>
+                                      Download
+                                  </button>
+                              </div>
+                          </td>
+                      </tr>
+                  ))}
+              </tbody>
+          </table>
+      </div>
+  </div>
   );
 };
 

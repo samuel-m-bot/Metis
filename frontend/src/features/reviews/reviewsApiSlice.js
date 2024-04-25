@@ -22,6 +22,19 @@ export const reviewsApiSlice = apiSlice.injectEndpoints({
             query: id => `/reviews/${id}`,
             providesTags: (result, error, arg) => [{ type: 'Review', id: arg }]
         }),
+        getReviewsByItemReviewed: builder.query({
+            query: itemReviewedId => `/reviews/item/${itemReviewedId}`,
+            transformResponse: responseData => {
+                const loadedReviews = responseData.map(review => {
+                    review.id = review._id;
+                    return review;
+                });
+                return reviewsAdapter.setAll(initialState, loadedReviews);
+            },
+            providesTags: (result, error, arg) => result ? 
+                [...result.ids.map(id => ({ type: 'Review', id })), { type: 'Review', id: 'LIST' }] : 
+                [{ type: 'Review', id: 'LIST' }]
+        }),
         addNewReview: builder.mutation({
             query: initialReviewData => ({
                 url: '/reviews',
@@ -62,6 +75,7 @@ export const reviewsApiSlice = apiSlice.injectEndpoints({
 export const {
     useGetReviewsQuery,
     useGetReviewByIdQuery,
+    useGetReviewsByItemReviewedQuery,
     useAddNewReviewMutation,
     useUpdateReviewMutation,
     useDeleteReviewMutation,

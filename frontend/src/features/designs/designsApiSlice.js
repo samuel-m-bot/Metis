@@ -42,7 +42,7 @@ export const designsApiSlice = apiSlice.injectEndpoints({
                 const design = { ...responseData, id: responseData._id };
                 return design;
             },
-            providesTags: (result, error, arg) => [{ type: 'Design', id: result.id }]
+            providesTags: (result, error, arg) => [{ type: 'Design', id: result._id }]
         }),
         addNewDesign: builder.mutation({
             query: (designData) => {
@@ -105,11 +105,22 @@ export const designsApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'Design', id: 'LIST' }];
             }
         }),
+        toggleFeaturedDesign: builder.mutation({
+            query: (designId) => ({
+                url: `/designs/${designId}/toggle-featured`, // Assuming this is the endpoint you set up
+                method: 'PATCH', // Using PATCH as only one field is being updated
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Design', id: arg }, // Invalidate cache for this specific design
+                { type: 'Design', id: "LIST" } // Optionally invalidate the list to refresh other related queries
+            ]
+        }),        
     }),
 })
 
 export const {
     useGetDesignsQuery,
+    useGetDesignByIdQuery,
     useLazyGetDesignByIdQuery,
     useAddNewDesignMutation,
     useUpdateDesignMutation,
@@ -117,7 +128,8 @@ export const {
     useDownloadDesignQuery,
     useLazyDownloadDesignQuery,
     useGetDesignsByProjectIdQuery,
-    useLazyGetDesignsQuery
+    useLazyGetDesignsQuery,
+    useToggleFeaturedDesignMutation
 } = designsApiSlice
 
 // returns the query result object

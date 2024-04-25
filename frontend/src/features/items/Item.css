@@ -22,17 +22,17 @@
   }
   
   .document-details h2 {
-    color: #28a745; 
+    color: #287379; 
     padding-bottom: 5px;
     margin-bottom: 15px;
-    border-bottom: 2px solid #28a745;
+    border-bottom: 2px solid #287379;
   }
   
   .detail-section {
     padding: 10px;
     margin-bottom: 20px;
     background-color: #f8f9fa; 
-    border-left: 5px solid #28a745; 
+    border-left: 5px solid #287379; 
     border-radius: 4px;
   }
   

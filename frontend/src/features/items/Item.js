@@ -6,11 +6,14 @@ import ChangeRequestsTable from '../changes/ChangeRequestsTable';
 import HistoryGraph from '../../components/HistoryGraph';
 import RelatedObjects from '../../components/RelatedObjects';
 import ItemActions from './ItemActions';
+import ReviewsApprovalsTab from '../reviews/ReviewsApprovalsTab';
+
 
 const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
   const [showModal, setShowModal] = useState(false);
   console.log(itemData)
+
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -74,7 +77,10 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
                     <div className="detail-row">
                       <p className="detail-item">
                         <span className="detail-label">{itemType === 'Document' ? 'Author(s):' : 'Designer(s):'}</span>
-                        {itemType === 'Document' ? itemData.authors?.join(', ') : itemData.designers?.join(', ')}
+                        {itemType === 'Document' ? 
+                          itemData.authors?.map(author => `${author.firstName} ${author.surname}`).join(', ') 
+                          : 
+                          itemData.designers?.map(designer => `${designer.firstName} ${designer.surname}`).join(', ')}
                       </p>
                     </div>
                   </div>
@@ -155,39 +161,11 @@ const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) =
         <Tab eventKey="relatedObjects" title="Related Objects">
           <RelatedObjects/>
         </Tab>
+
         <Tab eventKey="reviewsApprovals" title="Reviews & Approvals">
-          <div className="reviews-approvals">
-            <h3>Change Request Reviews</h3>
-            {changeRequests.map((cr, index) => (
-              <div key={index} className="change-request-review">
-                <h4>{`Change Request: ${cr.title} (${cr.id})`}</h4>
-                <p>Status: <strong>{cr.status}</strong></p>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Reviewer</th>
-                      <th>Role</th>
-                      <th>Review Date</th>
-                      <th>Feedback</th>
-                      <th>Decision</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cr.reviews.map((review, index) => (
-                      <tr key={index}>
-                        <td>{review.reviewer}</td>
-                        <td>{review.role}</td>
-                        <td>{new Date(review.date).toLocaleDateString()}</td>
-                        <td>{review.feedback}</td>
-                        <td>{review.decision}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
-          </div>
+          <ReviewsApprovalsTab projectId={itemData.id} />
         </Tab>
+        
       </Tabs>
       </div>
     </div>

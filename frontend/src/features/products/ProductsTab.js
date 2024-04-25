@@ -4,38 +4,36 @@ import { useGetProductsByProjectIdQuery } from './productsApiSlice';
 
 const ProductsTab = ({ projectId }) => {
     const {
-        data: ongoingProducts,
-        isLoading: isLoadingOngoing,
-        isError: isErrorOngoing,
-        error: errorOngoing
-    } = useGetProductsByProjectIdQuery( projectId, {status: 'Ongoing' });
+        data: productsData,
+        isLoading,
+        isError,
+        error
+    } = useGetProductsByProjectIdQuery(projectId);
 
-    const {
-        data: completedProducts,
-        isLoading: isLoadingCompleted,
-        isError: isErrorCompleted,
-        error: errorCompleted
-    } = useGetProductsByProjectIdQuery( projectId, {status: 'Completed' });
+    const products = productsData ? productsData?.ids.map(id => productsData.entities[id]) : [];
+
+    // Filter products based on their status
+    const ongoingProducts = products.filter(product => product.status !== 'Published');
+    const completedProducts = products.filter(product => product.status === 'Published');
 
     return (
         <div>
             <div className='row'>
                 <h3>Ongoing Products</h3>
-                {console.log(ongoingProducts)}
                 <ProductList 
-                    products={ongoingProducts ? ongoingProducts?.ids.map(id => ongoingProducts.entities[id]) : []} 
-                    isLoading={isLoadingOngoing} 
-                    isError={isErrorOngoing} 
-                    error={errorOngoing}
+                    products={ongoingProducts} 
+                    isLoading={isLoading} 
+                    isError={isError} 
+                    error={error}
                 />
             </div>
             <div className='row'>
                 <h3>Completed Products</h3>
                 <ProductList 
-                    products={completedProducts ? completedProducts?.ids.map(id => completedProducts.entities[id]) : []} 
-                    isLoading={isLoadingCompleted} 
-                    isError={isErrorCompleted} 
-                    error={errorCompleted}
+                    products={completedProducts} 
+                    isLoading={isLoading} 
+                    isError={isError} 
+                    error={error}
                 />
             </div>
         </div>

@@ -18,6 +18,17 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
             },
             providesTags: (result, error, arg) => result?.ids ? result.ids.map(id => ({ type: 'Project', id })) : [{ type: 'Project', id: 'LIST' }]
         }),
+        getProjectById: builder.query({
+            query: (id) => ({
+                url: `/projects/${id}`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const project = { ...responseData, id: responseData._id };
+                return project;
+            },
+            providesTags: (result, error, arg) => [{ type: 'Project', id: result.id }]
+        }),
         getProjectTeamMembers: builder.query({
             query: projectId => `/projects/${projectId}/TeaMember`,
             providesTags: (result, error, arg) => [{ type: 'Project', id: arg }]
@@ -74,6 +85,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 
 export const {
     useGetProjectsQuery,
+    useGetProjectByIdQuery,
     useGetProjectTeamMembersQuery,
     useGetProjectReviewersQuery,
     useAddNewProjectMutation,

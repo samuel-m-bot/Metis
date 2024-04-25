@@ -1,9 +1,23 @@
+import { useParams } from 'react-router-dom';
+import { useGetDocumentByIdQuery } from './documentsApiSlice';
 import Item from '../items/Item';
-import { useLocation } from 'react-router-dom';
 
 const Documents = () => {
-  const location = useLocation();
-  const itemData = location.state?.itemData;
+  const { documentId } = useParams();
+  const {
+    data: itemData,
+    isLoading,
+    isError,
+    error
+  } = useGetDocumentByIdQuery(documentId, {
+    pollingInterval: 60000, // Polling every 60 seconds
+    refetchOnFocus: true, // Refetch when the window gains focus
+    refetchOnMountOrArgChange: true // Refetch on component mount or argument changes
+  });
+
+  // Handling loading and error states
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
 
   const completedChangeRequests = [
     { id: 'CR001', title: 'Initial Creation', dateCompleted: '2022-01-10', status: 'Completed' },
@@ -55,16 +69,14 @@ const Documents = () => {
       ],
     },
   ];
-  
+
   return (
-    <>
-      <Item 
-        itemType="Document" 
-        itemData={itemData} 
-        changeRequests={changeRequests} 
-        completedChangeRequests={completedChangeRequests}
-      />
-    </>
+    <Item 
+      itemType="Document" 
+      itemData={itemData} 
+      changeRequests={changeRequests} 
+      completedChangeRequests={completedChangeRequests}
+    />
   );
 };
 

@@ -4,11 +4,12 @@ import { useCanUserCheckOutAndInItemQuery, useCheckOutItemMutation, useCheckInIt
 import ChangeRequestModal from '../changes/ChangeRequestModal';
 import EditItemModal from './EditItemModal';
 import useAuth from '../../hooks/useAuth';
+import { useToggleFeaturedDesignMutation } from '../designs/designsApiSlice';
 
 const ItemActions = ({ itemType, itemData }) => {
     const [showModal, setShowModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const { id: userId } = useAuth();
+    const { id: userId, isAdmin, isProjectManager } = useAuth();
 
     const {
         data: permissionData,
@@ -18,6 +19,16 @@ const ItemActions = ({ itemType, itemData }) => {
 
     const [checkOutItem, { isLoading: loadingCheckOut }] = useCheckOutItemMutation();
     const [checkInItem, { isLoading: loadingCheckIn }] = useCheckInItemMutation();
+    const [toggleFeatured] = useToggleFeaturedDesignMutation();
+
+    const handleToggleFeatured = async (designId) => {
+        try {
+            await toggleFeatured(designId).unwrap();
+            console.log('Design featured status toggled successfully!');
+        } catch (error) {
+            console.error('Failed to toggle featured status: ', error);
+        }
+    };
 
     const handleCheckOut = async () => {
         try {
@@ -61,6 +72,11 @@ const ItemActions = ({ itemType, itemData }) => {
                 <Button variant="secondary">Actions</Button>
                 <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
                 <Dropdown.Menu>
+                    {itemType === 'Design' && (isAdmin || isProjectManager) && (
+                        <Dropdown.Item onClick={() => handleToggleFeatured(itemData.id)}>
+                            {itemData.isFeatured ? 'Un-Feature Design' : 'Feature Design'}
+                        </Dropdown.Item>
+                    )}
                     <Dropdown.Item onClick={handleCheckOut} disabled={loadingCheckOut || !permissionData?.authorized}>Check Out</Dropdown.Item>
                     <Dropdown.Item onClick={handleCheckIn} disabled={loadingCheckIn || !permissionData?.authorized}>Check In</Dropdown.Item>
                     <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>

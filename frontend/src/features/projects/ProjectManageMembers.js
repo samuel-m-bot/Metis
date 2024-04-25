@@ -5,7 +5,8 @@ import { useGetUsersQuery } from '../users/usersApiSlice';
 import AddTeamMemberModal from './AddTeamMemberModal';
 
 const ProjectManageMembers = () => {
-    const { id: projectId } = useParams();
+    const { projectId } = useParams();
+    console.log(projectId);
     const navigate = useNavigate();
     const { data: projectDetails, isLoading: isLoadingProjectDetails, isError, error } = useGetProjectTeamMembersQuery(projectId);
     const { data: allUsers, isLoading: isLoadingUsers } = useGetUsersQuery();
@@ -17,6 +18,7 @@ const ProjectManageMembers = () => {
     const [selectedPermissions, setSelectedPermissions] = useState([]);
     const [availableUsers, setAvailableUsers] = useState([]);
 
+    console.log(projectDetails)
     useEffect(() => {
         if (allUsers && projectDetails) {
             const currentMemberIds = new Set(projectDetails.teamMembers.map(member => member.userId));

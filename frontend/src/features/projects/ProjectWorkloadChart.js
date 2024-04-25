@@ -1,13 +1,29 @@
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-const ProjectWorkloadChart = () => {
-  const teamMembersTasks = [
-    { name: 'Member 1', completed: 5, remaining: 10, overdue: 2 },
-    { name: 'Member 2', completed: 7, remaining: 8, overdue: 3 },
-    { name: 'Member 3', completed: 6, remaining: 5, overdue: 1 },
-  ];
+const ProjectWorkloadChart = ({ tasks }) => {
+  const aggregateTasks = (tasks) => {
+    const taskAggregation = {};
+    tasks.forEach(task => {
+      task.assignedTo.forEach(user => {
+        const userName = `${user.firstName} ${user.surname}`;
+        if (!taskAggregation[userName]) {
+          taskAggregation[userName] = { completed: 0, remaining: 0, overdue: 0, name: userName };
+        }
+        if (task.status === 'Completed') {
+          taskAggregation[userName].completed += 1;
+        } else if (task.status !== 'Completed' && new Date(task.dueDate) > new Date()) {
+          taskAggregation[userName].remaining += 1;
+        }
+        if (task.status !== 'Completed' && new Date(task.dueDate) < new Date()) {
+          taskAggregation[userName].overdue += 1;
+        }
+      });
+    });
+    return Object.values(taskAggregation);
+  };
+
+  const teamMembersTasks = aggregateTasks(tasks);
 
   const data = {
     labels: teamMembersTasks.map(member => member.name),

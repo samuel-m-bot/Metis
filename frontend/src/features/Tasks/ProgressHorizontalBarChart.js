@@ -1,14 +1,20 @@
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-const ProgressHorizontalBarChart = () => {
+const ProgressHorizontalBarChart = ({ tasks }) => {
+  // Compute task counts based on status
+  const taskCounts = {
+    completed: tasks.filter(task => task.status === 'Completed').length,
+    inProgress: tasks.filter(task => task.status === 'In Progress').length,
+    notStarted: tasks.filter(task => task.status === 'Not Started').length
+  };
+
   const data = {
     labels: ['Completed', 'Ongoing', 'Not Started'],
     datasets: [
       {
         label: 'Tasks',
-        data: [5, 3, 2],
+        data: [taskCounts.completed, taskCounts.inProgress, taskCounts.notStarted],
         backgroundColor: [
           'rgba(75, 192, 192, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -25,7 +31,7 @@ const ProgressHorizontalBarChart = () => {
   };
 
   const options = {
-    indexAxis: 'y',
+    indexAxis: 'y', // Horizontal bar chart
     elements: {
       bar: {
         borderWidth: 2,

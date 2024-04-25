@@ -14,6 +14,7 @@ import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
 import './ProjectDashboard.css'
 import useAuth from '../../hooks/useAuth';
 import NewTaskForm from '../Tasks/NewTaskForm';
+import ProductsTab from '../products/ProductsTab';
 
 const ProjectDashboard = () => {
   const location = useLocation();
@@ -97,8 +98,8 @@ const ProjectDashboard = () => {
           <p><strong>End Date:</strong> {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}</p>
           <p><strong>Status:</strong> <span className={`badge ${project.status === 'Completed' ? 'bg-success' : 'bg-warning'}`}>{project.status}</span></p>
           <p><strong>Description:</strong> {project.description}</p>
-          <p><strong>Project Manager:</strong> {project.projectManagerID}</p>
-          <p><strong>Team Members:</strong> {project.teamMembers.join(', ')}</p>
+          <p><strong>Project Manager:</strong> {project.projectManagerID.firstName} {project.projectManagerID.surname}</p>
+          <p><strong>Team Members:</strong> {project.teamMembers.map(member => `${member.userId.firstName} ${member.userId.surname}`).join(', ')}</p>
           <div><strong>Progress:</strong></div>
           <div className="progress" style={{ height: '20px' }}>
             <div className="progress-bar" role="progressbar" style={{ width: '50%' }}></div>
@@ -215,7 +216,7 @@ const ProjectDashboard = () => {
             <p>No tasks available.</p>
           )}
         </Tab>
-        <Tab eventKey="changeRequests" title="Change Requests">
+        {/* <Tab eventKey="changeRequests" title="Change Requests">
           <div className='row'>
             <h3>Ongoing Change Request</h3>
             <ChangeRequestsTable projectId={project.id} status="Reviewed" />
@@ -224,6 +225,10 @@ const ProjectDashboard = () => {
             <h3>Completed Change Request</h3>
             <ChangeRequestsTable projectId={project.id} status="Closed" />
           </div>
+        </Tab> */}
+        <ProductsTab projectId={project.id} />
+        <Tab eventKey="products" title="Products">
+          <ProductsTab projectId={project.id} />
         </Tab>
         <Tab eventKey="design" title="Design" className="design-tab-content">
           <h2 className="design-tab-title">Project Design Overview</h2>

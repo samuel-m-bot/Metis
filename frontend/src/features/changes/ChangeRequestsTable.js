@@ -16,10 +16,10 @@ const ChangeRequestsTable = ({ mainItemId }) => {
   }, [mainItemId, triggerQuery]);
 
   const handleViewChangeRequest = (changeRequestID) => {
-    const changeRequestData = changeRequests.find(request => request._id === changeRequestID);
+    const itemData = changeRequests.find(request => request._id === changeRequestID);
   
-    if (changeRequestData) {
-      navigate(`/change-requests/${changeRequestID}`, { state: { changeRequestData } });
+    if (itemData) {
+      navigate(`/change-requests/${changeRequestID}`, { state: { itemData } });
     } else {
       console.error("No change request found with ID:", changeRequestID);
     }

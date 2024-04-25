@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useGetProductsQuery } from './productsApiSlice';
 import useAuth from '../../hooks/useAuth';
 
-const ProductList = () => {
-  const { data: products, isLoading, isError, error } = useGetProductsQuery();
+const ProductList = ({ products, isLoading, isError, error }) => {
   const [sortedProducts, setSortedProducts] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
   const { isAdmin, isProjectManager, email } = useAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (products && products.ids.length > 0) {
-      let sorted = products.ids.map(id => products.entities[id]);
+    console.log(products)
+    if (products && products.length > 0) {
+      let sorted = [...products];
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -38,24 +37,12 @@ const ProductList = () => {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) {
-    if (error.status === 400 && error?.data?.message === 'No products found') {
-      return (
-        <div className="container mt-5">
-          <h2>{error.data.message}</h2>
-          {(isAdmin || isProjectManager) && (
-            <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/products/create')}>
-              Create New Change Request
-            </button>
-          )}
-        </div>
-      );
-    }
-    return <p>Error: {error?.data?.message}</p>;
+    return <p>Error: {error?.message}</p>;
   }
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Product List</h2>
+      {/* <h2 className="mb-4">Product List</h2> */}
       {(isAdmin || isProjectManager) && (
         <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/products/create')}>
           Create New Product
@@ -85,10 +72,10 @@ const ProductList = () => {
                 <Link to={`/products/${product.id}`}>{product.name}</Link>
               </td>
               <td>{product.category}</td>
-              <td>{product.createdAt}</td>
+              <td>{new Date(product.createdAt).toLocaleDateString()}</td>
               {(isAdmin || isProjectManager) && (
                  <td>
-                  <Link to={`/admin-dashboard/products/${product.id}`}>Edit</Link>
+                  <Link to={`/admin-dashboard/products/${product.id}/edit`}>Edit</Link>
                 </td>
               )}
             </tr>

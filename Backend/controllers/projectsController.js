@@ -5,25 +5,39 @@ const bcrypt = require('bcrypt')
 
 // @desc Get all projects
 // @route GET /projects
-// @access private
+// @access Private
 const getAllProjects = asyncHandler(async (req, res) => {
-    const projects = await Project.find().lean()
-    if(!projects?.length){
-        return res.status(400).json({ message: 'No projects found'})
-    }
-    res.json(projects)
-})
+    const projects = await Project.find().populate({
+        path: 'projectManagerID',
+        select: 'firstName surname'  
+    }).populate({
+        path: 'teamMembers.userId',
+        select: 'firstName surname'  
+    }).lean();
 
-// @desc Get specific projects
-// @route GET /projects
-// @access private
-const getProjectById = asyncHandler(async (req, res) => {
-    const projects = await Project.findById(req.params.id).lean()
-    if(!projects){
-        return res.status(400).json({ message: 'No project found with that ID'})
+    if (!projects?.length) {
+        return res.status(400).json({ message: 'No projects found' });
     }
-    res.json(projects)
-})
+    res.json(projects);
+});
+
+// @desc Get specific project
+// @route GET /projects/:id
+// @access Private
+const getProjectById = asyncHandler(async (req, res) => {
+    const project = await Project.findById(req.params.id).populate({
+        path: 'projectManagerID',
+        select: 'firstName surname'
+    }).populate({
+        path: 'teamMembers.userId',
+        select: 'firstName surname'
+    }).lean();
+
+    if (!project) {
+        return res.status(400).json({ message: 'No project found with that ID' });
+    }
+    res.json(project);
+});
 
 // @desc Get projects assigned to the current user
 // @route GET /projects/assigned/:userId
@@ -31,8 +45,15 @@ const getProjectById = asyncHandler(async (req, res) => {
 const getAssignedProjects = asyncHandler(async (req, res) => {
     const userId = req.params.userId;
 
-    // Find projects where the userId is in the teamMembers array
-    const assignedProjects = await Project.find({ teamMembers: { $in: [userId] } });
+    const assignedProjects = await Project.find({
+        'teamMembers.userId': userId
+    }).populate({
+        path: 'projectManagerID',
+        select: 'firstName surname'
+    }).populate({
+        path: 'teamMembers.userId',
+        select: 'firstName surname'
+    });
 
     if (!assignedProjects.length) {
         return res.status(404).json({ message: 'No assigned projects found' });
@@ -40,6 +61,7 @@ const getAssignedProjects = asyncHandler(async (req, res) => {
 
     res.json(assignedProjects);
 });
+
 
 // @desc Create new project
 // @route POST /projects

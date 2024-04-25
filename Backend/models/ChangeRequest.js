@@ -98,6 +98,11 @@ const changeRequestSchema = new mongoose.Schema({
         type: String,
         enum: ['High', 'Medium', 'Low'],
         required: true
+    },
+    revisionType: {
+        type: String,
+        required: true,
+        enum: ['Major', 'Minor'] 
     }
 });
 

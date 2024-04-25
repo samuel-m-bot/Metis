@@ -39,6 +39,7 @@ app.use('/changeRequests', require('./routes/changeRequestRoutes'))
 app.use('/tasks', require('./routes/taskRoutes'))
 app.use('/reviews', require('./routes/reviewRoutes'))
 app.use('/activity', require('./routes/activityRoutes'))
+app.use('/items', require('./routes/itemRoutes'))
 
 app.all('*', (req, res) => {
     res.status(404)

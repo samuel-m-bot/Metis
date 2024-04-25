@@ -44,13 +44,13 @@ const createNewChangeRequest = asyncHandler(async (req, res) => {
     const {
         requestedBy, projectId, title, description, status, priority, estimatedCompletionDate,
         assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts,
-        mainItem, onModel, changeType, riskAssessment, impactLevel
+        mainItem, onModel, changeType, riskAssessment, impactLevel, revisionType
     } = req.body;
 
     // Validate required fields
     if (!requestedBy || !projectId || !title ||  !description || !status 
         || !priority || !mainItem || !onModel || !changeType || !riskAssessment
-        || !impactLevel) {
+        || !impactLevel || !revisionType) {
         return res.status(400).json({ message: 'Required fields are missing' });
     }
 
@@ -58,7 +58,7 @@ const createNewChangeRequest = asyncHandler(async (req, res) => {
     const changeRequest = new ChangeRequest({
         requestedBy, projectId, title,  description, status, priority, estimatedCompletionDate,
         assignedTo, comments, relatedDocuments, relatedDesigns, associatedTasks, relatedProducts,
-        mainItem, onModel, changeType, riskAssessment, impactLevel
+        mainItem, onModel, changeType, riskAssessment, impactLevel, revisionType
     });
 
     const createdChangeRequest = await changeRequest.save();
@@ -79,7 +79,7 @@ const updateChangeRequest = asyncHandler(async (req, res) => {
         description, status, title, priority, estimatedCompletionDate, 
         approvalDate, assignedTo, comments,relatedDocuments, 
         relatedDesigns, associatedTasks, relatedProducts, mainItem, 
-        onModel, changeType, riskAssessment, impactLevel
+        onModel, changeType, riskAssessment, impactLevel, revisionType
     } = req.body;
     const changeRequestId = req.params.id;
 
@@ -105,6 +105,7 @@ const updateChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.changeType = changeType || changeRequest.changeType;
     changeRequest.riskAssessment = riskAssessment || changeRequest.riskAssessment;
     changeRequest.impactLevel = impactLevel || changeRequest.impactLevel;
+    changeRequest.revisionType = revisionType || changeRequest.revisionType;
 
     const updatedChangeRequest = await changeRequest.save();
     res.json(updatedChangeRequest);

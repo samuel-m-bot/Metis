@@ -10,7 +10,8 @@ const Activity = require('../models/Activity')
 const createTask = asyncHandler(async (req, res) => {
     const {
         name, description, status, priority, assignedTo, taskType,
-        projectId, dueDate, relatedTo,  assignedDesign, assignedDocument, assignedProduct, review
+        projectId, dueDate, relatedTo,  assignedDesign, assignedDocument, assignedProduct, review,
+        assignedChangeRequest
     } = req.body;
 
     if (!name || !description || !status || !priority || !assignedTo || !taskType || !projectId || !relatedTo) {
@@ -34,6 +35,7 @@ const createTask = asyncHandler(async (req, res) => {
     if(relatedTo && relatedTo==="Design" && assignedDesign) task.assignedDesign = assignedDesign;
     if(relatedTo && relatedTo==="Document" && assignedDocument) task.assignedDocument = assignedDocument;
     if(relatedTo && relatedTo==="Product" && assignedProduct) task.assignedProduct = assignedProduct;
+    if(assignedChangeRequest) task.assignedChangeRequest = assignedChangeRequest;
     if(review) task.review = review;
 
     task.creationDate = Date.now();
@@ -99,7 +101,8 @@ const getUserTasks = asyncHandler(async (req, res) => {
 const updateTask = asyncHandler(async (req, res) => {
     const {
         name, description, status, priority, assignedTo, taskType,
-        projectId, dueDate, relatedTo, assignedDesign, assignedDocument, assignedProduct, review
+        projectId, dueDate, relatedTo, assignedDesign, assignedDocument, assignedProduct, review,
+        assignedChangeRequest
     } = req.body;
 
     const task = await Task.findById(req.params.id);
@@ -120,6 +123,7 @@ const updateTask = asyncHandler(async (req, res) => {
     task.assignedDesign = assignedDesign || task.assignedDesign;
     task.assignedDocument = assignedDocument || task.assignedDocument;
     task.assignedProduct = assignedProduct || task.assignedProduct;
+    task.assignedChangeRequest = assignedChangeRequest || task.assignedChangeRequest;
     task.review = review || task.review;
 
     const updatedTask = await task.save();
@@ -335,6 +339,7 @@ const getTasksByProjectId = asyncHandler(async (req, res) => {
 // @route POST /tasks/manage-review-tasks
 // @access Private
 const manageReviewTasks = asyncHandler(async (req, res) => {
+    console.log("PPPPPPPPPPPPPPPPPPPPPPPPPPP")
     const { reviewId, projectId, reviewers, taskDetails, isChangeRequest } = req.body;
 
     const requestUserId = req.user._id; 
@@ -356,7 +361,8 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
                 taskType: 'Review',
                 relatedTo: taskDetails.relatedTo,
                 dueDate: taskDetails.dueDate,
-                review: reviewId
+                review: reviewId,
+                assignedChangeRequest: taskDetails.assignedChangeRequest
             });
             await newTask.save();
         });
@@ -375,7 +381,8 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             taskType: 'Observe',
             relatedTo: taskDetails.relatedTo,
             dueDate: taskDetails.dueDate,
-            review: reviewId
+            review: reviewId,
+            assignedChangeRequest: taskDetails.assignedChangeRequest
         });
         await observeTask.save();
 
@@ -411,6 +418,7 @@ const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
             relatedTo: task.relatedTo,
             dueDate: task.dueDate || undefined,
             [`assigned${task.relatedTo}`]: createdItemId,
+            assignedChangeRequest: task.assignedChangeRequest
         };
 
         const newReviewTask = new Task(reviewTaskData);

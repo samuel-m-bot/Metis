@@ -41,6 +41,10 @@ const reviewSchema = new mongoose.Schema({
     initiationDate: {
         type: Date,
         default: Date.now  
+    },
+    reviewType: {
+        type: String,
+        enum: ['Update'],
     }
 }, { timestamps: true });
 

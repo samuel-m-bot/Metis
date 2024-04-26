@@ -1,5 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 const Document = require('../models/Document')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 const storage = new Storage();
@@ -78,7 +79,20 @@ const createNewDocument = asyncHandler(async (req, res) => {
     document.creationDate = Date.now();
 
     const createdDocument = await document.save();
+
+    const activity = new Activity({
+        actionType: 'Created',
+        description: `New document '${createdDocument.title}' was created with ID ${createdDocument._id}`,
+        createdBy: req.user._id,
+        relatedTo: createdDocument._id,
+        onModel: 'Document',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(201).json(createdDocument);
+
 });
 
 // @desc Update a document
@@ -116,7 +130,20 @@ const updateDocument = asyncHandler(async (req, res) => {
     }
 
     const updatedDocument = await document.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Document '${updatedDocument.title}' was updated with ID ${updatedDocument._id}`,
+        createdBy: req.user._id,
+        relatedTo: updatedDocument._id,
+        onModel: 'Document',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({ message: `Document '${updatedDocument._id}' updated successfully.` });
+
 });
 
 // @desc Delete a document form the cloud and database
@@ -145,6 +172,18 @@ const deleteDocument = asyncHandler(async (req, res) => {
     // Then, delete the document record from the database
     const result = await document.deleteOne();
     const reply = `Document ${result.name} with ID ${result._id} deleted`;
+    
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Document '${document.title}' with ID ${document._id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: document._id,
+        onModel: 'Document',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({ message: reply });
 });
 
@@ -180,6 +219,17 @@ const downloadDocumentFile = asyncHandler(async (req, res) => {
             console.error('Error during the file download:', err);
             res.status(500).json({ message: "Could not download the file: " + err.message });
         });
+
+        const activity = new Activity({
+            actionType: 'Downloaded',
+            description: `File ${fileName} for document ID ${document._id} was downloaded`,
+            createdBy: req.user._id,
+            relatedTo: document._id,
+            onModel: 'Document',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
 
         readStream.pipe(res);
     } catch (err) {

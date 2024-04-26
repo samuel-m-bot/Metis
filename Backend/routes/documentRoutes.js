@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const documentsController = require('../controllers/documentsController');
 const { upload, uploadFileToStorage } = require('../config/multerConfig');  
+const verifyJWT = require('../middleware/verifyJWT')
+
+router.use(verifyJWT)
 
 router.route('/')
     .get(documentsController.getAllDocuments)

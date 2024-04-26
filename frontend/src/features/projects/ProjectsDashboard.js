@@ -52,11 +52,14 @@ const ProjectsDashboard = () => {
     id => assignedProjects.entities[id].status !== 'Completed'
   ).map(id => assignedProjects.entities[id]);
 
+
   return (
     <div className="container mt-3">
       <h1>Project Dashboard</h1>
       <div className='row'>
+
           <div className='col'>
+          <button className='btn btn-primary' onClick={()=> handleCreateNewProject()}>Create Project</button>
               <h2>Assigned projects</h2>
               <ProjectsList projects={ongoingProjects} />
           </div>

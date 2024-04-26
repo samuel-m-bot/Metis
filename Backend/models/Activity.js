@@ -4,31 +4,41 @@ const activitySchema = new mongoose.Schema({
     actionType: {
         type: String,
         required: true,
-        enum: ['Created', 'Updated', 'Reviewed', 'Commented', 'Completed', 'Approved', 'Rejected', 'Deleted', 'Other'],
+        enum: ['Created', 'Updated', 'Reviewed', 'Commented', 'Completed', 'Approved', 
+        'Rejected', 'Deleted', 'RevisionUpdate' , 'Checked Out', 'Checked In', 
+        'Added', 'Removed','Cancelled','Implemented','Other'],
     },
     description: {
         type: String,
-        required: true,
+        required: true
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+        ref: 'User', 
     },
     relatedTo: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        refPath: 'onModel',
+        refPath: 'onModel' 
     },
     onModel: {
         type: String,
         required: true,
-        enum: ['Project', 'ChangeRequest', 'Document', 'Product', 'Design', 'Task'],
+        enum: ['ChangeRequest', 'Product', 'Document', 'Task', 'Design', 'Review', 'Project'] 
     },
-    createdAt: {
+    timestamp: {
         type: Date,
-        default: Date.now,
+        default: Date.now 
     },
+    ipAddress: {
+        type: String,
+        required: false 
+    },
+    deviceInfo: {
+        type: String,
+        required: false 
+    }
 });
 
-module.exports = mongoose.model('Activity', activitySchema);
+const Activity = mongoose.model('Activity', activitySchema);
+module.exports = Activity;

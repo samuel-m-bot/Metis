@@ -1,14 +1,8 @@
-import { useNavigate } from "react-router-dom";
 import Project from './Project';
 import useAuth from '../../hooks/useAuth';
 
 const ProjectsList = ({ projects }) => {
-    const navigate = useNavigate();
     const { isAdmin, isProjectManager } = useAuth();
-
-    const handleCreateNewProject = () => {
-        navigate('/admin-dashboard/projects/create');
-    };
 
     const canEdit = (isAdmin || isProjectManager);
 

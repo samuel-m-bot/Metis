@@ -1,7 +1,7 @@
 const ChangeRequest = require('../models/ChangeRequest')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
-const Activity = require('../models/Activity');
 
 // @desc Get all changeRequests
 // @route GET /changeRequests
@@ -67,6 +67,17 @@ const createNewChangeRequest = asyncHandler(async (req, res) => {
     const populatedChangeRequest = await ChangeRequest.findById(createdChangeRequest._id)
         .populate('assignedTo', 'firstName surname'); // only populate firstName and surname
 
+    const activity = new Activity({
+        actionType: 'Created',
+        description: `New change request '${createdChangeRequest.title}' was created with ID ${createdChangeRequest._id}`,
+        createdBy: req.user._id,
+        relatedTo: createdChangeRequest._id,
+        onModel: 'ChangeRequest',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(201).json(populatedChangeRequest);
 });
 
@@ -108,6 +119,18 @@ const updateChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.revisionType = revisionType || changeRequest.revisionType;
 
     const updatedChangeRequest = await changeRequest.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Change request '${updatedChangeRequest.title}' was updated with ID ${updatedChangeRequest._id}`,
+        createdBy: req.user._id,
+        relatedTo: updatedChangeRequest._id,
+        onModel: 'ChangeRequest',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json(updatedChangeRequest);
 });
 
@@ -124,7 +147,19 @@ const deleteChangeRequest = asyncHandler(async (req, res) => {
 
     await ChangeRequest.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({ message: `Change request : ${changeRequest._id} deleted successfully` });
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Change request '${changeRequest.title}' with ID ${changeRequest._id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: changeRequest._id,
+        onModel: 'ChangeRequest',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
+    res.json({ message: `Change request ${changeRequest._id} deleted successfully` });
+
 });
 
 // @desc List change requests by status
@@ -141,77 +176,6 @@ const listChangeRequestsByStatus = asyncHandler(async (req, res) => {
     }
 
     res.json(changeRequests);
-});
-
-
-// @desc Assign a change request to a user
-// @route PATCH /changeRequests/:id/assign
-// @access private
-const assignChangeRequest = asyncHandler(async (req, res) => {
-    const { userId } = req.body; // ID of the user to whom the request is assigned
-    const changeRequestId = req.params.id; // ID of the change request
-
-    const changeRequest = await ChangeRequest.findById(changeRequestId);
-
-    if (!changeRequest) {
-        return res.status(404).json({ message: 'Change request not found' });
-    }
-
-    // Optionally, verify the user exists
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Assign the change request
-    changeRequest.assignedTo = userId;
-    await changeRequest.save();
-
-    const newActivity = new Activity({
-        actionType: 'Assigned',
-        description: `Change request ${changeRequestId} assigned to user ${userId}`,
-        createdBy: req.user._id,
-        relatedTo: changeRequestId,
-        onModel: 'ChangeRequest',
-    });
-    await newActivity.save();
-
-    res.json({ message: `Change request ${changeRequestId} assigned to user ${userId}` });
-});
-
-// @desc Approve or reject a change request
-// @route PATCH /changeRequests/:id/approveReject
-// @access private
-const approveRejectChangeRequest = asyncHandler(async (req, res) => {
-    const { approvalStatus } = req.body; // Expected to be either 'Approved' or 'Rejected'
-    const changeRequestId = req.params.id;
-
-    const changeRequest = await ChangeRequest.findById(changeRequestId);
-
-    if (!changeRequest) {
-        return res.status(404).json({ message: 'Change request not found' });
-    }
-
-    if (!['Approved', 'Rejected'].includes(approvalStatus)) {
-        return res.status(400).json({ message: 'Invalid approval status' });
-    }
-
-    changeRequest.approvalStatus = approvalStatus;
-    await changeRequest.save();
-
-    const approvalActivity = new Activity({
-        actionType: approvalStatus, 
-        description: `Change request ${changeRequestId} has been ${approvalStatus.toLowerCase()}`,
-        createdBy: req.user._id,
-        relatedTo: changeRequestId,
-        onModel: 'ChangeRequest',
-    });
-    await approvalActivity.save();
-
-    res.json({
-        message: `Change request ${changeRequestId} has been ${approvalStatus.toLowerCase()}`,
-        changeRequest
-    });
 });
 
 // @desc Get change requests by Project ID and Status
@@ -318,6 +282,17 @@ const addCommentToChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.comments.push(newComment);
     await changeRequest.save();
 
+    const activity = new Activity({
+        actionType: 'Commented',
+        description: `A comment was added to change request ${changeRequestId} by user ${postedBy || req.user._id}`,
+        createdBy: req.user._id,
+        relatedTo: changeRequestId,
+        onModel: 'ChangeRequest',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(201).json({
         message: 'Comment added successfully',
         comments: changeRequest.comments
@@ -346,10 +321,22 @@ const deleteCommentFromChangeRequest = asyncHandler(async (req, res) => {
     changeRequest.comments.splice(commentIndex, 1);
     await changeRequest.save();
 
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `A comment was deleted from change request ${changeRequestId}`,
+        createdBy: req.user._id,
+        relatedTo: changeRequestId,
+        onModel: 'ChangeRequest',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({
         message: 'Comment deleted successfully',
         comments: changeRequest.comments
     });
+
 });
 
 // @desc Get all comments for a change request sorted by latest
@@ -383,8 +370,6 @@ module.exports = {
     updateChangeRequest,
     deleteChangeRequest,
     listChangeRequestsByStatus,
-    assignChangeRequest,
-    approveRejectChangeRequest,
     getChangeRequestsByProjectAndStatus,
     getChangeRequestsByRelatedItem,
     getChangeRequestsByMainItem,

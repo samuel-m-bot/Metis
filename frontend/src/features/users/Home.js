@@ -4,14 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import UserTasks from '../Tasks/UserTasks';
 
+
 const Home = () => {
   const navigate = useNavigate();
-  const { isAdmin, id } = useAuth();
+  const { isAdmin, id, firstName, surname } = useAuth();
   
 
   return (
     <div className="container">
-      <h1 className="text-center my-4">Welcome to Your <span className="metis-green">Metis</span> Dashboard</h1>
+      <h1 className="text-center my-4">Welcome to Your <span className="metis-green">Metis</span> Dashboard, {firstName}</h1>
       <div className="row">
         <div className="col-md-4">
           <h2>Quick Links</h2>

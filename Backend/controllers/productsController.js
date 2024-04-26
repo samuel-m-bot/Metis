@@ -1,4 +1,5 @@
 const Product = require('../models/Product')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 
@@ -59,6 +60,18 @@ const createNewProduct = asyncHandler(async (req, res) => {
     const product = await Product.create(productObject)
 
     if (product) {
+
+        const activity = new Activity({
+            actionType: 'Created',
+            description: `New product '${product.name}' was created with ID ${product._id}`,
+            createdBy: req.user._id,
+            relatedTo: product._id,
+            onModel: 'Product',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+
         res.status(201).json(product);
     } else {
         res.status(400).json({ message: 'Invalid product data received' })
@@ -106,6 +119,17 @@ const updateProduct = asyncHandler(async (req, res) => {
     // Save the updated product
     const updatedProduct = await product.save()
 
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Product '${product.name}' was updated with ID ${product._id}`,
+        createdBy: req.user._id,
+        relatedTo: product._id,
+        onModel: 'Product',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({ message: `Product ${updatedProduct.name} updated` })
 })
 
@@ -122,6 +146,17 @@ const deleteProduct = asyncHandler(async (req, res) => {
     const result = await product.deleteOne()
 
     const reply = `Product ${result.name} with ID ${result._id} deleted`
+
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Product '${product.name}' with ID ${product._id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: product._id,
+        onModel: 'Product',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
 
     res.json(reply)
 })

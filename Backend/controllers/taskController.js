@@ -50,6 +50,17 @@ const createTask = asyncHandler(async (req, res) => {
         { new: true, safe: true, upsert: true }
     );
 
+    const taskCreationActivity = new Activity({
+        actionType: 'Created',
+        description: `New task '${task.name}' created with ID ${task._id} under project ID ${projectId}. Task type: ${taskType}.`,
+        createdBy: req.user._id, 
+        relatedTo: task._id,
+        onModel: 'Task',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await taskCreationActivity.save();
+
     res.status(201).json(savedTask);
 });
 
@@ -128,6 +139,18 @@ const updateTask = asyncHandler(async (req, res) => {
     task.review = review || task.review;
 
     const updatedTask = await task.save();
+
+    const taskUpdateActivity = new Activity({
+        actionType: 'Updated',
+        description: `Task ${task._id} updated with new details. Status changed to ${status}.`,
+        createdBy: req.user._id, 
+        relatedTo: task._id,
+        onModel: 'Task',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await taskUpdateActivity.save();
+
     res.status(200).json(updatedTask);
 });
 
@@ -160,6 +183,17 @@ const deleteTask = asyncHandler(async (req, res) => {
         onModel: 'Task',
     });
     await newActivity.save();
+
+    const taskDeletionActivity = new Activity({
+        actionType: 'Deleted',
+        description: `Task ${task._id} deleted from project ${projectId}.`,
+        createdBy: req.user._id, 
+        relatedTo: task._id,
+        onModel: 'Task',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await taskDeletionActivity.save();
 
     res.status(200).json({ message: 'Task deleted successfully' });
 });
@@ -350,8 +384,7 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
         }
 
-        // Create tasks for each reviewer
-        reviewers.forEach(async reviewer => {
+        for (const reviewer of reviewers) {
             const newTask = new Task({
                 projectId,
                 name: 'Review Task for ' + taskDetails.relatedTo,
@@ -365,8 +398,19 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
                 review: reviewId,
                 assignedChangeRequest: taskDetails.assignedChangeRequest
             });
+        
             await newTask.save();
-        });
+        
+            const reviewTaskCreationActivity = new Activity({
+                actionType: 'Created',
+                description: `Review task created for reviewer ${reviewer.userId} under project ${projectId} to review ${taskDetails.relatedTo}, task ID: ${newTask._id}`,
+                relatedTo: newTask._id,
+                onModel: 'Task',
+                ipAddress: req.ip,
+                deviceInfo: req.headers['user-agent']
+            });
+            await reviewTaskCreationActivity.save();
+        }
 
         // Determine the observer based on whether it's a change request
         const observerId = isChangeRequest ? requestUserId : taskDetails.assignedTo;
@@ -388,6 +432,18 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             assignedDocument: taskDetails?.assignedDocument,
             assignedProduct: taskDetails?.assignedProduct
         });
+
+        const observerTaskCreationActivity = new Activity({
+            actionType: 'Created',
+            description: `Observer task created for observing the review process of ${taskDetails.relatedTo}, assigned to user ${observerId}. Task ID: ${observeTask._id}`,
+            createdBy: observerId, 
+            relatedTo: observeTask._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await observerTaskCreationActivity.save();
+
         await observeTask.save();
 
         res.status(200).json({ message: 'Tasks managed successfully' });
@@ -416,6 +472,18 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
             status: 'In Review', 
             onModel: originalReview.onModel 
         });
+
+        const newReviewActivity = new Activity({
+            actionType: 'Created',
+            description: `New review created based on original review ${originalReview._id}. New review ID is ${newReview._id}.`,
+            createdBy: req.user._id,
+            relatedTo: newReview._id,
+            onModel: 'Review',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await newReviewActivity.save();
+
         await newReview.save();
 
         // Check if the original task exists
@@ -430,28 +498,48 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
             { status: 'Completed' },
             { new: true }
         );
-        
+        const taskCompletionActivity = new Activity({
+            actionType: 'Completed',
+            description: `Original task ${taskDetails.id} updated to 'Completed' status as part of review revision process.`,
+            createdBy: req.user._id,
+            relatedTo: taskDetails.id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await taskCompletionActivity.save();
+
         // Validate that the original task was updated successfully
         if (!updatedOriginalTask || updatedOriginalTask.status !== 'Completed') {
             return res.status(500).json({ message: 'Failed to mark the original task as completed.' });
         }
 
-        // Create new review tasks for each original reviewer
-        originalReview.reviewers.forEach(async reviewer => {
-            const newReviewTask = new Task({
-                projectId,
-                name: `Review Task for revised ${taskDetails.relatedTo}`,
-                description: `Please review the revised ${taskDetails.relatedTo.toLowerCase()}`,
-                status: 'Not Started',
-                priority: taskDetails.priority,
-                assignedTo: reviewer.userId,
-                taskType: 'Review',
-                relatedTo: taskDetails.relatedTo,
-                dueDate: taskDetails.dueDate,
-                review: newReview._id // Link to the new review
-            });
-            await newReviewTask.save();
+        await Promise.all(originalReview.reviewers.map(async (reviewer) => {
+        const newReviewTask = new Task({
+            projectId,
+            name: `Review Task for revised ${taskDetails.relatedTo}`,
+            description: `Please review the revised ${taskDetails.relatedTo.toLowerCase()}`,
+            status: 'Not Started',
+            priority: taskDetails.priority,
+            assignedTo: reviewer.userId,
+            taskType: 'Review',
+            relatedTo: taskDetails.relatedTo,
+            dueDate: taskDetails.dueDate,
+            review: newReview._id
         });
+        await newReviewTask.save();
+
+        const reviewTaskCreationActivity = new Activity({
+            actionType: 'Created',
+            description: `New review task created for reviewer ${reviewer.userId} for revised item under review ${newReview._id}. Task ID: ${newReviewTask._id}`,
+            relatedTo: newReviewTask._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await reviewTaskCreationActivity.save();
+    }));
+
 
         console.log(taskDetails)
         // Re-setup an observer task for the revised item
@@ -470,6 +558,18 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
             assignedDocument: taskDetails?.assignedDocument,
             assignedProduct: taskDetails?.assignedProduct
         });
+
+        const observerTaskActivity = new Activity({
+            actionType: 'Created',
+            description: `Observer task created for monitoring the review process of the revised item. Task ID: ${newObserveTask._id}`,
+            createdBy: req.user._id,
+            relatedTo: newObserveTask._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await observerTaskActivity.save();
+
         await newObserveTask.save();
 
         res.status(201).json({ message: 'Revised task managed successfully, new review and observe tasks created', newReview });

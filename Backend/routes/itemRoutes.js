@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const itemController = require('../controllers/itemController');
+const verifyJWT = require('../middleware/verifyJWT')
+
+router.use(verifyJWT)
 
 // Route to check if a user can check out or check in an item
 router.get('/:itemId/can-check-out/:userId/:projectId', itemController.canUserCheckOutAndInItem);

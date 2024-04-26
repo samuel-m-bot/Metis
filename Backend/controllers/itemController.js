@@ -1,6 +1,7 @@
 const ChangeRequest = require('../models/ChangeRequest');
 const Task = require('../models/Tasks');
 const Project = require('../models/Project');
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler');
 
 const models = {
@@ -81,6 +82,18 @@ const checkOutItem = asyncHandler(async (req, res) => {
     }
 
     const updatedItem = await Model.findByIdAndUpdate(itemId, { status: 'Checked Out' }, { new: true });
+
+    const activity = new Activity({
+        actionType: 'Checked Out',
+        description: `${itemType} with ID ${itemId} was checked out by user ${userId}`,
+        createdBy: userId,
+        relatedTo: itemId,
+        onModel: itemType,
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({ message: 'Item checked out successfully', item: updatedItem });
 });
 
@@ -106,6 +119,17 @@ const checkInItem = asyncHandler(async (req, res) => {
     if (!updatedItem) {
         return res.status(404).json({ message: 'Item not found' });
     }
+
+    const activity = new Activity({
+        actionType: 'Checked In',
+        description: `${itemType} with ID ${itemId} was checked in by user ${userId}`,
+        createdBy: userId,
+        relatedTo: itemId,
+        onModel: itemType,
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
 
     res.json({ success: true, message: 'Item checked in successfully', item: updatedItem });
 });

@@ -1,49 +1,6 @@
 const Activity = require('../models/Activity');
 const asyncHandler = require('express-async-handler');
 
-// @desc Log a new activity
-// @route POST /activities
-// @access Private
-const logActivity = asyncHandler(async (req, res) => {
-    const { actionType, description, createdBy, relatedTo, onModel } = req.body;
-
-    if (!actionType || !description || !createdBy || !relatedTo || !onModel) {
-        return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    const activity = new Activity({
-        actionType,
-        description,
-        createdBy,
-        relatedTo,
-        onModel,
-    });
-
-    const savedActivity = await activity.save();
-    res.status(201).json(savedActivity);
-});
-
-
-// @desc Get activities for a specific entity
-// @route GET /activities/:onModel/:relatedTo
-// @access Private
-const getActivitiesForEntity = asyncHandler(async (req, res) => {
-    const { onModel, relatedTo } = req.params;
-
-    if (!onModel || !relatedTo) {
-        return res.status(400).json({ message: 'Missing required parameters' });
-    }
-
-    const activities = await Activity.find({ onModel, relatedTo });
-
-    if (activities.length === 0) {
-        return res.status(404).json({ message: 'No activities found for this entity' });
-    }
-
-    res.json(activities);
-});
-
-
 // @desc Get all activities (with optional filtering)
 // @route GET /activities
 // @access Private
@@ -54,11 +11,11 @@ const getAllActivities = asyncHandler(async (req, res) => {
     if (actionType) query.actionType = actionType;
     if (onModel) query.onModel = onModel;
     if (startDate && endDate) {
-        query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        query.timestamp = { $gte: new Date(startDate), $lte: new Date(endDate) };
     } else if (startDate) {
-        query.createdAt = { $gte: new Date(startDate) };
+        query.timestamp = { $gte: new Date(startDate) };
     } else if (endDate) {
-        query.createdAt = { $lte: new Date(endDate) };
+        query.timestamp = { $lte: new Date(endDate) };
     }
 
     const activities = await Activity.find(query);
@@ -69,7 +26,6 @@ const getAllActivities = asyncHandler(async (req, res) => {
 
     res.json(activities);
 });
-
 
 // @desc Update an activity (if needed, typically not common for activity logs)
 // @route PATCH /activities/:id
@@ -118,11 +74,81 @@ const deleteActivity = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Activity deleted successfully' });
 });
 
+// @desc Get all activities for a specific user sorted by latest
+// @route GET /activities/user/:userId
+// @access Private
+const getUserActivities = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query;  // Default page is 1, and limit is 10
+
+    // Validate the userId, optionally ensure it is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
+    const activities = await Activity.find({ createdBy: userId })
+        .sort({ timestamp: -1 }) 
+        .skip((page - 1) * limit)
+        .limit(limit) 
+        .exec();
+
+    const count = await Activity.countDocuments({ createdBy: userId });
+
+    if (!activities.length) {
+        return res.status(404).json({ message: 'No activities found for this user' });
+    }
+
+    res.json({
+        activities,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit)
+    });
+});
+
+// @desc Get all activities by relatedTo ID and onModel type
+// @route GET /activities/by-context
+// @access Private
+const getActivitiesByRelatedToAndModel = asyncHandler(async (req, res) => {
+    const { relatedTo, onModel, page = 1, limit = 10 } = req.query;
+
+    // Validate the input parameters
+    if (!mongoose.Types.ObjectId.isValid(relatedTo)) {
+        return res.status(400).json({ message: 'Invalid relatedTo ID format' });
+    }
+    if (!onModel) {
+        return res.status(400).json({ message: 'onModel type is required' });
+    }
+
+    const activities = await Activity.find({
+        relatedTo: relatedTo,
+        onModel: onModel
+    })
+    .sort({ timestamp: -1 }) 
+    .skip((page - 1) * limit) 
+    .limit(limit) 
+    .exec();
+
+    const count = await Activity.countDocuments({
+        relatedTo: relatedTo,
+        onModel: onModel
+    });
+
+    if (!activities.length) {
+        return res.status(404).json({ message: 'No activities found for the specified criteria' });
+    }
+
+    res.json({
+        activities,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit)
+    });
+});
+
 
 module.exports = {
-    logActivity,
-    getActivitiesForEntity,
     getAllActivities,
     updateActivity,
     deleteActivity,
+    getUserActivities,
+    getActivitiesByRelatedToAndModel
 };

@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviewController');
+const verifyJWT = require('../middleware/verifyJWT')
+
+router.use(verifyJWT)
 
 // Routes for Reviews
 router.route('/')

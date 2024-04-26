@@ -1,5 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 const Design = require('../models/Design')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 const storage = new Storage();
@@ -58,6 +59,18 @@ const createNewDesign = asyncHandler(async (req, res) => {
     });
 
     const createdDesign = await design.save();
+
+    const activity = new Activity({
+        actionType: 'Created',
+        description: `New design ${createdDesign.name} was created with ID ${createdDesign._id}`,
+        createdBy: req.user._id,
+        relatedTo: createdDesign._id,
+        onModel: 'Design',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(201).json(createdDesign);
 });
 
@@ -91,6 +104,19 @@ const updateDesign = asyncHandler(async (req, res) => {
     design.lastModifiedDate = Date.now();
 
     const updatedDesign = await design.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Design ${updatedDesign.name} was updated with ID ${updatedDesign._id}`,
+        createdBy: req.user._id,
+        relatedTo: updatedDesign._id,
+        onModel: 'Design',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
+
     res.json({ message: `Design '${updatedDesign._id}' updated successfully.` });
 });
 
@@ -122,7 +148,19 @@ const deleteDesign = asyncHandler(async (req, res) => {
     const result = await design.deleteOne();
     const reply = `Design '${result.name}' with ID ${result._id} deleted`;
 
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Design '${design.name}' with ID ${req.params.id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: req.params.id,
+        onModel: 'Design',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json(reply);
+
 });
 
 
@@ -157,6 +195,17 @@ const downloadDesignFile = asyncHandler(async (req, res) => {
             console.log(`Error during the file download for file: ${filePath}`);
             res.status(500).json({ message: "Could not download the file: " + error.message });
         });
+
+        const activity = new Activity({
+            actionType: 'Downloaded',
+            description: `File ${fileName} for Design ID ${designId} was downloaded`,
+            createdBy: req.user._id,
+            relatedTo: designId,
+            onModel: 'Design',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
 
         readStream.pipe(res).on('finish', () => {
             console.log(`Download successful for file: ${filePath}`);
@@ -196,6 +245,18 @@ const toggleFeaturedDesign = asyncHandler(async (req, res) => {
     design.isFeatured = !design.isFeatured;
 
     const updatedDesign = await design.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Design ${design?.name} for Design ID ${designId} was featured`,
+        createdBy: req.user._id,
+        relatedTo: designId,
+        onModel: 'Design',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json({
         message: `Design '${updatedDesign.name}' is now ${updatedDesign.isFeatured ? 'featured' : 'not featured'}.`
     });

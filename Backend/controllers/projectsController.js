@@ -1,5 +1,6 @@
 const Project = require('../models/Project')
 const User = require('../models/User')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 
@@ -103,6 +104,18 @@ const createNewProject = asyncHandler(async (req, res) => {
     // Create and store new project
     const project = await Project.create(projectObject);
     if (project) {
+
+        const activity = new Activity({
+            actionType: 'Created',
+            description: `New project '${project.name}' was created with ID ${project._id}`,
+            createdBy: req.user._id,
+            relatedTo: project._id,
+            onModel: 'Project',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+
         res.status(201).json({ message: `New project ${name} created` });
     } else {
         res.status(400).json({ message: 'Invalid project data received' });
@@ -139,6 +152,18 @@ const updateProject = asyncHandler(async (req, res) => {
     project.teamMembers = req.body.teamMembers || project.teamMembers
 
     await project.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Project '${project.name}' was updated with ID ${project._id}`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Project',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(200).json({ message: `Project ${project.name} updated` })
 })
 
@@ -158,6 +183,17 @@ const deleteProject = asyncHandler(async (req, res) => {
 
     const reply = `Project ${result.name} with ID ${result._id} deleted`
 
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Project '${project.name}' with ID ${project._id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Project',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+    
     res.json(reply)
 })
 
@@ -239,6 +275,18 @@ const addTeamMember = asyncHandler(async (req, res) => {
     // Add new member
     project.teamMembers.push({ userId, role, permissions });
     await project.save();
+
+    const activity = new Activity({
+        actionType: 'Added',
+        description: `User ${userId} was added as a '${role}' to project ${project.name} with permissions ${permissions.join(", ")}`,
+        createdBy: req.user._id, // Assuming req.user._id is the ID of the user making the request
+        relatedTo: project._id,
+        onModel: 'Project',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(200).json({ message: `User added to project ${project.name}` });
 });
 
@@ -281,6 +329,18 @@ const removeTeamMember = asyncHandler(async (req, res) => {
     // Remove the team member
     project.teamMembers = project.teamMembers.filter(member => member.userId.toString() !== teamMemberId);
     await project.save();
+
+    const activity = new Activity({
+        actionType: 'Removed',
+        description: `User ${teamMemberId} was removed from project ${project.name}`,
+        createdBy: req.user._id, // Assuming req.user._id is the ID of the user making the request
+        relatedTo: project._id,
+        onModel: 'Project',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+    
     res.json({ message: 'Team member removed successfully' });
 });
 
@@ -342,6 +402,17 @@ const archiveProject = asyncHandler(async (req, res) => {
     project.status = 'Archived';
 
     const archivedProject = await project.save();
+
+    const activity = new Activity({
+        actionType: 'Archived',
+        description: `Project '${project.name}' with ID ${project._id} was archived`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Project',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
 
     res.json({ message: `Project ${archivedProject.name} archived successfully` });
 });

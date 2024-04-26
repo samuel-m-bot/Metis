@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const designController = require('../controllers/designsController');
 const { upload, uploadFileToStorage } = require('../config/multerConfig');
+const verifyJWT = require('../middleware/verifyJWT')
+
+router.use(verifyJWT)
 
 // Middleware to handle file upload and attach URL to req.body
 async function handleFileUpload(req, res, next) {

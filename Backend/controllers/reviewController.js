@@ -1,5 +1,6 @@
 const Review = require('../models/Review');
 const Task = require('../models//Tasks')
+const Activity = require('../models/Activity')
 const ChangeRequest = require('../models/ChangeRequest')
 const asyncHandler = require('express-async-handler');
 
@@ -51,6 +52,17 @@ const createNewReview = asyncHandler(async (req, res) => {
     const review = new Review({ itemReviewed, onModel, reviewers, reviewType });
     const createdReview = await review.save();
 
+    const activity = new Activity({
+        actionType: 'Created',
+        description: `New review was created with ID ${review._id}`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Review',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.status(201).json(createdReview);
 });
 
@@ -69,6 +81,18 @@ const updateReview = asyncHandler(async (req, res) => {
     if (decision) review.reviewer.forEach(r => r.decision = decision);
 
     const updatedReview = await review.save();
+
+    const activity = new Activity({
+        actionType: 'Updated',
+        description: `Updated review was created with ID ${review._id}`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Review',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
+
     res.json(updatedReview);
 });
 
@@ -84,6 +108,17 @@ const deleteReview = asyncHandler(async (req, res) => {
     const result = await review.deleteOne()
 
     const reply = `Review with ID ${result._id} deleted`
+
+    const activity = new Activity({
+        actionType: 'Deleted',
+        description: `Review with ID ${review._id} was deleted`,
+        createdBy: req.user._id,
+        relatedTo: project._id,
+        onModel: 'Review',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await activity.save();
 
     res.json(reply)
 });
@@ -128,6 +163,7 @@ const updateRevisionNumber = (item, isMajor) => {
 
     const newRevisionNumber = prefix ? `${prefix}${major}.${minor}` : `${major}.${minor}`;
     console.log(`Updating revision from ${item.revisionNumber} to ${newRevisionNumber}`);
+
     return newRevisionNumber;
 };
 
@@ -141,6 +177,17 @@ const updateItem = async (itemId, model,isMajor) => {
 
     const newRevisionNumber = updateRevisionNumber(item, isMajor);
     if (newRevisionNumber) {
+
+        const activity = new Activity({
+            actionType: 'RevisionUpdate',
+            description: `${item.revisionNumber},${newRevisionNumber}`,
+            relatedTo: itemId,
+            onModel: model.modelName,
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+
         console.log(`Updating item ${itemId}: setting status to 'Checked In' and revision number to ${newRevisionNumber}`);
         await model.findByIdAndUpdate(itemId, {
             status: 'Checked In',
@@ -180,12 +227,33 @@ const processRejectionWorkflow = async (review, req, res) => {
     review.status = 'Rejected';
     await review.save();
 
-    // Cancel all pending review tasks
     const pendingReviewers = review.reviewers.filter(r => r.decision === 'Pending').map(r => r.userId);
+
+    // Find all tasks that are going to be cancelled to log them properly
+    const tasksToCancel = await Task.find({
+        'assignedTo': { $in: pendingReviewers },
+        'review': review._id,
+        'status': { $ne: 'Cancelled' } 
+    });
+
+    // Now cancel all these tasks
     await Task.updateMany(
-        { 'assignedTo': { $in: pendingReviewers }, 'review': review._id },
+        { '_id': { $in: tasksToCancel.map(task => task._id) } },
         { $set: { 'status': 'Cancelled' } }
     );
+
+    // Log an activity for each cancellation
+    for (const task of tasksToCancel) {
+        const activity = new Activity({
+            actionType: 'Cancelled',
+            description: `Task for review ${review._id} assigned to user ${task.assignedTo} was cancelled`,
+            relatedTo: task._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+    }
 
     console.log("Cancelled pending review tasks");
     
@@ -197,6 +265,17 @@ const processRejectionWorkflow = async (review, req, res) => {
     if (observeTask) {
         observeTask.status = 'Completed';
         await observeTask.save();
+
+        const activity = new Activity({
+            actionType: 'Update',
+            description: `Review Failed task: ${observeTask.id} updated to complete`,
+            relatedTo: observeTask.id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+
         console.log("Observer task completed");
 
         // Create a new 'Revise' task for the observer to handle necessary revisions
@@ -219,6 +298,17 @@ const processRejectionWorkflow = async (review, req, res) => {
 
         const newReviseTask = new Task(reviseTaskData);
         await newReviseTask.save();
+
+        const activityNew = new Activity({
+            actionType: 'Created',
+            description: `Created task: ${observeTask.id}`,
+            relatedTo: newReviseTask.id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activityNew.save();
+
         console.log("Created new 'Revise' task for the observer");
     }
 
@@ -234,6 +324,17 @@ const handleChangeRequestApproval = async (review) => {
         }
         // Update the change request status
         changeRequest.status = 'Approved';
+
+        const approvalActivity = new Activity({
+            actionType: 'Approved',
+            description: `Change request ${changeRequest._id} for project ${changeRequest.projectId} was approved.`,
+            relatedTo: changeRequest._id,
+            onModel: 'ChangeRequest',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await approvalActivity.save();
+
         await changeRequest.save();
 
         // Create the update task
@@ -251,6 +352,17 @@ const handleChangeRequestApproval = async (review) => {
         });
 
         await updateTask.save();
+
+        const taskCreationActivity = new Activity({
+            actionType: 'Created',
+            description: `Update task created for change request ${changeRequest._id} with task ID ${updateTask._id}. Task is to update the main item and any related items as described in the change request.`,
+            relatedTo: updateTask._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await taskCreationActivity.save();
+
         console.log("Saved update task");
 
         return { success: true, message: "Change request approved and update task created" };
@@ -265,6 +377,17 @@ const processCompletionWorkflow = async (review, req, res) => {
     if (allReviewed) {
         console.log("All reviewers have completed their review, updating review status");
         review.status = 'Completed';
+
+        const reviewCompletionActivity = new Activity({
+            actionType: 'Completed',
+            description: `Review ${review._id} completed. All reviewers have submitted their decisions.`,
+            relatedTo: review._id,
+            onModel: 'Review',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await reviewCompletionActivity.save();
+
         await review.save();
 
         // Update observer task to 'Completed'
@@ -274,6 +397,18 @@ const processCompletionWorkflow = async (review, req, res) => {
         });
 
         if (observeTask) {
+
+            const taskCompletionActivity = new Activity({
+                actionType: 'Completed',
+                description: `Observer task ${observeTask._id} associated with review ${review._id} marked as completed.`,
+                createdBy: observeTask.assignedTo, // This should be the ID of the user marking the task completed
+                relatedTo: observeTask._id,
+                onModel: 'Task',
+                ipAddress: req.ip,
+                deviceInfo: req.headers['user-agent']
+            });
+            await taskCompletionActivity.save();
+
             observeTask.status = 'Completed';
             await observeTask.save();
         }
@@ -295,6 +430,17 @@ const processCompletionWorkflow = async (review, req, res) => {
                     'taskType': 'Update'
                 });
                 if (updateTask) {
+
+                    const updateTaskCompletionActivity = new Activity({
+                        actionType: 'Completed',
+                        description: `Update task ${updateTask._id} related to change request ${changeRequest._id} and observer task ${observeTask._id} marked as completed.`,
+                        relatedTo: updateTask._id,
+                        onModel: 'Task',
+                        ipAddress: req.ip,
+                        deviceInfo: req.headers['user-agent']
+                    });
+                    await updateTaskCompletionActivity.save();
+
                     updateTask.status = 'Completed';
                     await updateTask.save();
                     console.log("Updated 'Update' task to Completed");
@@ -302,6 +448,17 @@ const processCompletionWorkflow = async (review, req, res) => {
             }
             console.log(changeRequest)
             changeRequest.status = 'Implemented';
+
+            const changeRequestUpdateActivity = new Activity({
+                actionType: 'Implemented',
+                description: `Change request ${changeRequest._id} status updated to Implemented.`,
+                relatedTo: changeRequest._id,
+                onModel: 'ChangeRequest',
+                ipAddress: req.ip,
+                deviceInfo: req.headers['user-agent']
+            });
+            await changeRequestUpdateActivity.save();
+
             await changeRequest.save();
         } else if (Model) {
             console.log("Updating item status to Checked In");
@@ -314,6 +471,17 @@ const processCompletionWorkflow = async (review, req, res) => {
             });
             if (createTask) {
                 createTask.status = 'Completed';
+
+                const createTaskCompletionActivity = new Activity({
+                    actionType: 'Completed',
+                    description: `Create task ${createTask._id} related to observer task ${observeTask._id} marked as completed.`,
+                    relatedTo: createTask._id,
+                    onModel: 'Task',
+                    ipAddress: req.ip,
+                    deviceInfo: req.headers['user-agent']
+                });
+                await createTaskCompletionActivity.save();
+
                 await createTask.save();
                 console.log("Updated 'Create' task to Completed");
             }
@@ -346,14 +514,44 @@ const reviewSubmission = asyncHandler(async (req, res) => {
 
     review.reviewers[reviewerIndex].feedback = feedback;
     review.reviewers[reviewerIndex].decision = decision;
+
+    const reviewUpdateActivity = new Activity({
+        actionType: 'Updated',
+        description: `Review ${review._id} updated by reviewer ${reviewerId}: Decision - ${decision}, Feedback - ${feedback}`,
+        createdBy: req.user._id,
+        relatedTo: review._id,
+        onModel: 'Review',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await reviewUpdateActivity.save();
+
     await review.save();
     console.log("Updated review with feedback and decision:", feedback, decision);
 
-     // Update the reviewer's task to 'Completed'
-     await Task.findOneAndUpdate(
-        { 'assignedTo': reviewerId, 'review': review._id },
-        { $set: { 'status': 'Completed' } }
-    );
+     // Find the task and update its status to 'Completed'
+    const reviewerTask = await Task.findOne({
+        'assignedTo': reviewerId,
+        'review': review._id
+    });
+
+    if (reviewerTask && reviewerTask.status !== 'Completed') {
+        reviewerTask.status = 'Completed';
+        await reviewerTask.save();
+
+        const taskCompletionActivity = new Activity({
+            actionType: 'Completed',
+            description: `Task ${reviewerTask._id} for review ${review._id} completed by reviewer ${reviewerId}`,
+            createdBy: req.user._id, 
+            relatedTo: reviewerTask._id,
+            onModel: 'Task',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await taskCompletionActivity.save();
+
+        console.log("Logged activity for reviewer's task completion.");
+    }
 
     if (decision === 'Rejected') {
         console.log("Decision is rejected, processing rejection workflow");

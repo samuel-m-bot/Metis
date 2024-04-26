@@ -1,4 +1,5 @@
 const User = require('../models/User')
+const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
 
@@ -50,6 +51,16 @@ const createNewUser = asyncHandler(async (req, res) => {
     const user = await User.create(userObject)
 
     if(user){
+        const createUserActivity = new Activity({
+            actionType: 'Created',
+            description: `New user ${email} created with roles ${roles.join(', ')} and department ${department}.`,
+            createdBy: req.user._id, 
+            relatedTo: user._id,
+            onModel: 'User',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await createUserActivity.save();
         res.status(201).json({ message: `New user ${email} created`})
     }else{
         res.status(400).json({ message:'Invalid user data received'})
@@ -87,6 +98,18 @@ const updateUser = asyncHandler(async (req, res) => {
     }
 
     const updatedUser = await user.save()
+
+    const updateUserActivity = new Activity({
+        actionType: 'Updated',
+        description: `User ${user._id} updated. Changes include new email: ${req.body.email || user.email}, and potentially updated roles or department.`,
+        createdBy: req.user._id, 
+        relatedTo: user._id,
+        onModel: 'User',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await updateUserActivity.save();
+
     res.json({ message: `${updatedUser.email} updated` })
 })
 
@@ -104,6 +127,17 @@ const deleteUser = asyncHandler(async (req, res) => {
     const result = await user.deleteOne()
 
     const reply = `Email ${user.email} with ID ${user._id} deleted`
+
+    const deleteUserActivity = new Activity({
+        actionType: 'Deleted',
+        description: `User ${user._id} with email ${user.email} deleted.`,
+        createdBy: req.user._id, 
+        relatedTo: user._id,
+        onModel: 'User',
+        ipAddress: req.ip,
+        deviceInfo: req.headers['user-agent']
+    });
+    await deleteUserActivity.save();
 
     res.json(reply)
 })

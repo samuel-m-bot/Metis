@@ -177,6 +177,7 @@ const processRejectionWorkflow = async (review, req, res) => {
     review.status = 'Rejected';
     await review.save();
 
+    // Cancel all pending review tasks
     const pendingReviewers = review.reviewers.filter(r => r.decision === 'Pending').map(r => r.userId);
     await Task.updateMany(
         { 'assignedTo': { $in: pendingReviewers }, 'review': review._id },
@@ -184,6 +185,7 @@ const processRejectionWorkflow = async (review, req, res) => {
     );
 
     console.log("Cancelled pending review tasks");
+    
     const observeTask = await Task.findOne({
         'review': review._id, 
         'taskType': 'Observe'
@@ -193,9 +195,28 @@ const processRejectionWorkflow = async (review, req, res) => {
         observeTask.status = 'Completed';
         await observeTask.save();
         console.log("Observer task completed");
+
+        // Create a new 'Revise' task for the observer to handle necessary revisions
+        const reviseTaskData = {
+            projectId: observeTask.projectId,
+            name: 'Revise item based on review feedback',
+            description: 'Revise the item based on feedback and resubmit for review',
+            status: 'To Do',
+            priority: observeTask.priority, // Assuming same priority as the observe task
+            assignedTo: observeTask.assignedTo, // Assigning to the same person who observed
+            taskType: 'Revise',
+            relatedTo: observeTask.relatedTo, // Related to the same item type as the observe task
+            dueDate: observeTask.dueDate,
+            review: review._id, // Linking back to the original review for reference
+            assignedChangeRequest: observeTask?.assignedChangeRequest // Assuming it's related to a change request
+        };
+
+        const newReviseTask = new Task(reviseTaskData);
+        await newReviseTask.save();
+        console.log("Created new 'Revise' task for the observer");
     }
 
-    res.status(200).json({ message: 'Review rejected and pending tasks cancelled' });
+    res.status(200).json({ message: 'Review rejected, pending tasks cancelled, and revise task created' });
 };
 
 const handleChangeRequestApproval = async (review) => {
@@ -260,14 +281,36 @@ const processCompletionWorkflow = async (review, req, res) => {
             if (changeRequest) {
                 console.log("Updating related items and main item for change request");
                 await updateRelatedItemsAndMain(changeRequest);
+
+                const updateTask = await Task.findOne({
+                    'assignedTo': observeTask.assignedTo,
+                    'relatedTo': observeTask.relatedTo,
+                    'assignedChangeRequest': changeRequest._id,
+                    'taskType': 'Update'
+                });
+                if (updateTask) {
+                    updateTask.status = 'Completed';
+                    await updateTask.save();
+                    console.log("Updated 'Update' task to Completed");
+                }
             }
             changeRequest.status = 'Implemented';
             await changeRequest.save();
         } else if (Model) {
             console.log("Updating item status to Checked In");
             await Model.findByIdAndUpdate(review.itemReviewed, { status: 'Checked In' });
-        }
 
+            const createTask = await Task.findOne({
+                'assignedTo': observeTask.assignedTo,
+                'relatedTo': observeTask.relatedTo,
+                'taskType': 'Create'
+            });
+            if (createTask) {
+                createTask.status = 'Completed';
+                await createTask.save();
+                console.log("Updated 'Create' task to Completed");
+            }
+        }
         res.json({ review, message: 'Review completed successfully' });
     } else {
         console.log("Not all reviewers have completed their review");

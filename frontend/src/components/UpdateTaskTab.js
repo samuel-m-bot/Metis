@@ -8,7 +8,7 @@ import { useCompleteTaskAndSetupReviewMutation } from '../features/Tasks/tasksAp
 
 const UpdateTaskTab = ({ task }) => {
   const navigate = useNavigate();
-  const { data: changeRequest, isLoading: isCRLoading, isError: isCRError } = useGetChangeRequestByIdQuery(task.assignedChangeRequest);
+  const { data: changeRequest, isLoading: isCRLoading, isError: isCRError } = useGetChangeRequestByIdQuery(task?.assignedChangeRequest);
   const [getDocument] = useLazyGetDocumentByIdQuery();
   const [getDesign] = useLazyGetDesignByIdQuery();
   const [getProduct] = useLazyGetProductByIdQuery();

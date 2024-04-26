@@ -8,6 +8,7 @@ import ReviewerSelectionModal from '../../components/ReviewerSelectionModal';
 import ReviewTab from '../reviews/ReviewTab';
 import ObserveTab from '../reviews/ObserveTab';
 import UpdateTaskTab from '../../components/UpdateTaskTab';
+import ReviseTaskTab from './ReviseTaskTab';
 
 const TaskDetails = () => {
   const { taskId } = useParams();
@@ -97,6 +98,12 @@ const TaskDetails = () => {
           <Tab eventKey="update" title="Update Task">
             <UpdateTaskTab task={task} />
           </Tab>
+        )}
+
+        {task.taskType === "Revise" && task.status !== 'Completed' && (
+            <Tab eventKey="revise" title="Revise Task">
+                <ReviseTaskTab task={task} />
+            </Tab>
         )}
 
         {task.taskType === "Observe" && (

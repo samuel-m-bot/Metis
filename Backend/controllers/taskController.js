@@ -392,19 +392,88 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc Updates staus of create task as well as creating a set up review task
+// @desc Manages revised tasks, sets up a new review and reassigns observe task
+// @route POST /tasks/manage-revised-task
+// @access Private
+const manageRevisedTask = asyncHandler(async (req, res) => {
+    const { projectId, taskDetails } = req.body;
+
+    try {
+        // Create a new review
+        const originalReview = await Review.findById(taskDetails.review);
+        if (!originalReview) {
+            return res.status(404).json({ message: 'Original review not found' });
+        }
+
+        const newReview = new Review({
+            projectId: projectId,
+            itemReviewed: taskDetails.relatedTo, // Adjust depending on your Review model fields
+            reviewers: originalReview.reviewers, // Copy reviewers from the original review
+            status: 'Pending', // Initial status of the new review
+            onModel: originalReview.onModel // Model being reviewed, if applicable
+        });
+        await newReview.save();
+
+        // Mark the original task as 'Completed'
+        await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
+
+        // Create new review tasks for each original reviewer
+        originalReview.reviewers.forEach(async reviewer => {
+            const newReviewTask = new Task({
+                projectId,
+                name: `Review Task for revised ${taskDetails.relatedTo}`,
+                description: `Please review the revised ${taskDetails.relatedTo.toLowerCase()}`,
+                status: 'Not Started',
+                priority: taskDetails.priority,
+                assignedTo: reviewer.userId,
+                taskType: 'Review',
+                relatedTo: taskDetails.relatedTo,
+                dueDate: taskDetails.dueDate,
+                review: newReview._id // Link to the new review
+            });
+            await newReviewTask.save();
+        });
+
+        // Re-setup an observer task for the revised item
+        const newObserveTask = new Task({
+            projectId,
+            name: 'Observe revision review',
+            description: 'Observe the review process of the revised item.',
+            status: 'In Progress',
+            priority: taskDetails.priority,
+            assignedTo: taskDetails.assignedTo, // Typically the creator of the task or a designated reviewer
+            taskType: 'Observe',
+            relatedTo: taskDetails.relatedTo,
+            dueDate: taskDetails.dueDate,
+            review: newReview._id // Link to the new review
+        });
+        await newObserveTask.save();
+
+        res.status(201).json({ message: 'Revised task managed successfully, new review and observe tasks created', newReview });
+    } catch (error) {
+        console.error('Error managing revised tasks:', error);
+        res.status(500).json({ message: 'Error managing revised tasks', error: error.toString() });
+    }
+});
+
+// @desc Updates task with new item ID and creates a setup review task
 // @route POST /tasks/complete-and-setup-review
 // @access Private
 const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
     const { projectId, task, createdItemId } = req.body;
 
     try {
-        // Update the existing task to 'Completed'
+        // Update the existing task with the newly created item ID but not change its status
         const updatedTask = await Task.findByIdAndUpdate(task.id, {
-            status: 'Completed',
-            // Dynamically assign the document, design, or product ID based on the type of item
             [`assigned${task.relatedTo}`]: createdItemId
         }, { new: true });
+
+        // Validate that the update is successful, especially that the task is still in progress
+        if (!updatedTask) {
+            return res.status(404).json({
+                message: 'Task not found.'
+            });
+        }
 
         // Create a new task for setting up the review
         const reviewTaskData = {
@@ -413,7 +482,7 @@ const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
             description: `Choose from a list of users who will review the ${task.relatedTo.toLowerCase()}`,
             status: 'In Progress',
             priority: task.priority,
-            assignedTo: task.assignedTo,
+            assignedTo: task.assignedTo, // Assign to the same person or to a review coordinator
             taskType: 'Set up Review',
             relatedTo: task.relatedTo,
             dueDate: task.dueDate || undefined,
@@ -425,13 +494,13 @@ const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
         await newReviewTask.save();
 
         res.status(201).json({
-            message: 'Task completed and review setup task created successfully',
+            message: 'Task updated and review setup task created successfully',
             updatedTask,
             newReviewTask
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Failed to complete task and setup review',
+            message: 'Failed to update task and setup review',
             error: error.message
         });
     }
@@ -452,5 +521,6 @@ module.exports = {
     filterTasks,
     getTasksByProjectId,
     manageReviewTasks,
+    manageRevisedTask,
     completeTaskAndSetupReview
 };

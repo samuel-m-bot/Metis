@@ -28,7 +28,12 @@ const ObserveTab = ({ task }) => {
           <div key={reviewer._id} className="card mb-2">
             <div className="card-body">
               <h5 className="card-title">{reviewer.userId.firstName} {reviewer.userId.surname}</h5>
-              <h6 className="card-subtitle mb-2 text-muted">Decision: <strong>{reviewer.decision}</strong></h6>
+              <h6 className="card-subtitle mb-2 text-muted">
+                Decision: 
+                <strong className={`badge ${reviewer.decision === 'Approved' ? 'bg-success' : reviewer.decision === 'Rejected' ? 'bg-danger' : 'bg-warning'}`}>
+                  {reviewer.decision}
+                </strong>
+              </h6>
               <p className="card-text">
                 <strong>Feedback:</strong> {reviewer.feedback || "No feedback provided"}
               </p>

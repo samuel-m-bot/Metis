@@ -1,6 +1,9 @@
+const { Storage } = require('@google-cloud/storage');
 const Document = require('../models/Document')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
+const storage = new Storage();
+const bucketName = 'metis_bucket_1'; 
 
 // @desc Get all documents
 // @route GET /documents
@@ -34,8 +37,10 @@ const getDocumentById = asyncHandler(async (req, res) => {
 // @route POST /documents
 // @access private
 const createNewDocument = asyncHandler(async (req, res) => {
-    const {projectId, title, type, description, revisionNumber, associatedProductIDs, authors, 
-        status, relatedDocuments, classification } = req.body;
+    const {
+        projectId, title, type, description, revisionNumber, associatedProductIDs, authors,
+        status, relatedDocuments, classification
+    } = req.body;
 
     // Validate required fields
     if (!projectId || !title || !type || !description || !revisionNumber || !authors || !status || !classification) {
@@ -48,13 +53,13 @@ const createNewDocument = asyncHandler(async (req, res) => {
     }
 
     // Prepare the attachment data
-    const attachment = req.file ? {
-        filePath: req.file.path,
-        fileName: req.file.filename
+    const attachment = req.fileUrl ? {
+        filePath: req.fileUrl,
+        fileName: req.file.originalname  // Assuming you still want to track the original file name
     } : undefined;
 
     // Create new document with attachment if available
-    const docuemnt = new Document({
+    const document = new Document({
         projectId,
         title,
         type,
@@ -66,15 +71,15 @@ const createNewDocument = asyncHandler(async (req, res) => {
         attachment
     });
 
-    if(associatedProductIDs) docuemnt.associatedProductID = associatedProductIDs
-    if(relatedDocuments) docuemnt.relatedDocuments = relatedDocuments
+    if (associatedProductIDs) document.associatedProductID = associatedProductIDs;
+    if (relatedDocuments) document.relatedDocuments = relatedDocuments;
 
-    // Automatically set the creation  date to now
-    docuemnt.creationDate = Date.now();
+    // Automatically set the creation date to now
+    document.creationDate = Date.now();
 
-    const createdDocuemnt = await docuemnt.save();
-    res.status(201).json(createdDocuemnt);
-})
+    const createdDocument = await document.save();
+    res.status(201).json(createdDocument);
+});
 
 // @desc Update a document
 // @route PATCH /documents/:id
@@ -84,7 +89,7 @@ const updateDocument = asyncHandler(async (req, res) => {
     const document = await Document.findById(documentId);
 
     if (!document) {
-        return res.status(404).json({ message: 'document not found' });
+        return res.status(404).json({ message: 'Document not found' });
     }
 
     // Update fields if provided
@@ -102,19 +107,19 @@ const updateDocument = asyncHandler(async (req, res) => {
     // Automatically set the last modified date to now
     document.lastModifiedDate = Date.now();
 
-    // Prepare the attachment data if a file is uploaded
-    if (req.file) {
+    // Prepare the attachment data if a new file is uploaded
+    if (req.fileUrl) {
         document.attachment = {
-            filePath: req.file.path,  // The path to the file in the filesystem
-            fileName: req.file.filename 
+            filePath: req.fileUrl,
+            fileName: req.file.originalname  
         };
     }
 
-    const updateddocument = await document.save();
-    res.json({ message: `document '${updateddocument._id}' updated successfully.` });
-})
+    const updatedDocument = await document.save();
+    res.json({ message: `Document '${updatedDocument._id}' updated successfully.` });
+});
 
-// @desc Delete a document
+// @desc Delete a document form the cloud and database
 // @route DELETE /documents
 // @access private
 const deleteDocument = asyncHandler(async (req, res) => {
@@ -124,31 +129,63 @@ const deleteDocument = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'Document not found' });
     }
 
-    const result = await document.deleteOne()
+    // First, delete the document's file from Google Cloud Storage if it exists
+    if (document.attachment && document.attachment.filePath) {
+        try {
+            const bucket = storage.bucket(bucketName);
+            const file = bucket.file(document.attachment.filePath);
+            await file.delete(); // Deletes the file from the bucket
+            console.log(`File ${document.attachment.filePath} deleted.`);
+        } catch (err) {
+            console.error('Failed to delete file from Google Cloud Storage:', err);
+            return res.status(500).json({ message: 'Failed to delete document file from storage' });
+        }
+    }
 
-    const reply = `Document ${result.name} with ID ${result._id} deleted`
+    // Then, delete the document record from the database
+    const result = await document.deleteOne();
+    const reply = `Document ${result.name} with ID ${result._id} deleted`;
+    res.json({ message: reply });
+});
 
-    res.json(reply)
-})
-
-// @desc Download a docuemnt file
-// @route GET /docuemnts/:id/download
+// @desc Download a document file
+// @route GET /documents/:id/download
 // @access private
 const downloadDocumentFile = asyncHandler(async (req, res) => {
     const document = await Document.findById(req.params.id);
     if (!document || !document.attachment || !document.attachment.filePath) {
-        return res.status(404).json({ message: 'Document not found' });
+        return res.status(404).json({ message: 'Document not found or no attachment present' });
     }
 
-    const filePath = document.attachment.filePath;
+    
+    const filePath = document.attachment.filePath.split('https://storage.googleapis.com/metis_bucket_1/').pop();
     const fileName = document.attachment.fileName;
 
-    res.download(filePath, fileName, function(err) {
-        if (err) {
-            // handle errors
-            res.status(500).send({ message: "Could not download the file: " + err });
-        }
-    });
+    console.log('Correct File Path:', filePath);
+    console.log('File Name:', fileName);
+
+    try {
+        const options = {};
+
+        const bucket = storage.bucket('metis_bucket_1');
+        const file = bucket.file(filePath);
+
+        console.log('Attempting to download:', file.name);
+
+        res.attachment(fileName);
+
+        const readStream = file.createReadStream(options);
+
+        readStream.on('error', (err) => {
+            console.error('Error during the file download:', err);
+            res.status(500).json({ message: "Could not download the file: " + err.message });
+        });
+
+        readStream.pipe(res);
+    } catch (err) {
+        console.error('Failed to download file from Google Cloud Storage:', err);
+        res.status(500).json({ message: "Server error occurred" });
+    }
 });
 
 // @desc Get documents by projectId

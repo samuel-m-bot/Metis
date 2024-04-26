@@ -103,7 +103,7 @@ function App() {
                 </Route>
 
                 <Route path="designs">
-                  <Route index element={<DesignList />} />
+                  <Route index element={<DesignsListPage />} />
                   <Route path=":id" element={<EditDesign />} />
                   <Route path="create" element={<NewDesignForm />} />
                 </Route>

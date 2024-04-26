@@ -1,4 +1,4 @@
-import { useLazyDownloadDocumentQuery } from "../documents/documentsApiSlice";
+import { useLazyDownloadDocumentQuery, useDownloadDocumentQuery } from "../documents/documentsApiSlice";
 import { useLazyDownloadDesignQuery } from "../designs/designsApiSlice";
 import { useGetUserPermissionsQuery } from "../projects/projectsApiSlice";
 
@@ -6,58 +6,94 @@ const ItemDetails = ({ itemData, itemType, }) => {
     const { data: permissions, isFetching, isError, error } = useGetUserPermissionsQuery(itemData.projectId);
     const [triggerDocumentDownload, { isLoading: isDownloadingDocument }] = useLazyDownloadDocumentQuery();
     const [triggerDesignDownload, { isLoading: isDownloadingDesign }] = useLazyDownloadDesignQuery();
+    const { data, error: errorD, isLoading } = useDownloadDocumentQuery(itemData.id, {
+        skip: true // This prevents the query from automatically running
+    });
     const hasReadPermission = permissions?.permissions.includes("Read")
 
-    const handleDocumentDownload = async (documentId) => {
-        console.log(permissions)
+    // const handleDocumentDownload = async (documentId) => {
+    //     console.log(permissions)
+    //     try {
+    //         const { blob, filename } = await triggerDocumentDownload(documentId).unwrap();
+      
+    //         console.log('Download Filename:', filename);
+    //         console.log('Download Blob:', blob);
+    //         console.log('Download Blob Size:', blob?.size);  
+    //         console.log('Download Blob Type:', blob?.type);
+      
+    //         if (!blob || blob.size === 0) {
+    //             throw new Error("Blob data is missing or invalid.");
+    //         }
+      
+    //         const url = window.URL.createObjectURL(blob);
+    //         const link = document.createElement('a');
+    //         link.href = url;
+    //         link.setAttribute('download', filename);
+    //         document.body.appendChild(link);
+    //         link.click();
+      
+    //         window.URL.revokeObjectURL(url);
+    //         link.remove();
+    //     } catch (error) {
+    //         console.error('Failed to download the document:', error);
+    //     }
+    // };
+    const handleDesignDownload = async (designId) => {
         try {
-            const { blob, filename } = await triggerDocumentDownload(documentId).unwrap();
-      
-            console.log('Download Filename:', filename);
-            console.log('Download Blob:', blob);
-            console.log('Download Blob Size:', blob?.size);  
-            console.log('Download Blob Type:', blob?.type);
-      
-            if (!blob || blob.size === 0) {
-                throw new Error("Blob data is missing or invalid.");
+            const result = await triggerDesignDownload(designId).unwrap();
+            console.log('Received result from server:', result);
+    
+            if (!result || !(result instanceof Blob)) {
+                console.error('No blob data or incorrect response structure:', result);
+                alert('Failed to load the design file. No data received.');
+                return;
             }
-      
-            const url = window.URL.createObjectURL(blob);
+    
+            // Log detailed information about the blob
+            console.log(`Blob received - Size: ${result.size}, Type: ${result.type}`);
+    
+            // Since filename is not part of the blob response, it needs to be extracted from headers or set default
+            // This needs to be adjusted based on actual implementation details.
+            const filename = `design_${designId}.stp`; // Default filename, ensure to handle dynamically if possible
+    
+            // Create a URL for the blob
+            const url = window.URL.createObjectURL(result);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', filename);
+            link.download = filename; // Set filename
             document.body.appendChild(link);
             link.click();
-      
+    
+            // Cleanup
             window.URL.revokeObjectURL(url);
             link.remove();
         } catch (error) {
-            console.error('Failed to download the document:', error);
+            console.error('Error downloading the design:', error);
+            alert('Error downloading the design: ' + error.message);
         }
-      };
-      const handleDesignDownload = async (design) => {
-        // Extract the file extension from the fileName
-        const fileExtension = design.attachment.fileName.split('.').pop();
-        
-        // Trigger the lazy query
-        const result = await triggerDesignDownload(design.id).unwrap();
-        
-        // Create a blob link to download
-        const url = window.URL.createObjectURL(new Blob([result]));
-        const link = document.createElement('a');
-        link.href = url;
-        
-        // Use the file extension for the download attribute
-        link.setAttribute('download', `design_${design.id}.${fileExtension}`);
-        
-        document.body.appendChild(link);
-        link.click();
-        
-        // Cleanup
-        window.URL.revokeObjectURL(url);
-        link.remove();
-      };
+    };    
+    
 
+    const handleDownload = async () => {
+        try {
+            // Since triggerDocumentDownload is a function that initiates the fetch,
+            // you need to use it instead of calling `data()` directly.
+            const result = await triggerDocumentDownload(itemData.id).unwrap(); // Using unwrap() to handle the result directly
+            if (result?.blob) {
+                // Create a URL for the blob
+                const url = window.URL.createObjectURL(result.blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = result.filename || 'downloaded-file';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url); // Clean up by revoking the Blob URL after use
+            }
+        } catch (error) {
+            console.error('Error downloading the document:', error);
+        }
+    };    
     return (
         <div className="detail-section">
             <h2>General Details</h2>
@@ -75,7 +111,7 @@ const ItemDetails = ({ itemData, itemType, }) => {
                     {new Date(itemData.updatedAt || itemData.lastModifiedDate).toLocaleDateString()}
                 </p>
                 {itemType === 'Document' && (
-                    <button onClick={() => handleDocumentDownload(itemData.id)} className="btn btn-primary btn-lg" disabled={!hasReadPermission}>
+                    <button onClick={handleDownload} className="btn btn-primary btn-lg" >
                         Download Document
                     </button>
                 )}
@@ -84,6 +120,7 @@ const ItemDetails = ({ itemData, itemType, }) => {
                         Download Design
                     </button>
                 )}
+                
             </div>
             <div className='row'>
                 <div className='col'>

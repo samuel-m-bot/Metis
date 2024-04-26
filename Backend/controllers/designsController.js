@@ -1,6 +1,9 @@
+const { Storage } = require('@google-cloud/storage');
 const Design = require('../models/Design')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
+const storage = new Storage();
+const bucketName = 'metis_bucket_1'; 
 
 // @desc Get all designs
 // @route GET /designs
@@ -28,7 +31,7 @@ const getDesignById = asyncHandler(async (req, res) => {
 // @route POST /designs
 // @access private
 const createNewDesign = asyncHandler(async (req, res) => {
-    const { projectId, productID, name, description, type, revisionNumber, status, designers, classification } = req.body;
+    const { projectId, productID, name, description, type, revisionNumber, status, designers, classification, attachment } = req.body;
 
     // Validate required fields
     if (!projectId || !productID || !name || !description || !type || !revisionNumber || !status || !designers || !classification) {
@@ -39,12 +42,6 @@ const createNewDesign = asyncHandler(async (req, res) => {
     if (!/^[A-Z]*\.?\d+(\.\d+)?$/.test(revisionNumber)) {
         return res.status(400).json({ message: 'Invalid revision number format' });
     }
-
-    // Prepare the attachment data
-    const attachment = req.file ? {
-        filePath: req.file.path,
-        fileName: req.file.filename
-    } : undefined;
 
     // Create new design with attachment if available
     const design = new Design({
@@ -64,13 +61,11 @@ const createNewDesign = asyncHandler(async (req, res) => {
     res.status(201).json(createdDesign);
 });
 
-
 // @desc Update an existing design
 // @route PATCH /designs/:id
 // @access private
 const updateDesign = asyncHandler(async (req, res) => {
-    console.log(req.body)
-    console.log(req.file)
+    const { projectId, productID, name, description, type, revisionNumber, status, designers, classification, attachment } = req.body;
     const designId = req.params.id;
     const design = await Design.findById(designId);
 
@@ -79,34 +74,28 @@ const updateDesign = asyncHandler(async (req, res) => {
     }
 
     // Update fields if provided
-    design.projectId = req.body.projectId || design.projectId;
-    design.productID = req.body.productID || design.productID;
-    design.name = req.body.name || design.name;
-    design.description = req.body.description || design.description;
-    design.type = req.body.type || design.type;
-    design.revisionNumber = req.body.revisionNumber || design.revisionNumber;
-    design.status = req.body.status || design.status;
-    design.comments = req.body.comments || design.comments;
-    design.designers = req.body.designers || design.designers;
-    design.classification = req.body.classification || design.classification;
+    design.projectId = projectId || design.projectId;
+    design.productID = productID || design.productID;
+    design.name = name || design.name;
+    design.description = description || design.description;
+    design.type = type || design.type;
+    design.revisionNumber = revisionNumber || design.revisionNumber;
+    design.status = status || design.status;
+    design.designers = designers || design.designers;
+    design.classification = classification || design.classification;
+    if (attachment) {
+        design.attachment = attachment;
+    }
 
     // Automatically set the last modified date to now
     design.lastModifiedDate = Date.now();
-
-    // Prepare the attachment data if a file is uploaded
-    if (req.file) {
-        design.attachment = {
-            filePath: req.file.path,  // The path to the file in the filesystem
-            fileName: req.file.filename 
-        };
-    }
 
     const updatedDesign = await design.save();
     res.json({ message: `Design '${updatedDesign._id}' updated successfully.` });
 });
 
 // @desc Delete a design
-// @route DELETE /designs
+// @route DELETE /designs/:id
 // @access private
 const deleteDesign = asyncHandler(async (req, res) => {
     const design = await Design.findById(req.params.id);
@@ -115,33 +104,69 @@ const deleteDesign = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: 'Design not found' });
     }
 
-    const result = await design.deleteOne()
+    // If there's an attachment, attempt to delete it from Google Cloud Storage
+    if (design.attachment && design.attachment.filePath) {
+        const filePath = design.attachment.filePath.replace(/^https?:\/\/storage.googleapis.com\/metis_bucket_1\//, '');
+        const file = storage.bucket(bucketName).file(filePath);
 
-    const reply = `Design ${result.name} with ID ${result._id} deleted`
+        try {
+            await file.delete();
+            console.log(`File deleted successfully from cloud storage for design ID: ${req.params.id}`);
+        } catch (error) {
+            console.error('Failed to delete design file from cloud storage:', error);
+            return res.status(500).json({ message: 'Failed to delete design file from cloud storage', error: error.message });
+        }
+    }
 
-    res.json(reply)
-})
+    // Proceed to delete the design document from the database
+    const result = await design.deleteOne();
+    const reply = `Design '${result.name}' with ID ${result._id} deleted`;
+
+    res.json(reply);
+});
+
 
 // @desc Download a design file
 // @route GET /designs/:id/download
 // @access private
 const downloadDesignFile = asyncHandler(async (req, res) => {
-    const design = await Design.findById(req.params.id);
+    const designId = req.params.id;
+    console.log(`Starting download for design ID: ${designId}`);
 
-    if (!design) {
-        return res.status(404).json({ message: 'Design not found' });
+    const design = await Design.findById(designId);
+    if (!design || !design.attachment || !design.attachment.filePath) {
+        console.log(`Design not found or no attachment present for design ID: ${designId}`);
+        return res.status(404).json({ message: 'Design not found or no file attached' });
     }
 
-    const file = design.attachment.filePath;
-    
-    // Set the correct headers on the response to prompt download
-    res.download(file, design.attachment.fileName, (err) => {
-        if (err) {
-            res.status(500).send({
-                message: "Could not download the file. " + err,
-            });
-        }
-    });
+    try {
+        const filePath = design.attachment.filePath.replace(/^https?:\/\/storage.googleapis.com\/metis_bucket_1\//, '');
+        const fileName = design.attachment.fileName;
+        console.log(`File Path: ${filePath}`);
+        console.log(`File Name: ${fileName}`);
+        console.log(`Bucket Name: metis_bucket_1`);
+
+        const file = storage.bucket('metis_bucket_1').file(filePath);
+
+        res.attachment(fileName);
+
+        const readStream = file.createReadStream();
+
+        readStream.on('error', (error) => {
+            console.error(`Failed to download file: ${error.message}`);
+            console.log(`Error during the file download for file: ${filePath}`);
+            res.status(500).json({ message: "Could not download the file: " + error.message });
+        });
+
+        readStream.pipe(res).on('finish', () => {
+            console.log(`Download successful for file: ${filePath}`);
+        });
+
+    } catch (error) {
+        console.error(`Error during file download: ${error.message}`);
+        console.log(`Exception caught during the file download for design ID: ${designId}`);
+        res.status(500).send({ message: "Server error during file download." });
+    }
 });
 
 // @desc Get designs by projectId

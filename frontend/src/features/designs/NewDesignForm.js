@@ -105,9 +105,9 @@ const NewDesignForm = ({ projectId: initialProjectId, task, closeModal }) => {
                             required={!initialProjectId}
                         >
                             <option value="">Select a project</option>
-                            {projects?.map(project => (
-                                <option key={project._id} value={project._id}>
-                                    {project.name}
+                            {projects?.ids.map(projectId => (
+                                <option key={projectId} value={projectId}>
+                                    {projects.entities[projectId].name}
                                 </option>
                             ))}
                         </select>

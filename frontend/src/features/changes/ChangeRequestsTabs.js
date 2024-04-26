@@ -6,6 +6,7 @@ import ChangeRequestDetails from '../../components/ChangeRequestDetails';
 import { Dropdown, Button, ButtonGroup } from 'react-bootstrap';
 import EditChangeRequestModal from './EditChangeRequestModal'
 import useAuth from '../../hooks/useAuth';
+import HistoryCommentsTab from '../../components/HistoryCommentsTab';
 
 const ChangeRequestTabs = ({changeRequestData}) => {
   const {isAdmin, isProjectManager} = useAuth()
@@ -40,6 +41,17 @@ const ChangeRequestTabs = ({changeRequestData}) => {
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
   
+  const mockHistory = [
+    "2023-04-01: Change request created by Alice Johnson",
+    "2023-04-02: Status updated to 'Under Review' by Project Manager",
+    "2023-04-03: Assigned to John Doe for initial assessment",
+    "2023-04-04: Comments added by Alice Johnson regarding project scope adjustments",
+    "2023-04-05: Status updated to 'Pending Approval' by Compliance Officer",
+    "2023-04-06: Feedback requested from the engineering team",
+    "2023-04-07: Revised following feedback from engineering",
+    "2023-04-08: Status updated to 'Approved' awaiting final sign off"
+];
+
   return (
     <div className="change-request-container">
       {(isAdmin || isProjectManager) && (
@@ -55,7 +67,7 @@ const ChangeRequestTabs = ({changeRequestData}) => {
         show={showModal}
         handleClose={handleCloseModal}
         projectId={changeRequestData.projectId}
-        mainItemId={changeRequestData.id}
+        mainItemId={changeRequestData._id}
         changeRequest={changeRequestData}
       />
         </>
@@ -108,36 +120,9 @@ const ChangeRequestTabs = ({changeRequestData}) => {
           </div>
         </Tab>
 
+        {console.log(changeRequestData)}
         <Tab eventKey="historyComments" title="History & Comments">
-          <div className="change-request-history-comments">
-            <div className="history-log">
-              <h3>Change Request History</h3>
-              <ul className="list-group">
-                <li className="list-group-item">2022-09-15: Change request created by Jane Doe</li>
-                <li className="list-group-item">2022-09-16: Status updated to "Under Review" by Project Manager</li>
-                <li className="list-group-item">2022-09-17: Feedback added by Design Lead</li>
-                <li className="list-group-item">2022-09-20: Status updated to "Pending Approval" by Compliance Officer</li>
-              </ul>
-            </div>
-
-            <div className="comments-section">
-              <h3>Comments</h3>
-              <div className="comments-list">
-                <div className="comment">
-                  <p className="comment-author">Jane Doe - <small>2022-09-16</small></p>
-                  <p className="comment-text">"I've added the initial requirements. Please review and provide feedback."</p>
-                </div>
-                <div className="comment">
-                  <p className="comment-author">John Smith - <small>2022-09-17</small></p>
-                  <p className="comment-text">"Reviewed. Please see the attached document for my detailed feedback."</p>
-                </div>
-              </div>
-              <form className="new-comment-form">
-                <textarea className="form-control" placeholder="Write a comment..." rows="3"></textarea>
-                <button type="submit" className="btn btn-primary mt-2">Post Comment</button>
-              </form>
-            </div>
-          </div>
+          <HistoryCommentsTab changeRequestId={changeRequestData._id} history={mockHistory}/>
         </Tab>
 
         <Tab eventKey="relatedDocuments" title="Related Documents & Items">

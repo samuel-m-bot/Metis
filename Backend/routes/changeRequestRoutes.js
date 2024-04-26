@@ -20,4 +20,9 @@ router.get('/:id/approveReject', changeRequestController.approveRejectChangeRequ
 router.get('/project/:projectId/:status', changeRequestController.getChangeRequestsByProjectAndStatus);
 // router.get('/:type/:itemId', changeRequestController.getChangeRequestsByRelatedItem);
 router.get('/main-item/:mainItemId', changeRequestController.getChangeRequestsByMainItem); // Get all change requests for a mainItem
+router.post('/:id/comment', changeRequestController.addCommentToChangeRequest);
+router.delete('/:id/comment/:commentId', changeRequestController.deleteCommentFromChangeRequest);
+router.get('/:id/comments', changeRequestController.getCommentsForChangeRequest);
+
+
 module.exports = router

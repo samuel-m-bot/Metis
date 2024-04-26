@@ -289,6 +289,91 @@ const getChangeRequestsByMainItem = asyncHandler(async (req, res) => {
     res.json(changeRequests);
 });
 
+// @desc Add a comment to a change request
+// @route POST /changeRequests/:id/comment
+// @access private
+const addCommentToChangeRequest = asyncHandler(async (req, res) => {
+    const changeRequestId = req.params.id;
+    const { text, postedBy } = req.body;
+
+    console.log(text)
+    console.log(postedBy)
+
+    if (!text) {
+        return res.status(400).json({ message: 'Comment text is required' });
+    }
+
+    const changeRequest = await ChangeRequest.findById(changeRequestId);
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'Change request not found' });
+    }
+
+    const newComment = {
+        text,
+        postedBy: postedBy || req.user._id, // Assume `req.user._id` if `postedBy` is not provided
+        postedDate: new Date()
+    };
+
+    changeRequest.comments.push(newComment);
+    await changeRequest.save();
+
+    res.status(201).json({
+        message: 'Comment added successfully',
+        comments: changeRequest.comments
+    });
+});
+
+// @desc Delete a comment from a change request
+// @route DELETE /changeRequests/:id/comment/:commentId
+// @access private
+const deleteCommentFromChangeRequest = asyncHandler(async (req, res) => {
+    const changeRequestId = req.params.id;
+    const commentId = req.params.commentId;
+
+    const changeRequest = await ChangeRequest.findById(changeRequestId);
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'Change request not found' });
+    }
+
+    const commentIndex = changeRequest.comments.findIndex(c => c._id.toString() === commentId);
+    
+    if (commentIndex === -1) {
+        return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    changeRequest.comments.splice(commentIndex, 1);
+    await changeRequest.save();
+
+    res.json({
+        message: 'Comment deleted successfully',
+        comments: changeRequest.comments
+    });
+});
+
+// @desc Get all comments for a change request sorted by latest
+// @route GET /changeRequests/:id/comments
+// @access Private
+const getCommentsForChangeRequest = asyncHandler(async (req, res) => {
+    const { id } = req.params; 
+
+    const changeRequest = await ChangeRequest.findById(id)
+        .populate({
+            path: 'comments.postedBy',
+            select: 'firstName surname email'
+        })
+        .select('comments')
+        .lean();
+
+    if (!changeRequest) {
+        return res.status(404).json({ message: 'Change request not found' });
+    }
+
+    const sortedComments = changeRequest.comments.sort((a, b) => b.postedDate - a.postedDate);
+
+    res.json(sortedComments);
+});
 
 
 module.exports = {
@@ -302,5 +387,8 @@ module.exports = {
     approveRejectChangeRequest,
     getChangeRequestsByProjectAndStatus,
     getChangeRequestsByRelatedItem,
-    getChangeRequestsByMainItem
+    getChangeRequestsByMainItem,
+    addCommentToChangeRequest,
+    deleteCommentFromChangeRequest,
+    getCommentsForChangeRequest
 }

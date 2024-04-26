@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import Login from './features/auth/Login'
 import SignUp from './features/users/SignUp.js'
@@ -145,7 +145,7 @@ function App() {
               <Route path="products/:productId" element={<Product />} />
               <Route path="designs" element={<DesignsListPage />} />
               <Route path="designs/:designId" element={<Design />} />
-              <Route path="change-requests" element={<ChangeRequests />} />
+              <Route path="/change-requests" element={<Navigate to="/home" replace />} />
               <Route path="documents" element={<DocumentLibrary />} />
               <Route path="users" element={<UserManagement />} />
             </Route>

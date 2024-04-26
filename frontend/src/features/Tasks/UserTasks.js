@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useGetUserTasksQuery } from './tasksApiSlice';
+import { Table, Badge, Button } from 'react-bootstrap';
 
 const UserTasks = ({ userId }) => {
     const navigate = useNavigate();
+    const [sortConfig, setSortConfig] = useState(null);
+
     const {
         data: tasks,
         isLoading,
@@ -16,6 +20,27 @@ const UserTasks = ({ userId }) => {
 
     const handleTaskClick = (taskId) => {
         navigate(`/tasks/${taskId}`);
+    };
+
+    const sortedTasks = tasks ? [...tasks.ids].sort((a, b) => {
+        if (!sortConfig) return 0;
+        const taskA = tasks.entities[a][sortConfig.key];
+        const taskB = tasks.entities[b][sortConfig.key];
+        if (taskA < taskB) {
+            return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (taskA > taskB) {
+            return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+    }) : [];
+
+    const handleSorting = (key) => {
+        let direction = 'ascending';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
     };
 
     if (isLoading) return <p>Loading tasks...</p>;
@@ -33,29 +58,29 @@ const UserTasks = ({ userId }) => {
     return (
         <div className='row' id='activity-row'>
             <h1 className='text-center mb-3'>Assigned Tasks</h1>
-            <table className="table table-hover">
+            <Table hover responsive>
                 <thead className="table-dark">
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Task ID</th>
-                        <th scope="col">Affected Item</th>
-                        <th scope="col">Details</th>
+                        <th>#</th>
+                        <th onClick={() => handleSorting('taskType')}>Type</th>
+                        <th onClick={() => handleSorting('status')}>Status</th>
+                        <th>Task ID</th>
+                        <th>Affected Item</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {tasks && tasks.ids.map((taskId, index) => (
+                    {sortedTasks.map((taskId, index) => (
                         <tr key={taskId} onClick={() => handleTaskClick(taskId)} style={{ cursor: 'pointer' }}>
-                            <th scope="row">{index + 1}</th>
+                            <td>{index + 1}</td>
                             <td>{tasks.entities[taskId].taskType}</td>
                             <td>
-                                <span className={`badge ${
-                                    tasks.entities[taskId].status === 'Completed' ? 'bg-success' :
-                                    tasks.entities[taskId].status === 'Cancelled' ? 'bg-danger' :
-                                    'bg-warning'}`}>
+                                <Badge bg={
+                                    tasks.entities[taskId].status === 'Completed' ? 'success' :
+                                    tasks.entities[taskId].status === 'Cancelled' ? 'danger' :
+                                    'warning'}>
                                     {tasks.entities[taskId].status}
-                                </span>
+                                </Badge>
                             </td>
                             <td>{taskId}</td>
                             <td>{tasks.entities[taskId].name}</td>
@@ -63,7 +88,7 @@ const UserTasks = ({ userId }) => {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
         </div>
     );
 };

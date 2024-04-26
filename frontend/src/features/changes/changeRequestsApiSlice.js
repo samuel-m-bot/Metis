@@ -89,6 +89,26 @@ export const changeRequestsApiSlice = apiSlice.injectEndpoints({
             query: (mainItemId) => `/changeRequests/main-item/${mainItemId}`,
             providesTags: (result, error, mainItemId) => [{ type: 'ChangeRequest', mainItemId: mainItemId }],
         }),
+        addCommentToChangeRequest: builder.mutation({
+            query: (commentData) => ({
+                url: `/changeRequests/${commentData.changeRequestId}/comment`,
+                method: 'POST',
+                body: commentData,
+            }),
+            invalidatesTags: (result, error, { changeRequestId }) => [{ type: 'Comments', id: changeRequestId }]
+        }),
+        deleteCommentFromChangeRequest: builder.mutation({
+            query: ({ changeRequestId, commentId }) => ({
+                url: `/changeRequests/${changeRequestId}/comment/${commentId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (result, error, { changeRequestId }) => [{ type: 'Comments', id: changeRequestId }]
+        }),        
+        getCommentsForChangeRequest: builder.query({
+            query: (changeRequestId) => `/changeRequests/${changeRequestId}/comments`,
+            transformResponse: (response, meta, arg) => response.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate)),
+            providesTags: (result, error, changeRequestId) => [{ type: 'Comments', id: changeRequestId }],
+        }),
     }),
 })
 
@@ -103,7 +123,10 @@ export const {
     useGetChangeRequestsByProjectAndStatusQuery,
     useGetChangeRequestsByRelatedItemQuery,
     useGetChangeRequestsByMainItemQuery,
-    useLazyGetChangeRequestsByMainItemQuery
+    useLazyGetChangeRequestsByMainItemQuery,
+    useAddCommentToChangeRequestMutation,
+    useDeleteCommentFromChangeRequestMutation,
+    useGetCommentsForChangeRequestQuery
 } = changeRequestsApiSlice
 
 // returns the query result object

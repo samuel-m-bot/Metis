@@ -3,8 +3,13 @@ import { Tab, Tabs } from 'react-bootstrap';
 import './ChangeRequest.css'
 import RelatedItems from '../../components/RelatedItems';
 import ChangeRequestDetails from '../../components/ChangeRequestDetails';
+import { Dropdown, Button, ButtonGroup } from 'react-bootstrap';
+import EditChangeRequestModal from './EditChangeRequestModal'
+import useAuth from '../../hooks/useAuth';
 
 const ChangeRequestTabs = ({changeRequestData}) => {
+  const {isAdmin, isProjectManager} = useAuth()
+  const [showModal, setShowModal] = useState(false);
   const [key, setKey] = useState('details');
 
   console.log(changeRequestData)
@@ -32,9 +37,30 @@ const ChangeRequestTabs = ({changeRequestData}) => {
     },
   ];
 
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
   
   return (
     <div className="change-request-container">
+      {(isAdmin || isProjectManager) && (
+        <>
+        <Dropdown as={ButtonGroup} className="actions-dropdown">
+        <Button variant="secondary">Actions</Button>
+        <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" />
+        <Dropdown.Menu>
+            <Dropdown.Item onClick={handleOpenModal}>Edit Change Request</Dropdown.Item>
+        </Dropdown.Menu>
+    </Dropdown>
+    <EditChangeRequestModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        projectId={changeRequestData.projectId}
+        mainItemId={changeRequestData.id}
+        changeRequest={changeRequestData}
+      />
+        </>
+      )}
+
       <Tabs
         id="change-request-tabs"
         activeKey={key}

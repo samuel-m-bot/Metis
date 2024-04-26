@@ -19,7 +19,7 @@ const EditChangeRequestForm = ({ changeRequest }) => {
     const { data: documents, isFetching: isFetchingDocuments, isError: isDocumentsError } = useGetDocumentsQuery();
     const { data: designs, isFetching: isFetchingDesigns, isError: isDesignsError } = useGetDesignsQuery();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
-    const {id} = useAuth()
+    const {id, isAdmin} = useAuth()
 
     console.log(changeRequest)
     const [projectId, setProjectId] = useState(changeRequest.projectId);
@@ -52,7 +52,7 @@ const EditChangeRequestForm = ({ changeRequest }) => {
     }, [changeRequest])
     const onSaveChangeRequestClicked = async () => {
         const updatedChangeRequest = {
-            id: changeRequest.id,
+            id: changeRequest._id,
             requestedBy: id,
             projectId,
             description,
@@ -68,6 +68,7 @@ const EditChangeRequestForm = ({ changeRequest }) => {
         if(relatedProducts!='' && type ==='Product') updatedChangeRequest.relatedProducts = relatedProducts
 
         try {
+            console.log(updatedChangeRequest)
             await updateChangeRequest(updatedChangeRequest).unwrap();
             navigate('/admin-dashboard/change-requests');
         } catch (error) {
@@ -87,22 +88,36 @@ const EditChangeRequestForm = ({ changeRequest }) => {
         <div className="container mt-3">
             <h2>Edit Change Request</h2>
             <form>
+                {isAdmin && (
+                    <div className="mb-3">
+                        <label htmlFor="projectId" className="form-label">Project:</label>
+                        <select
+                            className="form-select"
+                            id="projectId"
+                            value={projectId}
+                            onChange={e => setProjectId(e.target.value)}
+                        >
+                            <option value="">Select a project</option>
+                            {projects?.ids.map(id => (
+                                <option key={id} value={id}>
+                                    {projects.entities[id].name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                {!isAdmin &&  (
                 <div className="mb-3">
-                    <label htmlFor="projectId" className="form-label">Project:</label>
-                    <select
-                        className="form-select"
-                        id="projectId"
-                        value={projectId}
-                        onChange={e => setProjectId(e.target.value)}
-                    >
-                        <option value="">Select a project</option>
-                        {projects?.ids.map(id => (
-                            <option key={id} value={id}>
-                                {projects.entities[id].name}
-                            </option>
-                        ))}
-                    </select>
+                    <label htmlFor="projectName" className="form-label">Project:</label>
+                    <input
+                    type="text"
+                    className="form-control"
+                    id="projectName"
+                    value={projects.entities[projectId]?.name || ''}
+                    readOnly
+                    />
                 </div>
+                )}
                 <div className="mb-3">
                     <label htmlFor="description" className="form-label">Description:</label>
                     <textarea

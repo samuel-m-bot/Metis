@@ -10,9 +10,9 @@ import ReviewsApprovalsTab from '../reviews/ReviewsApprovalsTab';
 import ItemDetails from './ItemDetails';
 
 
-const Item = ({ itemType, itemData, changeRequests, completedChangeRequests }) => {
+const Item = ({ itemType, itemData, completedChangeRequests }) => {
   const [key, setKey] = useState('details');
-  console.log(itemData)
+  console.log(itemType)
 
   return (
     <div className="item-container">

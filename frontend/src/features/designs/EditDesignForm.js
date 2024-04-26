@@ -6,16 +6,18 @@ import { useGetProductsQuery } from '../products/productsApiSlice';
 import { useGetDesignsQuery } from "../designs/designsApiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import useAuth from '../../hooks/useAuth';
 
-const EditDesignForm = ({ design }) => {
+const EditDesignForm = ({ design, closeModal }) => {
     const navigate = useNavigate();
+    const {isAdmin} = useAuth()
     const [updateDesign] = useUpdateDesignMutation();
     const [deleteDocument] = useDeleteDesignMutation();
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const { data: products, isFetching: isFetchingProducts, isError: isProductsError } = useGetProductsQuery();
     const { data: designs, isFetching: isFetchingDesigns, isError: isDesignsError } = useGetDesignsQuery();
 
-    const [designId, setDesignId] = useState(design.designId);
+    const [designId, setDesignId] = useState(design.id);
     const [productID, setProductID] = useState(design.productID);
     const [name, setName] = useState(design.name);
     const [description, setDescription] = useState(design.description);
@@ -25,7 +27,7 @@ const EditDesignForm = ({ design }) => {
     const [status, setStatus] = useState(design.status);
     const [designers, setDesigners] = useState(design.designers);
     const [file, setFile] = useState(null);
-    const [classification, setClassification] = useState(document.classification);
+    const [classification, setClassification] = useState(design.classification);
     
 
     const handleRevisionChange = (e) => {
@@ -51,7 +53,9 @@ const EditDesignForm = ({ design }) => {
     
         try {
             await updateDesign({id: design._id, formData}).unwrap();
-            navigate('/admin-dashboard/designs');
+            if(isAdmin)navigate('/admin-dashboard/designs');
+            else if(closeModal) closeModal()
+            else navigate('/designs');
         } catch (error) {
             console.error('Failed to update the design:', error);
         }
@@ -80,7 +84,7 @@ const EditDesignForm = ({ design }) => {
             <h2>Edit Design</h2>
             {console.log(design)}
             <form encType="multipart/form-data" onSubmit={onSaveChanges}>
-            <div className="mb-3">
+                {isAdmin && (<div className="mb-3">
                     <label htmlFor="designId" className="form-label">Design:</label>
                     <select
                         className="form-select"
@@ -96,6 +100,25 @@ const EditDesignForm = ({ design }) => {
                         ))}
                     </select>
                 </div>
+                )}
+                {!isAdmin && (
+                    <div className="mb-3">
+                        <label htmlFor="designId" className="form-label">Design:</label>
+                        <select
+                            className="form-select"
+                            id="designId"
+                            value={designId}
+                            disabled 
+                        >
+                            <option value="">Select a design</option>
+                            {designs?.ids.map(id => (
+                                <option key={id} value={id}>
+                                    {designs.entities[id].name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <div className="mb-3">
                     {console.log(design)}
                     <label htmlFor="productID" className="form-label">Product:</label>

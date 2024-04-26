@@ -64,6 +64,7 @@ const canUserCheckOutAndInItem = asyncHandler(async (req, res) => {
 // @access Private
 const checkOutItem = asyncHandler(async (req, res) => {
     const { itemId, itemType, userId } = req.params;
+    console.log(itemType)
     const Model = models[itemType];
 
     if (!Model) {

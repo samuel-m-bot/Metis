@@ -8,9 +8,9 @@ const EditItemModal = ({ show, itemType, closeModal, projectId, itemData }) => {
     const renderForm = () => {
         switch (itemType) {
             case 'Product':
-                return <EditProductForm projectId={projectId} itemData={itemData} closeModal={closeModal} />;
+                return <EditProductForm projectId={projectId} product={itemData} closeModal={closeModal} />;
             case 'Design':
-                return <EditDesignForm projectId={projectId} itemData={itemData} closeModal={closeModal} />;
+                return <EditDesignForm projectId={projectId} design={itemData} closeModal={closeModal} />;
             case 'Document':
                 return <EditDocumentForm projectId={projectId} document={itemData} closeModal={closeModal} />;
             default:

@@ -5,13 +5,16 @@ import { PRODUCT_CATEGORIES } from '../../config/categories';
 import { useGetProjectsQuery } from '../projects/projectsApiSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {  faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import useAuth from '../../hooks/useAuth';
 
-const EditProductForm = ({ product }) => {
+const EditProductForm = ({ product, closeModal }) => {
     const navigate = useNavigate();
+    const {isAdmin, isProjectManager} = useAuth()
     const [updateProduct, { isLoading }] = useUpdateProductMutation();
     const [deleteProduct] = useDeleteProductMutation();
     const { data: projects, isFetching: isFetchingProjects, isError: isProjectsError } = useGetProjectsQuery();
 
+    console.log(product)
     const [projectId, setProjectId] = useState(product.projectId);
     const [name, setName] = useState(product.name);
     const [description, setDescription] = useState(product.description);
@@ -61,7 +64,8 @@ const EditProductForm = ({ product }) => {
 
         try {
             await updateProduct(updatedProduct).unwrap();
-            navigate('admin-dashboard/products');
+            if (isAdmin)navigate('/admin-dashboard/products');
+            else navigate('/products');
         } catch (error) {
             console.error('Failed to update product:', error);
         }

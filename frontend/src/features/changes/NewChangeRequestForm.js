@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAddNewChangeRequestMutation } from './changeRequestsApiSlice';
-import { useGetUsersQuery } from '../users/usersApiSlice'; 
-import { useGetProjectsQuery } from "../projects/projectsApiSlice";
+import { useGetProjectTeamMembersQuery } from "../projects/projectsApiSlice";
 import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
 import { useGetDesignsByProjectIdQuery } from '../designs/designsApiSlice';
 import { useGetProductsByProjectIdQuery } from '../products/productsApiSlice';
@@ -11,13 +10,13 @@ import useAuth from '../../hooks/useAuth';
 const NewChangeRequestForm = ({ projectId, closeModal, mainItemId, itemType, onSuccess }) => {
     const navigate = useNavigate();
     const [addNewChangeRequest, { isLoading }] = useAddNewChangeRequestMutation();
-    const { data: users } = useGetUsersQuery();
-    const { data: projects } = useGetProjectsQuery();
+    const { data: teamMembers } = useGetProjectTeamMembersQuery(projectId);
     const { data: documents, isError: isDocumentsError } = useGetDocumentsByProjectIdQuery(projectId);
     const { data: designs, isError: isDesignsError } = useGetDesignsByProjectIdQuery(projectId);
     const { data: products, isError: isProductsError } = useGetProductsByProjectIdQuery(projectId);
     const { id, isAdmin } = useAuth()
 
+    console.log(teamMembers)
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('');
@@ -153,8 +152,10 @@ const NewChangeRequestForm = ({ projectId, closeModal, mainItemId, itemType, onS
                     <label htmlFor="assignedTo" className="form-label">Assigned To:</label>
                     <select className="form-select" id="assignedTo" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                         <option value="">Select a user</option>
-                        {users?.ids.map(userId => (
-                            <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
+                        {teamMembers?.teamMembers.filter(member => member.userId !== id).map(member => (
+                            <option key={member.userId} value={member.userId}>
+                                {member.firstName} {member.surname}
+                            </option>
                         ))}
                     </select>
                 </div>

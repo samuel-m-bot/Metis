@@ -131,10 +131,30 @@ const updateRevisionNumber = (item, isMajor) => {
     return newRevisionNumber;
 };
 
-const processUpdates = async (items, model) => {
+const updateItem = async (itemId, model,isMajor) => {
+    console.log(`Looking up item ${itemId} in model ${model.modelName}`);
+    const item = await model.findById(itemId);
+    if (!item) {
+        console.log(`Item ${itemId} not found in model ${model.modelName}`);
+        return;
+    }
+
+    const newRevisionNumber = updateRevisionNumber(item, isMajor);
+    if (newRevisionNumber) {
+        console.log(`Updating item ${itemId}: setting status to 'Checked In' and revision number to ${newRevisionNumber}`);
+        await model.findByIdAndUpdate(itemId, {
+            status: 'Checked In',
+            revisionNumber: newRevisionNumber
+        }, { new: true });
+    }
+};
+
+const processUpdates = async (items, model,isMajor) => {
+
+
     console.log(`Processing updates for ${items.length} items in model ${model.modelName}`);
     for (let itemId of items) {
-        await updateItem(itemId, model);
+        await updateItem(itemId, model,isMajor);
     }
 };
 
@@ -142,35 +162,18 @@ const updateRelatedItemsAndMain = async (changeRequest) => {
     const isMajor = changeRequest.revisionType === 'Major';
     console.log(`Updating related items and main for ChangeRequest: ${changeRequest._id}, Major update: ${isMajor}`);
 
-    const updateItem = async (itemId, model) => {
-        console.log(`Looking up item ${itemId} in model ${model.modelName}`);
-        const item = await model.findById(itemId);
-        if (!item) {
-            console.log(`Item ${itemId} not found in model ${model.modelName}`);
-            return;
-        }
-
-        const newRevisionNumber = updateRevisionNumber(item, isMajor);
-        if (newRevisionNumber) {
-            console.log(`Updating item ${itemId}: setting status to 'Checked In' and revision number to ${newRevisionNumber}`);
-            await model.findByIdAndUpdate(itemId, {
-                status: 'Checked In',
-                revisionNumber: newRevisionNumber
-            }, { new: true });
-        }
-    };
 
     // Update the main item
     const mainModel = models[changeRequest.onModel];
     console.log(`Model for main item: ${mainModel.modelName}`);
     if (mainModel) {
-        await updateItem(changeRequest.mainItem, mainModel);
+        await updateItem(changeRequest.mainItem, mainModel,isMajor);
     }
 
     // Process all related item types
-    await processUpdates(changeRequest.relatedDocuments, models.Document);
+    await processUpdates(changeRequest.relatedDocuments, models.Document,isMajor);
     await processUpdates(changeRequest.relatedDesigns, models.Design);
-    await processUpdates(changeRequest.relatedProducts, models.Product);
+    await processUpdates(changeRequest.relatedProducts, models.Product,isMajor);
 };
 
 const processRejectionWorkflow = async (review, req, res) => {
@@ -297,6 +300,7 @@ const processCompletionWorkflow = async (review, req, res) => {
                     console.log("Updated 'Update' task to Completed");
                 }
             }
+            console.log(changeRequest)
             changeRequest.status = 'Implemented';
             await changeRequest.save();
         } else if (Model) {

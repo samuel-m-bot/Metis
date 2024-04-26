@@ -42,13 +42,15 @@ const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, is
           priority: changeRequestData?.priority || task?.priority,
           dueDate: changeRequestData?.estimatedCompletionDate || task?.dueDate,
           assignedTo: changeRequestData?.assignedTo || task?.assignedTo,
-          ...(task?.assignedChangeRequest && { assignedChangeRequest: task.assignedChangeRequest }),
           assignedDesign: task?.assignedDesign,
           assignedDocument: task?.assignedDocument,
-          assignedProduct: task?.assignedProduct
+          assignedProduct: task?.assignedProduct,
         },
         isChangeRequest
       };
+
+      if(isChangeRequest) taskData.taskDetails.assignedChangeRequest = changeRequestData?._id
+      else if(task?.assignedChangeRequest) taskData.taskDetails.assignedChangeRequest = task?.assignedChangeRequest
 
       await manageReviewTasks(taskData).unwrap();
       handleClose(); // Close the modal on successful creation

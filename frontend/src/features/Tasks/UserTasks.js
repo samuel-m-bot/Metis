@@ -50,7 +50,10 @@ const UserTasks = ({ userId }) => {
                             <th scope="row">{index + 1}</th>
                             <td>{tasks.entities[taskId].taskType}</td>
                             <td>
-                                <span className={`badge ${tasks.entities[taskId].status === 'Completed' ? 'bg-success' : 'bg-warning'}`}>
+                                <span className={`badge ${
+                                    tasks.entities[taskId].status === 'Completed' ? 'bg-success' :
+                                    tasks.entities[taskId].status === 'Cancelled' ? 'bg-danger' :
+                                    'bg-warning'}`}>
                                     {tasks.entities[taskId].status}
                                 </span>
                             </td>

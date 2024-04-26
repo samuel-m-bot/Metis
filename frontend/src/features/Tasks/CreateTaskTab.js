@@ -27,13 +27,15 @@ const CreateTaskTab = ({ task, handleOpenModal, handleCloseModal, showModal }) =
                     <li>Submit the form to finalize the creation of the new item.</li>
                 </ol>
                 <button className="btn btn-primary" onClick={handleOpenModal}>Create Item</button>
-                <button 
-                    className="btn btn-secondary ml-2" 
-                    onClick={onUpdateTaskStatusClick}
-                    disabled={isUpdating}
-                >
-                    Mark Task as In Progress
-                </button>
+                {task.status !=='In Progress' && (
+                    <button 
+                        className="btn btn-secondary ml-2" 
+                        onClick={onUpdateTaskStatusClick}
+                        disabled={isUpdating}
+                    >
+                        Mark Task as In Progress
+                    </button>
+                )}
                 <CreationModal show={showModal} taskType={task.relatedTo} closeModal={handleCloseModal} projectId={task.projectId._id} task={task}/>
             </div>
         </>

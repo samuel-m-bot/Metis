@@ -137,9 +137,11 @@ const UpdateTaskTab = ({ task }) => {
       <Button variant="primary" onClick={handleCompleteUpdate}>
           Complete Update
       </Button>
-      <Button variant="secondary" onClick={onMarkAsInProgress} disabled={isUpdatingStatus}>
+      {task.status !=='In Progress' && (
+        <Button variant="secondary" onClick={onMarkAsInProgress} disabled={isUpdatingStatus}>
           Mark as In Progress
-      </Button>
+        </Button>
+      )}
     </div>
 
   );

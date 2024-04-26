@@ -11,6 +11,7 @@ const ItemActions = ({ itemType, itemData }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const { id: userId, isAdmin, isProjectManager } = useAuth();
 
+    console.log(itemType)
     const {
         data: permissionData,
         isLoading: loadingPermissions,
@@ -80,7 +81,9 @@ const ItemActions = ({ itemType, itemData }) => {
                     {console.log(permissionData)}
                     <Dropdown.Item onClick={handleCheckOut} disabled={loadingCheckOut || !permissionData?.authorized}>Check Out</Dropdown.Item>
                     <Dropdown.Item onClick={handleCheckIn} disabled={loadingCheckIn || !permissionData?.authorized}>Check In</Dropdown.Item>
-                    <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
+                    {(isAdmin || isProjectManager) && (
+                        <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>
+                    )}
                 </Dropdown.Menu>
             </Dropdown>
             <ChangeRequestModal

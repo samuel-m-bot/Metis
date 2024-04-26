@@ -143,7 +143,48 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: [
                 { type: 'Task', id: "LIST" }
             ]
-        }),    
+        }), 
+        handleUpdateTaskStatus: builder.mutation({
+            query: ({ taskId, status }) => ({
+                url: `/tasks/${taskId}/status`,
+                method: 'PATCH',
+                body: { status }
+            }),
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Task', id: arg.taskId },
+                { type: 'Task', id: "LIST" }
+            ],
+            onQueryStarted: async ({ taskId, status }, { dispatch, queryFulfilled }) => {
+                try {
+                    const patchResult = dispatch(
+                        tasksApiSlice.util.updateQueryData('getTaskById', taskId, draft => {
+                            if (draft.status === status) {
+                                throw new Error(`Task already set to status '${status}'.`);
+                            }
+                            draft.status = status;
+                        })
+                    );
+                    try {
+                        await queryFulfilled;
+                    } catch {
+                        patchResult.undo();
+                    }
+                } catch (error) {
+                    alert(error.message);
+                }
+            }
+        }),
+        manageRevisedTask: builder.mutation({
+            query: revisedTaskData => ({
+                url: '/tasks/manage-revised-task',
+                method: 'POST',
+                body: revisedTaskData
+            }),
+            invalidatesTags: [
+                { type: 'Task', id: "LIST" },
+                { type: 'Review', id: "LIST" }
+            ]
+        }),         
     }),
 })
 
@@ -157,7 +198,9 @@ export const {
     useGetTasksByProjectIdQuery,
     useGetUserTasksQuery,
     useManageReviewTasksMutation,
-    useCompleteTaskAndSetupReviewMutation
+    useCompleteTaskAndSetupReviewMutation,
+    useHandleUpdateTaskStatusMutation,
+    useManageRevisedTaskMutation
 } = tasksApiSlice
 
 // returns the query result object

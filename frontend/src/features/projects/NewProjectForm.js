@@ -4,9 +4,11 @@ import { useAddNewProjectMutation } from './projectsApiSlice';
 import { useGetUsersQuery } from '../users/usersApiSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
+import useAuth from '../../hooks/useAuth';
 
 const NewProjectForm = () => {
     const navigate = useNavigate();
+    const {isAdmin, isProjectManager} = useAuth()
     const { data: users, isFetching: isFetchingUsers, isError: isUsersError } = useGetUsersQuery();
     const [addNewProject, { isLoading }] = useAddNewProjectMutation();
 
@@ -40,7 +42,8 @@ const NewProjectForm = () => {
             };
             try {
                 await addNewProject(projectData).unwrap();
-                navigate('/admin-dashboard/projects');
+                if(isAdmin)navigate('/admin-dashboard/projects');
+                else if(isProjectManager)navigate('/projects');
             } catch (error) {
                 console.error('Failed to save the project', error);
             }

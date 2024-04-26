@@ -12,7 +12,7 @@ const models = {
 // @route GET /api/items/:itemId/can-check-out/:userId
 // @access Private
 const canUserCheckOutAndInItem = asyncHandler(async (req, res) => {
-    const { itemId, userId } = req.params;
+    const { itemId, userId, projectId } = req.params;
 
     // Find 'Approved' change requests related to the item
     const changeRequests = await ChangeRequest.find({
@@ -25,26 +25,25 @@ const canUserCheckOutAndInItem = asyncHandler(async (req, res) => {
         status: 'Approved'
     }).select('_id projectId');
 
-    if (changeRequests.length === 0) {
-        return res.status(404).json({ message: 'No approved change requests found for this item.' });
-    }
-
-    const projectIds = changeRequests.map(cr => cr.projectId);
-
-    // Find update tasks associated with these change requests that are assigned to the user
-    const updateTasks = await Task.find({
-        assignedChangeRequest: { $in: changeRequests.map(cr => cr._id) },
+    // Find update or revise tasks that are assigned to the user
+    const tasks = await Task.find({
+        $or: [
+            { assignedDesign: { $in: itemId } },
+            { assignedDocument: { $in: itemId } },
+            { assignedProduct: { $in: itemId } }
+        ],
         assignedTo: userId,
-        taskType: 'Update'
+        taskType: { $in: ['Update', 'Revise'] } // Checking for both Update and Revise tasks
     });
 
-    if (updateTasks.length === 0) {
-        return res.status(403).json({ message: 'No active update tasks found for this user on the item.' });
+    if (tasks.length === 0 && changeRequests.length === 0) {
+        return res.status(403).json({ message: 'No active tasks (update/revise) found for this user on the item. and No approved change requests found for this item.' });
     }
 
+    console.log(projectId)
     // Ensure the user is part of the project team with the required permissions
     const userProjects = await Project.find({
-        '_id': { $in: projectIds },
+        '_id': { $in: projectId },
         'teamMembers': {
             $elemMatch: {
                 userId: userId,

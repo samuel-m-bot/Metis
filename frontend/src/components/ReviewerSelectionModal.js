@@ -3,6 +3,8 @@ import Modal from 'react-bootstrap/Modal';
 import { useGetProjectReviewersQuery } from '../features/projects/projectsApiSlice';
 import { useAddNewReviewMutation } from '../features/reviews/reviewsApiSlice';
 import { useManageReviewTasksMutation } from '../features/Tasks/tasksApiSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, isChangeRequest = false }) => {
   const projectId = changeRequestData?.projectId || task?.projectId._id;
@@ -40,7 +42,10 @@ const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, is
           priority: changeRequestData?.priority || task?.priority,
           dueDate: changeRequestData?.estimatedCompletionDate || task?.dueDate,
           assignedTo: changeRequestData?.assignedTo || task?.assignedTo,
-          ...(task?.assignedChangeRequest && { assignedChangeRequest: task.assignedChangeRequest })
+          ...(task?.assignedChangeRequest && { assignedChangeRequest: task.assignedChangeRequest }),
+          assignedDesign: task?.assignedDesign,
+          assignedDocument: task?.assignedDocument,
+          assignedProduct: task?.assignedProduct
         },
         isChangeRequest
       };
@@ -61,16 +66,25 @@ const ReviewerSelectionModal = ({ show, handleClose, task, changeRequestData, is
         <Modal.Title>Select Reviewers</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {reviewers && reviewers.map(user => (
-          <div key={user._id}>
-            <input
-              type="checkbox"
-              checked={selectedUsers.includes(user._id)}
-              onChange={() => handleCheckboxChange(user._id)}
-            /> {user.firstName} {user.surname} -- {user.email}
-          </div>
-        ))}
-      </Modal.Body>
+            <div className="list-group">
+                {reviewers.map(user => (
+                    <label key={user._id} className="list-group-item d-flex align-items-center">
+                        <input
+                            type="checkbox"
+                            className="form-check-input me-2"
+                            checked={selectedUsers.includes(user._id)}
+                            onChange={() => handleCheckboxChange(user._id)}
+                            style={{ cursor: 'pointer' }}
+                        />
+                        <FontAwesomeIcon icon={faUserCircle} className="me-2" size="lg" />
+                        <div>
+                            <strong>{user.firstName} {user.surname}</strong> <br />
+                            <small className="text-muted">{user.email}</small>
+                        </div>
+                    </label>
+                ))}
+            </div>
+        </Modal.Body>
       <Modal.Footer>
         <button className="btn btn-secondary" onClick={handleClose}>Cancel</button>
         <button className="btn btn-primary" onClick={handleSubmit}>Confirm Reviewers</button>

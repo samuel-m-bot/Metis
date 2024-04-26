@@ -13,7 +13,7 @@ const DesignTab = ({ projectId }) => {
     } = useGetDesignsByProjectIdQuery(projectId);
 
     if (isLoading) return <p>Loading designs...</p>;
-    if (isError) return <p>Error loading designs: {error.message}</p>;
+    if (isError) return <p>Error loading designs: {error?.data?.message}</p>;
 
     const designList = designs.ids.map(id => designs.entities[id]);
 

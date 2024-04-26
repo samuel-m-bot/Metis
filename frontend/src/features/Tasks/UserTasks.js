@@ -32,28 +32,28 @@ const UserTasks = ({ userId }) => {
 
     return (
         <div className='row' id='activity-row'>
-            <h1 className='text-center'>Assigned Tasks</h1>
-            <table className="table">
-                <thead>
+            <h1 className='text-center mb-3'>Assigned Tasks</h1>
+            <table className="table table-hover">
+                <thead className="table-dark">
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Type</th>
-                        <th scope="col">status</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Task ID</th>
                         <th scope="col">Affected Item</th>
                         <th scope="col">Details</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {tasks && tasks?.ids.map((taskId, index) => (
-                        <tr key={taskId}>
+                    {tasks && tasks.ids.map((taskId, index) => (
+                        <tr key={taskId} onClick={() => handleTaskClick(taskId)} style={{ cursor: 'pointer' }}>
                             <th scope="row">{index + 1}</th>
+                            <td>{tasks.entities[taskId].taskType}</td>
                             <td>
-                                <a href="#" onClick={() => handleTaskClick(taskId)} style={{ cursor: 'pointer' }}>
-                                    {tasks.entities[taskId].taskType}
-                                </a>
+                                <span className={`badge ${tasks.entities[taskId].status === 'Completed' ? 'bg-success' : 'bg-warning'}`}>
+                                    {tasks.entities[taskId].status}
+                                </span>
                             </td>
-                            <td>{tasks.entities[taskId].status}</td>
                             <td>{taskId}</td>
                             <td>{tasks.entities[taskId].name}</td>
                             <td>{tasks.entities[taskId].description}</td>

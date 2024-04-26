@@ -20,11 +20,6 @@ const ProjectsList = ({ projects }) => {
 
     return (
         <div>
-            {(isAdmin || isProjectManager) && (
-                <button onClick={handleCreateNewProject} className="btn btn-success mb-3">
-                    Create New Project
-                </button>
-            )}
             <table className="table">
                 <thead className="thead-dark">
                     <tr>

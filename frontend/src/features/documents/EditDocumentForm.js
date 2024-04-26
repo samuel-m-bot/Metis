@@ -105,138 +105,126 @@ const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal })
     if (isUsersError || isError) return <p>Error loading data.</p>;
 
     return (
-        <div classTitle="container mt-3">
+        <div className="container mt-3">
             <h2>Edit Document</h2>
             <form onSubmit={onSaveChanges} encType="multipart/form-data">
-            {isAdmin && (
-                    <div className="mb-3">
-                        <label htmlFor="projectId" className="form-label">Project:</label>
-                        <select
-                            className="form-select"
-                            id="projectId"
-                            value={projectId}
-                            onChange={e => setProjectId(e.target.value)}
-                            required={!initialProjectId}
-                        >
-                            <option value="">Select a project</option>
-                            {projects?.ids.map(projectId => (
-                                <option key={projectId} value={projectId}>
-                                    {projects.entities[projectId]?.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                {isAdmin && (
+                <div className="mb-3">
+                    <label htmlFor="projectId" className="form-label">Project:</label>
+                    <select
+                    className="form-select"
+                    id="projectId"
+                    value={projectId}
+                    onChange={e => setProjectId(e.target.value)}
+                    required={!initialProjectId}
+                    >
+                    <option value="">Select a project</option>
+                    {projects?.ids.map(projectId => (
+                        <option key={projectId} value={projectId}>
+                        {projects.entities[projectId]?.name}
+                        </option>
+                    ))}
+                    </select>
+                </div>
                 )}
                 {!isAdmin && initialProjectId && (
-                    <div className="mb-3">
-                        <label htmlFor="projectName" className="form-label">Project:</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="projectName"
-                            value={projects.entities[projectId]?.name || ''}
-                            readOnly
-                        />
-                    </div>
-                )}
-                <div classTitle="mb-3">
-                    <label htmlFor="title" classTitle="form-label">Title:</label>
-                    <input type="text" classTitle="form-control" id="title" value={title} onChange={e => setTitle(e.target.value)} required />
-                </div>
-                <div classTitle="mb-3">
-                    <label htmlFor="type" classTitle="form-label">Type:</label>
-                    <select classTitle="form-select" id="type" value={type} onChange={e => setType(e.target.value)} required>
-                        <option value="">Select Type</option>
-                        <option value="Requirements">Requirements</option>
-                        <option value="Design">Design</option>
-                        <option value="Devlopment">Devlopment</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Miantenance">Miantenance</option>
-                        <option value="End of Life">End of Life</option>
-                    </select>
-                </div>
-                <div classTitle="mb-3">
-                    <label htmlFor="description" classTitle="form-label">Description:</label>
-                    <textarea classTitle="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)} required></textarea>
-                </div>
-                {isAdmin && (<div className="mb-3">
-                    <label htmlFor="revisionNumber">Revision Number:</label>
+                <div className="mb-3">
+                    <label htmlFor="projectName" className="form-label">Project:</label>
                     <input
-                        type="text"
-                        id="revisionNumber"
-                        value={revisionNumber}
-                        onChange={handleRevisionChange}
-                        onBlur={validateRevisionNumber} 
-                        required
+                    type="text"
+                    className="form-control"
+                    id="projectName"
+                    value={projects.entities[projectId]?.name || ''}
+                    readOnly
                     />
-                    {revisionError && <div style={{ color: 'red' }}>{revisionError}</div>}
                 </div>
                 )}
                 <div className="mb-3">
-                    <label htmlFor="associatedProductID" className="form-label">Associated Products:</label>
-                    {isProductsError ?
-                        <p>No available products to select</p> :
-                        <select multiple className="form-select" id="associatedProductID" value={associatedProductIDs} onChange={(e) => handleMultiSelectChange(e, setAssociatedProductIDs)}>
-                            {products.ids.map(productId => (
-                                <option key={productId} value={productId}>{products.entities[productId].name}</option>
-                            ))}
-                        </select>
-                    }
+                <label htmlFor="title" className="form-label">Title:</label>
+                <input type="text" className="form-control" id="title" value={title} onChange={e => setTitle(e.target.value)} required />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="authors" className="form-label">Authors:</label>
-                    <select multiple className="form-select" id="authors" value={authors} onChange={(e) => handleMultiSelectChange(e, setAuthors)}>
-                        {users?.ids.map(userId => (
-                            <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
-                        ))}
-                    </select>
+                <label htmlFor="type" className="form-label">Type:</label>
+                <select className="form-select" id="type" value={type} onChange={e => setType(e.target.value)} required>
+                    <option value="">Select Type</option>
+                    <option value="Requirements">Requirements</option>
+                    <option value="Design">Design</option>
+                    <option value="Development">Development</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="End of Life">End of Life</option>
+                </select>
                 </div>
-                {isAdmin && (<div classTitle="mb-3">
-                    <label htmlFor="status" classTitle="form-label">Status:</label>
-                    <select classTitle="form-select" id="status" value={status} onChange={e => setStatus(e.target.value)}>
-                        <option value="">Select Status...</option>
-                        <option value="Draft">Draft</option>
-                        <option value="In Review">In Review</option>
-                        <option value="Revised">Revised</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Published">Published</option>
-                        <option value="Archived">Archived</option>
-                        <option value="Checked Out">Checked Out</option>
-                        <option value="Checked In">Checked In</option>
-                        <option value="On Hold">On Hold</option>
-                    </select>
+                <div className="mb-3">
+                <label htmlFor="description" className="form-label">Description:</label>
+                <textarea className="form-control" id="description" value={description} onChange={e => setDescription(e.target.value)} required></textarea>
+                </div>
+                {isAdmin && (
+                <div className="mb-3">
+                    <label htmlFor="revisionNumber" className="form-label">Revision Number:</label>
+                    <input
+                    type="text"
+                    className="form-control"
+                    id="revisionNumber"
+                    value={revisionNumber}
+                    onChange={handleRevisionChange}
+                    onBlur={validateRevisionNumber}
+                    required
+                    />
+                    {revisionError && <div className="text-danger">{revisionError}</div>}
                 </div>
                 )}
                 <div className="mb-3">
-                    <label htmlFor="relatedDocuments" className="form-label">Related Documents:</label>
-                    <select multiple className="form-select" id="relatedDocuments" value={relatedDocuments} onChange={(e) => handleMultiSelectChange(e, setRelatedDocuments)}>
-                        {projectDocuments?.ids.map(documentId => (
-                            <option key={documentId} value={documentId}>{projectDocuments.entities[documentId].title}</option>
-                        ))}
+                <label htmlFor="associatedProductID" className="form-label">Associated Products:</label>
+                {isProductsError ?
+                    <p>No available products to select</p> :
+                    <select multiple className="form-select" id="associatedProductID" value={associatedProductIDs} onChange={(e) => handleMultiSelectChange(e, setAssociatedProductIDs)}>
+                    {products.ids.map(productId => (
+                        <option key={productId} value={productId}>{products.entities[productId].name}</option>
+                    ))}
                     </select>
+                }
                 </div>
-                <div classTitle="mb-3">
-                    <label htmlFor="file" classTitle="form-label">Document File:</label>
-                    <input type="file" classTitle="form-control" id="file" onChange={e => setFile(e.target.files[0])} required />
+                <div className="mb-3">
+                <label htmlFor="authors" className="form-label">Authors:</label>
+                <select multiple className="form-select" id="authors" value={authors} onChange={(e) => handleMultiSelectChange(e, setAuthors)}>
+                    {users?.ids.map(userId => (
+                    <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
+                    ))}
+                </select>
                 </div>
-                <div classTitle="mb-3">
-                    <label htmlFor="classification" classTitle="form-label">Classification:</label>
-                    <select classTitle="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
-                        <option value="">Select Type</option>
-                        <option value="Confidential">Confidential</option>
-                        <option value="Restricted">Restricted</option>
-                        <option value="Public">Public</option>
-                        <option value="Private">Private</option>
-                    </select>
+                <div className="mb-3">
+                <label htmlFor="relatedDocuments" className="form-label">Related Documents:</label>
+                <select multiple className="form-select" id="relatedDocuments" value={relatedDocuments} onChange={(e) => handleMultiSelectChange(e, setRelatedDocuments)}>
+                    {projectDocuments?.ids.map(documentId => (
+                    <option key={documentId} value={documentId}>{projectDocuments.entities[documentId].title}</option>
+                    ))}
+                </select>
                 </div>
-                <button type="submit" className="btn btn-primary" onClick={onSaveChanges}>
+                <div className="mb-3">
+                <label htmlFor="file" className="form-label">Document File:</label>
+                <input type="file" className="form-control" id="file" onChange={e => setFile(e.target.files[0])} />
+                </div>
+                <div className="mb-3">
+                <label htmlFor="classification" className="form-label">Classification:</label>
+                <select className="form-select" id="classification" value={classification} onChange={e => setClassification(e.target.value)} required>
+                    <option value="">Select Type</option>
+                    <option value="Confidential">Confidential</option>
+                    <option value="Restricted">Restricted</option>
+                    <option value="Public">Public</option>
+                    <option value="Private">Private</option>
+                </select>
+                </div>
+                <div className="d-flex justify-content-between align-items-center">
+                <button type="submit" className="btn btn-primary">
                     <FontAwesomeIcon icon={faSave} /> Save Changes
                 </button>
                 <button type="button" className="btn btn-danger" onClick={onDeleteProjectClicked}>
                     <FontAwesomeIcon icon={faTrashCan} /> Delete
                 </button>
+                </div>
             </form>
-        </div>
+            </div>
     );
 };
 

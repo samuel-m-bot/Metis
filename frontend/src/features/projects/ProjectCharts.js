@@ -14,7 +14,15 @@ const ProjectCharts = ({ projectId }) => {
   } = useGetTasksByProjectIdQuery(projectId);
 
   if (tasksLoading) return <p>Loading tasks...</p>;
-  if (tasksError) return <p>Error loading tasks: {tasksErrorDetails.message}</p>;
+  if (tasksError) return (
+    <div className="alert alert-info" role="alert">
+      <h4 className="alert-heading">No Tasks Available</h4>
+      <p>There are no tasks for this project; therefore, no charts can be presented.</p>
+      <hr />
+      <p className="mb-0">Please ensure tasks are added to the project for detailed visual analytics.</p>
+    </div>
+  );
+  
 
   // Process tasks data here for chart inputs if necessary
   const taskSummary = tasks.ids.map(id => tasks.entities[id]);

@@ -4,11 +4,13 @@ import { Button } from 'react-bootstrap';
 import { useLazyGetDocumentByIdQuery } from '../features/documents/documentsApiSlice';
 import { useLazyGetDesignByIdQuery } from '../features/designs/designsApiSlice';
 import { useLazyGetProductByIdQuery } from '../features/products/productsApiSlice';
-import { useCompleteTaskAndSetupReviewMutation } from '../features/Tasks/tasksApiSlice';
+import { useCompleteTaskAndSetupReviewMutation, useHandleUpdateTaskStatusMutation } from '../features/Tasks/tasksApiSlice';
 
 const UpdateTaskTab = ({ task }) => {
+  
   const navigate = useNavigate();
   const { data: changeRequest, isLoading: isCRLoading, isError: isCRError } = useGetChangeRequestByIdQuery(task?.assignedChangeRequest);
+  const [handleUpdateTaskStatus, { isLoading: isUpdatingStatus }] = useHandleUpdateTaskStatusMutation();
   const [getDocument] = useLazyGetDocumentByIdQuery();
   const [getDesign] = useLazyGetDesignByIdQuery();
   const [getProduct] = useLazyGetProductByIdQuery();
@@ -27,7 +29,19 @@ const UpdateTaskTab = ({ task }) => {
     } catch (error) {
         alert("Failed to complete the update: " + error.message);
     }
-};
+  };
+
+  const onMarkAsInProgress = () => {
+    handleUpdateTaskStatus({ taskId: task.id, status: 'In Progress' })
+        .unwrap()
+        .then(() => {
+            alert('Task marked as In Progress.');
+        })
+        .catch(error => {
+            console.error('Error updating task status:', error);
+            alert('Failed to update task status: ' + error.message);
+        });
+  };
 
   const handleNavigateToItem = async (itemId, itemType) => {
     let itemData;
@@ -122,6 +136,9 @@ const UpdateTaskTab = ({ task }) => {
       </div>
       <Button variant="primary" onClick={handleCompleteUpdate}>
           Complete Update
+      </Button>
+      <Button variant="secondary" onClick={onMarkAsInProgress} disabled={isUpdatingStatus}>
+          Mark as In Progress
       </Button>
     </div>
 

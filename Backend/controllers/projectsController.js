@@ -67,7 +67,7 @@ const getAssignedProjects = asyncHandler(async (req, res) => {
 // @route POST /projects
 // @access private
 const createNewProject = asyncHandler(async (req, res) => {
-    const { name, startDate, endDate, description, projectManagerID, teamMembers } = req.body;
+    const { name, startDate, endDate, description, projectManagerID } = req.body;
 
     // Confirm required data is present
     if (!name || !startDate || !description || !projectManagerID) {
@@ -83,11 +83,10 @@ const createNewProject = asyncHandler(async (req, res) => {
     // Prepare the teamMembers array, including the project manager as an admin
     const initialTeamMembers = [
         {
-            userId: projectManagerID, // Assumes projectManagerID is a valid ObjectId of the user
+            userId: projectManagerID, 
             role: 'Admin',
             permissions: ['Read', 'Write', 'Delete']
         },
-        ...teamMembers // Spread any additional team members that might have been provided
     ];
 
     // Create project object with all fields

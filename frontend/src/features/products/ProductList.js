@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ProductList = ({ products, isLoading, isError, error }) => {
   const [sortedProducts, setSortedProducts] = useState([]);
@@ -35,10 +36,28 @@ const ProductList = ({ products, isLoading, isError, error }) => {
     setSortConfig({ key, direction });
   };
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <LoadingSpinner />
+
   if (isError) {
-    return <p>Error: {error?.message}</p>;
+    return (
+      <div className="alert alert-danger" role="alert">
+        <h4 className="alert-heading">Error Loading Products</h4>
+        <p>{error?.data?.message || "An unexpected error occurred while fetching products."}</p>
+        {(isAdmin || isProjectManager) && (
+          <div className="mt-3">
+            <button 
+              onClick={() => isAdmin ? navigate('/admin-dashboard/products/create') : navigate('/products/create')}
+              className="btn btn-primary"
+            >
+              Try Creating a Product
+            </button>
+            <p className="mt-2">If the problem persists, please contact support.</p>
+          </div>
+        )}
+      </div>
+    );
   }
+  
 
   const handleProductNavigate = (productId) => {
     navigate(`/products/${productId}`);

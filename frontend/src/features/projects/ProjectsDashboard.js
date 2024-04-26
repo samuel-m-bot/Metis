@@ -6,7 +6,7 @@ import useAuth from '../../hooks/useAuth';
 
 const ProjectsDashboard = () => {
   const navigate = useNavigate();
-  const { id } = useAuth();
+  const { id, isAdmin, isProjectManager } = useAuth();
 
   const {
     data: assignedProjects,
@@ -15,10 +15,33 @@ const ProjectsDashboard = () => {
     error
   } = useGetAssignedProjectsQuery(id);
 
+  const handleCreateNewProject = () => {
+    if(isAdmin) navigate('/admin-dashboard/projects/create');
+    else if(isProjectManager)navigate('/projects/create');
+  };
+
   if (isLoading) return <LoadingSpinner />;
+  
   if (isError) {
-    return <p>Error: {error.message}</p>;
+    return (
+      <div className="container mt-5">
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Error Encountered!</h4>
+          <p>{error?.data?.message || "An unexpected error occurred."}</p>
+          <hr />
+          {(isAdmin || isProjectManager) && (
+            <div className="d-flex justify-content-between align-items-center">
+              <p className="mb-0">No projects found or unable to load projects. You can create a new project to get started.</p>
+              <button onClick={handleCreateNewProject} className="btn btn-success">
+                Create New Project
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
+  
 
   // Filtering projects based on status
   const completedProjects = assignedProjects.ids.filter(

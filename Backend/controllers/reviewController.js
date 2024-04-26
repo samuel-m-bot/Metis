@@ -201,14 +201,17 @@ const processRejectionWorkflow = async (review, req, res) => {
             projectId: observeTask.projectId,
             name: 'Revise item based on review feedback',
             description: 'Revise the item based on feedback and resubmit for review',
-            status: 'To Do',
-            priority: observeTask.priority, // Assuming same priority as the observe task
-            assignedTo: observeTask.assignedTo, // Assigning to the same person who observed
+            status: 'In Progress',
+            priority: observeTask.priority, 
+            assignedTo: observeTask.assignedTo, 
             taskType: 'Revise',
-            relatedTo: observeTask.relatedTo, // Related to the same item type as the observe task
+            relatedTo: observeTask.relatedTo, 
             dueDate: observeTask.dueDate,
-            review: review._id, // Linking back to the original review for reference
-            assignedChangeRequest: observeTask?.assignedChangeRequest // Assuming it's related to a change request
+            review: review._id, 
+            assignedChangeRequest: observeTask?.assignedChangeRequest, 
+            assignedDesign: observeTask?.assignedDesign,
+            assignedDocument: observeTask?.assignedDocument,
+            assignedProduct: observeTask?.assignedProduct
         };
 
         const newReviseTask = new Task(reviseTaskData);

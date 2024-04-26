@@ -32,5 +32,7 @@ router.post('/filter', taskController.filterTasks);
 
 router.get('/project/:projectId', taskController.getTasksByProjectId);
 router.post('/manage-review-tasks', taskController.manageReviewTasks);
+router.post('/manage-revised-task', taskController.manageRevisedTask);
 router.post('/complete-and-setup-review', taskController.completeTaskAndSetupReview);
+router.patch('/:id/status', taskController.handleUpdateTaskStatus);
 module.exports = router;

@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useUpdateProjectMutation } from "./projectsApiSlice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave, faUsersCog } from "@fortawesome/free-solid-svg-icons";
+import useAuth from "../../hooks/useAuth";
 
 const EditProjectForm = ({ project }) => {
     const navigate = useNavigate();
+    const {isAdmin, isProjectManager} = useAuth()
     const [updateProject] = useUpdateProjectMutation();
 
     const [name, setName] = useState(project.name);
@@ -28,7 +30,8 @@ const EditProjectForm = ({ project }) => {
         try {
             console.log("before of function")
             await updateProject(updatedProject).unwrap();
-            navigate('/admin-dashboard/projects');
+            if(isAdmin)navigate('/admin-dashboard/projects');
+            else if(isProjectManager)navigate('/projects');
         } catch (error) {
             console.error('Failed to update the project:', error);
         }

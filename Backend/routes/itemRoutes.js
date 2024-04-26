@@ -3,7 +3,7 @@ const router = express.Router();
 const itemController = require('../controllers/itemController');
 
 // Route to check if a user can check out or check in an item
-router.get('/:itemId/can-check-out/:userId', itemController.canUserCheckOutAndInItem);
+router.get('/:itemId/can-check-out/:userId/:projectId', itemController.canUserCheckOutAndInItem);
 
 // Assuming itemType is necessary to determine the model
 router.post('/:itemId/:itemType/check-out/:userId', itemController.checkOutItem);

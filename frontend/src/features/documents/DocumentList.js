@@ -23,7 +23,16 @@ const DocumentList = ({ documents, isLoading, isError, error }) => {
   }, [sortConfig, documents]);
 
   const handleCreateNewDocument = () => {
-    navigate('/admin-dashboard/documents/create');
+    if(isAdmin)navigate('/admin-dashboard/documents/create');
+    else if(isProjectManager)navigate('/documents/create');
+  };
+
+  const handleEditClick = (documentId) => {
+    if (isAdmin) {
+      navigate(`/admin-dashboard/documents/${documentId}`);
+    } else if (isProjectManager) {
+      navigate(`/documents/${documentId}/edit`);
+    }
   };
 
   const requestSort = (key) => {
@@ -75,7 +84,11 @@ const DocumentList = ({ documents, isLoading, isError, error }) => {
               <td>{document.status}</td>
               <td>{document.projectId.name}</td>
               {(isAdmin || isProjectManager) && (
-                <td><Link to={`/documents/edit/${document.id}`} className="btn btn-primary btn-sm">Edit</Link></td>
+                <td>
+                  <button onClick={() => handleEditClick(document.id)} className="btn btn-primary btn-sm">
+                    Edit
+                  </button>
+                </td>
               )}
             </tr>
           ))}

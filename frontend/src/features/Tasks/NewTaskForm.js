@@ -128,9 +128,9 @@ const NewTaskForm = ({ onClose }) => {
                     >
                         <option value="">Select status</option>
                         <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
                         {isAdmin && (
                             <>
+                            <option value="In Progress">In Progress</option>
                             <option value="On Hold">On Hold</option>
                             <option value="Completed">Completed</option>
                             <option value="Reviewed">Reviewed</option>

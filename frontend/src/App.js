@@ -97,8 +97,8 @@ function App() {
                 </Route>
 
                 <Route path="documents">
-                  <Route index element={<DocuemntList />} />
-                  <Route path=":id" element={<EditDocument />} />
+                  <Route index element={<DocumentLibrary />} />
+                  <Route path=":documentId" element={<EditDocument />} />
                   <Route path="create" element={<NewDocumentForm />} />
                 </Route>
 
@@ -128,6 +128,7 @@ function App() {
 
               </Route>
               <Route path="projects" element={<ProjectsDashboard />}/>
+              <Route path="projects/create" element={<NewProjectForm />}/>
               <Route path="projects/project" element={<Project />}/>
               <Route path="projects/:projectId" element={<ProjectDashboard />} />
               <Route path="projects/:projectId/designs" element={<ProjectDesignsPage />} />
@@ -136,9 +137,11 @@ function App() {
               <Route path="tasks/:taskId" element={<TaskDetails />} />
               <Route path="/review-success" element={<ReviewSuccessPage />} />
               <Route path="documents/:documentId" element={<Documents />} />
+              <Route path="/documents/:documentId/edit" element={<EditDocument />} />
               <Route path="change-requests/:changeRequestID" element={<ChangeRequestPage />} />
               <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
               <Route path="products" element={<ProductListPage />} />
+              <Route path="products/create" element={<NewProductForm />} />
               <Route path="products/:productId" element={<Product />} />
               <Route path="designs" element={<DesignsListPage />} />
               <Route path="designs/:designId" element={<Design />} />

@@ -15,7 +15,7 @@ const ItemActions = ({ itemType, itemData }) => {
         data: permissionData,
         isLoading: loadingPermissions,
         isError: permissionError,
-    } = useCanUserCheckOutAndInItemQuery({ itemId: itemData.id, userId });
+    } = useCanUserCheckOutAndInItemQuery({ itemId: itemData.id, userId, projectId: itemData.projectId });
 
     const [checkOutItem, { isLoading: loadingCheckOut }] = useCheckOutItemMutation();
     const [checkInItem, { isLoading: loadingCheckIn }] = useCheckInItemMutation();
@@ -77,6 +77,7 @@ const ItemActions = ({ itemType, itemData }) => {
                             {itemData.isFeatured ? 'Un-Feature Design' : 'Feature Design'}
                         </Dropdown.Item>
                     )}
+                    {console.log(permissionData)}
                     <Dropdown.Item onClick={handleCheckOut} disabled={loadingCheckOut || !permissionData?.authorized}>Check Out</Dropdown.Item>
                     <Dropdown.Item onClick={handleCheckIn} disabled={loadingCheckIn || !permissionData?.authorized}>Check In</Dropdown.Item>
                     <Dropdown.Item onClick={handleOpenModal}>Make a Change Request</Dropdown.Item>

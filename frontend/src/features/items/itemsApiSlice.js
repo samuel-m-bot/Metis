@@ -3,7 +3,7 @@ import { apiSlice } from '../../app/api/apiSlice';
 export const itemsApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         canUserCheckOutAndInItem: builder.query({
-            query: ({ itemId, userId }) => `/items/${itemId}/can-check-out/${userId}`,
+            query: ({ itemId, userId, projectId }) => `/items/${itemId}/can-check-out/${userId}/${projectId}`,
             providesTags: (result, error, { itemId }) => [{ type: 'Item', id: itemId }],
         }),
         checkOutItem: builder.mutation({

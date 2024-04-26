@@ -9,6 +9,7 @@ import ReviewTab from '../reviews/ReviewTab';
 import ObserveTab from '../reviews/ObserveTab';
 import UpdateTaskTab from '../../components/UpdateTaskTab';
 import ReviseTaskTab from './ReviseTaskTab';
+import CreateTaskTab from './CreateTaskTab';
 
 const TaskDetails = () => {
   const { taskId } = useParams();
@@ -113,21 +114,17 @@ const TaskDetails = () => {
         )}
 
         {task.taskType === "Create" && task.status !== 'Completed' && (
-          <Tab eventKey="create" title="Create Item">
-            <div className="create-item">
-              <h3>Create New Item</h3>
-              <p>To create a new item, please follow the instructions below:</p>
-              <ol>
-                <li>Click on 'Create Item' to open the creation form.</li>
-                <li>Fill out the form with the necessary details.</li>
-                <li>Submit the form to finalize the creation of the new item.</li>
-              </ol>
-              <button className="btn btn-primary" onClick={handleOpenModal}>Create Item</button>
-              {console.log(task)}
-              <CreationModal show={showModal} taskType={task.relatedTo} closeModal={handleCloseModal} projectId={task.projectId._id} task={task}/>
-            </div>
-          </Tab>
+            <Tab eventKey="create" title="Create Item">
+                <CreateTaskTab 
+                    task={task} 
+                    handleOpenModal={handleOpenModal} 
+                    handleCloseModal={handleCloseModal} 
+                    showModal={showModal} 
+                />
+            </Tab>
         )}
+
+
 
         {task.taskType === "Set up Review" &&  task.status !== 'Completed' && (
           <Tab eventKey="set-up-review" title="Set up Review">

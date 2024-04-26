@@ -1,29 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { useGetReviewByIdQuery } from '../reviews/reviewsApiSlice';
-import { useCompleteTaskAndSetupReviewMutation } from './tasksApiSlice';
+import { useManageRevisedTaskMutation } from './tasksApiSlice';
 import { useGetChangeRequestByIdQuery } from '../changes/changeRequestsApiSlice';
-import { useLazyGetDocumentByIdQuery } from '../documents/documentsApiSlice';
-import { useLazyGetDesignByIdQuery } from '../designs/designsApiSlice';
-import { useLazyGetProductByIdQuery } from '../products/productsApiSlice';
 
 const ReviseTaskTab = ({ task }) => {
   const navigate = useNavigate();
   const { data: review, isLoading: reviewLoading, isError: reviewError } = useGetReviewByIdQuery(task.review);
   const { data: changeRequest, isLoading: isCRLoading } = useGetChangeRequestByIdQuery(task?.assignedChangeRequest);
-  const [getDocument] = useLazyGetDocumentByIdQuery();
-  const [getDesign] = useLazyGetDesignByIdQuery();
-  const [getProduct] = useLazyGetProductByIdQuery();
-  const [completeTaskAndSetupReview, { isLoading: isTaskLoading }] = useCompleteTaskAndSetupReviewMutation();
+
+  const [manageRevisedTask, { isLoading, isError, error }] = useManageRevisedTaskMutation();
 
   const handleCompleteRevision = async () => {
     try {
-      await completeTaskAndSetupReview({ projectId: task.projectId, task: task }).unwrap();
+      await manageRevisedTask({ projectId: task.projectId._id, taskDetails: task }).unwrap();
       alert("Revision completed and review process initiated.");
     } catch (error) {
       alert("Failed to complete the revision: " + error.message);
     }
   };
+
+  const handleNavigateToItem = async (itemId, itemType) => {
+    try {
+      const itemTypeLower = itemType.toLowerCase();
+      navigate(`/${itemTypeLower}s/${itemId}`);
+    } catch (error) {
+      console.error("Failed to navigate:", error);
+    }
+  };  
 
   if (isCRLoading || reviewLoading) return <div>Loading details...</div>;
   if (reviewError) return <div>Error loading review: {reviewError.message}</div>;
@@ -37,8 +41,18 @@ const ReviseTaskTab = ({ task }) => {
           <li className="list-group-item"><strong>Task ID:</strong> {task._id}</li>
           <li className="list-group-item"><strong>Description:</strong> {task.description}</li>
           <li className="list-group-item"><strong>Due By:</strong> {new Date(task.dueDate).toLocaleDateString()}</li>
+          <li className="list-group-item">
+            <strong>{task.relatedTo}:</strong>
+            <a
+              onClick={() => handleNavigateToItem(task[`assigned${task.relatedTo}`], task.relatedTo)}
+              style={{ cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              {task[`assigned${task.relatedTo}`]}
+            </a>
+          </li>
         </ul>
       </div>
+
 
       <div className="card">
         <div className="card-header">Review Feedback and Revision Instructions</div>
@@ -74,7 +88,7 @@ const ReviseTaskTab = ({ task }) => {
           </li>
         </ul>
       </div>
-      <Button variant="primary" onClick={handleCompleteRevision} disabled={isTaskLoading}>
+      <Button variant="primary" onClick={handleCompleteRevision} disabled={isLoading}>
         Complete Revision
       </Button>
     </div>

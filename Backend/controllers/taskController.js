@@ -3,6 +3,7 @@ const ChangeRequest = require('../models/ChangeRequest');
 const asyncHandler = require('express-async-handler');
 const Project = require('../models/Project')
 const Activity = require('../models/Activity')
+const Review = require('../models/Review')
 
 // @desc Create a new task
 // @route POST /tasks
@@ -382,7 +383,10 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             relatedTo: taskDetails.relatedTo,
             dueDate: taskDetails.dueDate,
             review: reviewId,
-            assignedChangeRequest: taskDetails.assignedChangeRequest
+            assignedChangeRequest: taskDetails.assignedChangeRequest,
+            assignedDesign: taskDetails?.assignedDesign,
+            assignedDocument: taskDetails?.assignedDocument,
+            assignedProduct: taskDetails?.assignedProduct
         });
         await observeTask.save();
 
@@ -407,15 +411,30 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
 
         const newReview = new Review({
             projectId: projectId,
-            itemReviewed: taskDetails.relatedTo, // Adjust depending on your Review model fields
-            reviewers: originalReview.reviewers, // Copy reviewers from the original review
-            status: 'Pending', // Initial status of the new review
-            onModel: originalReview.onModel // Model being reviewed, if applicable
+            itemReviewed: originalReview.itemReviewed,
+            reviewers: originalReview.reviewers, 
+            status: 'In Review', 
+            onModel: originalReview.onModel 
         });
         await newReview.save();
 
-        // Mark the original task as 'Completed'
-        await Task.findByIdAndUpdate(taskDetails.id, { status: 'Completed' });
+        // Check if the original task exists
+        const originalTask = await Task.findById(taskDetails.id);
+        if (!originalTask) {
+            return res.status(404).json({ message: 'Original task not found.' });
+        }
+
+        // Update the original task status to 'Completed'
+        const updatedOriginalTask = await Task.findByIdAndUpdate(
+            taskDetails.id, 
+            { status: 'Completed' },
+            { new: true }
+        );
+        
+        // Validate that the original task was updated successfully
+        if (!updatedOriginalTask || updatedOriginalTask.status !== 'Completed') {
+            return res.status(500).json({ message: 'Failed to mark the original task as completed.' });
+        }
 
         // Create new review tasks for each original reviewer
         originalReview.reviewers.forEach(async reviewer => {
@@ -434,6 +453,7 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
             await newReviewTask.save();
         });
 
+        console.log(taskDetails)
         // Re-setup an observer task for the revised item
         const newObserveTask = new Task({
             projectId,
@@ -441,11 +461,14 @@ const manageRevisedTask = asyncHandler(async (req, res) => {
             description: 'Observe the review process of the revised item.',
             status: 'In Progress',
             priority: taskDetails.priority,
-            assignedTo: taskDetails.assignedTo, // Typically the creator of the task or a designated reviewer
+            assignedTo: taskDetails.assignedTo, 
             taskType: 'Observe',
             relatedTo: taskDetails.relatedTo,
             dueDate: taskDetails.dueDate,
-            review: newReview._id // Link to the new review
+            review: newReview._id, 
+            assignedDesign: taskDetails?.assignedDesign,
+            assignedDocument: taskDetails?.assignedDocument,
+            assignedProduct: taskDetails?.assignedProduct
         });
         await newObserveTask.save();
 
@@ -506,6 +529,39 @@ const completeTaskAndSetupReview = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc Updates the status of a task
+// @route PATCH /tasks/:id/status
+// @access Private
+const handleUpdateTaskStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body; 
+    const taskId = req.params.id; 
+
+    try {
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found.' });
+        }
+
+        if (task.status === status) {
+            return res.status(400).json({ message: `Task already set to status '${status}'.` });
+        }
+
+        // Update the task's status
+        task.status = status;
+        const updatedTask = await task.save();
+
+        res.status(200).json({
+            message: 'Task status updated successfully',
+            updatedTask
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Failed to update task status',
+            error: error.message
+        });
+    }
+});
+
 module.exports = {
     createTask,
     getAllTasks,
@@ -522,5 +578,6 @@ module.exports = {
     getTasksByProjectId,
     manageReviewTasks,
     manageRevisedTask,
-    completeTaskAndSetupReview
+    completeTaskAndSetupReview,
+    handleUpdateTaskStatus
 };

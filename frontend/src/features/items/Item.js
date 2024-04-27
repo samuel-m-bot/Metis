@@ -8,6 +8,7 @@ import RelatedObjects from '../../components/RelatedObjects';
 import ItemActions from './ItemActions';
 import ReviewsApprovalsTab from '../reviews/ReviewsApprovalsTab';
 import ItemDetails from './ItemDetails';
+import RevisionLog from '../activity/RevisionLog';
 
 
 const Item = ({ itemType, itemData, completedChangeRequests }) => {
@@ -40,42 +41,13 @@ const Item = ({ itemType, itemData, completedChangeRequests }) => {
 
           )}
 
-          <div className="revision-log">
-            <h3>Revision Log</h3>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Revision Number</th>
-                  <th>Description</th>
-                  <th>Date</th>
-                  <th>Author</th>
-                  <th>Change Request ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1.0</td>
-                  <td>Initial creation of the document.</td>
-                  <td>01/01/2021</td>
-                  <td>John Doe</td>
-                  <td>N/A</td>
-                </tr>
-                <tr>
-                  <td>1.1</td>
-                  <td>Added section on safety protocols.</td>
-                  <td>02/15/2021</td>
-                  <td>Jane Smith</td>
-                  <td>CR123</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <RevisionLog itemData={itemData} />
           
         </Tab>
 
 
         <Tab eventKey="history" title="History">
-          <HistoryGraph completedChangeRequests={completedChangeRequests} />
+          <HistoryGraph revisions={itemData.revisions} />
         </Tab>
 
         <Tab eventKey="relatedObjects" title="Related Objects">

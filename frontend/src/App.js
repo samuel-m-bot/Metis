@@ -52,6 +52,9 @@ import ChangeRequestPage from './features/changes/ChangeRequestPage.js'
 import ProjectDesignsPage from './features/designs/ProjectDesignsPage.js'
 import ProductListPage from './features/products/ProductListPage.js'
 import DesignsListPage from './features/designs/DesignsListPage.js'
+import ActivityListPage from './features/activity/ActivityListPage.js'
+import UserActivityList from './features/activity/UserActivityList.js'
+import ProjectsListPage from './features/projects/ProjectsListPage.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -82,7 +85,7 @@ function App() {
                 </Route>
 
                 <Route path="projects">
-                  <Route index element={<ProjectList />} />
+                  <Route index element={<ProjectsListPage />} />
                   <Route path=":id" > 
                     <Route index element={<EditProject />} />
                     <Route path="manage-team" element={<ProjectManageMembers />} />
@@ -115,7 +118,7 @@ function App() {
                 </Route>
 
                 <Route path="activities">
-                  <Route index element={<UsersList />} />
+                  <Route index element={<ActivityListPage />} />
                   <Route path=":id" element={<EditUser />} />
                   <Route path="create" element={<NewUserForm />} />
                 </Route>
@@ -148,6 +151,8 @@ function App() {
               <Route path="/change-requests" element={<Navigate to="/home" replace />} />
               <Route path="documents" element={<DocumentLibrary />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="activities" element={<ActivityListPage />} />
+              <Route path="user/activity" element={<UserActivityList />} />
             </Route>
           </Route>
         </Route>

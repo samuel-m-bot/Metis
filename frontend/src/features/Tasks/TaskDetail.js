@@ -10,6 +10,7 @@ import ObserveTab from '../reviews/ObserveTab';
 import UpdateTaskTab from '../../components/UpdateTaskTab';
 import ReviseTaskTab from './ReviseTaskTab';
 import CreateTaskTab from './CreateTaskTab';
+import OnModelActivity from '../activity/OnModelActivity';
 
 const TaskDetails = () => {
   const { taskId } = useParams();
@@ -145,40 +146,7 @@ const TaskDetails = () => {
         )}
 
         <Tab eventKey="history" title="History">
-          <div className="task-history">
-              <h3>Task History</h3>
-              <table className="table">
-              <thead>
-                  <tr>
-                  <th>Date</th>
-                  <th>Event</th>
-                  <th>User</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr>
-                  <td>2023-01-16</td>
-                  <td>Task Created</td>
-                  <td>Admin</td>
-                  </tr>
-                  <tr>
-                  <td>2023-01-17</td>
-                  <td>Assigned to Jane Doe</td>
-                  <td>Admin</td>
-                  </tr>
-                  <tr>
-                  <td>2023-01-20</td>
-                  <td>Comment added: "Starting review."</td>
-                  <td>Jane Doe</td>
-                  </tr>
-                  <tr>
-                  <td>2023-01-22</td>
-                  <td>Status Updated: Completed</td>
-                  <td>Jane Doe</td>
-                  </tr>
-              </tbody>
-              </table>
-          </div>
+          <OnModelActivity relatedTo={task.id} onModel={'Task'} />
         </Tab>
       </Tabs>
     </div>

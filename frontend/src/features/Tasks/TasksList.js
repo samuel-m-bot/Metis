@@ -1,3 +1,4 @@
+// TasksList.js
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { useGetTasksQuery } from './tasksApiSlice';
@@ -7,8 +8,8 @@ import useAuth from '../../hooks/useAuth';
 
 const TasksList = () => {
     const navigate = useNavigate();
-    const {isAdmin, isProjectManager} = useAuth()
-    const { data: tasks, isLoading, isError, error } = useGetTasksQuery();
+    const { isAdmin, isProjectManager } = useAuth();
+    const { data, isLoading, isError, error } = useGetTasksQuery();
 
     const handleCreateNewTask = () => {
         navigate('/admin-dashboard/tasks/create');
@@ -18,14 +19,14 @@ const TasksList = () => {
     if (isError) {
         if (error.status === 400 && error?.data?.message === 'No tasks found') {
             return (
-            <div className="container mt-5">
-                <h2>{error.data.message}</h2>
-                {(isAdmin || isProjectManager) && (
-                <button className="btn btn-primary" onClick={() => navigate('/admin-dashboard/tasks/create')}>
-                    Create New Change Request
-                </button>
-                )}
-            </div>
+                <div className="container mt-5">
+                    <h2>{error.data.message}</h2>
+                    {(isAdmin || isProjectManager) && (
+                        <button className="btn btn-primary" onClick={handleCreateNewTask}>
+                            Create New Change Request
+                        </button>
+                    )}
+                </div>
             );
         }
         return <p>Error: {error?.data?.message}</p>;
@@ -50,7 +51,8 @@ const TasksList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {tasks?.ids.map(taskId => <Task key={taskId} task={tasks.entities[taskId]} />)}
+                    {console.log(data)}
+                    {data?.tasks?.ids.map(taskId => <Task key={taskId} task={data.tasks.entities[taskId]} />)}
                 </tbody>
             </table>
         </div>

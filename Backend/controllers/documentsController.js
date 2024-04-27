@@ -59,6 +59,11 @@ const createNewDocument = asyncHandler(async (req, res) => {
         fileName: req.file.originalname  // Assuming you still want to track the original file name
     } : undefined;
 
+    const revision = {
+        revisionNumber: revisionNumber,
+        description: 'Initial creation of the document.',
+        author: authors,
+    }
     // Create new document with attachment if available
     const document = new Document({
         projectId,
@@ -69,7 +74,8 @@ const createNewDocument = asyncHandler(async (req, res) => {
         authors,
         status,
         classification,
-        attachment
+        attachment,
+        revision
     });
 
     if (associatedProductIDs) document.associatedProductID = associatedProductIDs;
@@ -102,6 +108,7 @@ const updateDocument = asyncHandler(async (req, res) => {
     const documentId = req.params.id;
     const document = await Document.findById(documentId);
 
+    console.log(req.body)
     if (!document) {
         return res.status(404).json({ message: 'Document not found' });
     }

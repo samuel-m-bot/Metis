@@ -1,10 +1,12 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { useGetUserTasksQuery } from './tasksApiSlice';
-import { Table, Badge, Button } from 'react-bootstrap';
+import { Table, Badge, Pagination } from 'react-bootstrap';
 
 const UserTasks = ({ userId }) => {
     const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10; 
     const [sortConfig, setSortConfig] = useState(null);
 
     const {
@@ -12,20 +14,26 @@ const UserTasks = ({ userId }) => {
         isLoading,
         isError,
         error
-    } = useGetUserTasksQuery(userId, {
+    } = useGetUserTasksQuery({ userId, page: currentPage, limit: pageSize }, {
         pollingInterval: 60000,
         refetchOnFocus: true,
         refetchOnMountOrArgChange: true
     });
 
-    const handleTaskClick = (taskId) => {
+    if (isLoading) return <p>Loading tasks...</p>;
+    if (isError) {
+        return <p>Error: {error?.data?.message || 'An error occurred'}</p>;
+    }
+
+    const handleTaskClick = taskId => {
         navigate(`/tasks/${taskId}`);
     };
 
-    const sortedTasks = tasks ? [...tasks.ids].sort((a, b) => {
+    // Handle sorting and pagination controls
+    const sortedTasks = tasks && tasks.tasks && tasks.tasks.ids ? [...tasks.tasks.ids].sort((a, b) => {
         if (!sortConfig) return 0;
-        const taskA = tasks.entities[a][sortConfig.key];
-        const taskB = tasks.entities[b][sortConfig.key];
+        const taskA = tasks.tasks.entities[a][sortConfig.key];
+        const taskB = tasks.tasks.entities[b][sortConfig.key];
         if (taskA < taskB) {
             return sortConfig.direction === 'ascending' ? -1 : 1;
         }
@@ -35,7 +43,7 @@ const UserTasks = ({ userId }) => {
         return 0;
     }) : [];
 
-    const handleSorting = (key) => {
+    const handleSorting = key => {
         let direction = 'ascending';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
             direction = 'descending';
@@ -43,17 +51,12 @@ const UserTasks = ({ userId }) => {
         setSortConfig({ key, direction });
     };
 
-    if (isLoading) return <p>Loading tasks...</p>;
-    if (isError) {
-        if (error?.status === 404) {
-            return (
-                <div className="container mt-5">
-                    <h2>{error.data?.message || 'No tasks found'}</h2>
-                </div>
-            );
-        }
-        return <p>Error: {error?.data?.message || 'An error occurred'}</p>;
+    // Ensure tasks object is valid before rendering the table
+    if (!tasks || !tasks.tasks || !tasks.tasks.ids) {
+        return <div>No tasks available or still loading.</div>;
     }
+
+    const totalPages = tasks.totalPages || 0;
 
     return (
         <div className='row' id='activity-row'>
@@ -73,22 +76,31 @@ const UserTasks = ({ userId }) => {
                     {sortedTasks.map((taskId, index) => (
                         <tr key={taskId} onClick={() => handleTaskClick(taskId)} style={{ cursor: 'pointer' }}>
                             <td>{index + 1}</td>
-                            <td>{tasks.entities[taskId].taskType}</td>
+                            <td>{tasks.tasks.entities[taskId].taskType}</td>
                             <td>
                                 <Badge bg={
-                                    tasks.entities[taskId].status === 'Completed' ? 'success' :
-                                    tasks.entities[taskId].status === 'Cancelled' ? 'danger' :
+                                    tasks.tasks.entities[taskId].status === 'Completed' ? 'success' :
+                                    tasks.tasks.entities[taskId].status === 'Cancelled' ? 'danger' :
                                     'warning'}>
-                                    {tasks.entities[taskId].status}
+                                    {tasks.tasks.entities[taskId].status}
                                 </Badge>
                             </td>
                             <td>{taskId}</td>
-                            <td>{tasks.entities[taskId].name}</td>
-                            <td>{tasks.entities[taskId].description}</td>
+                            <td>{tasks.tasks.entities[taskId].name}</td>
+                            <td>{tasks.tasks.entities[taskId].description}</td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
+            {totalPages > 1 && (
+                <Pagination className="justify-content-center">
+                    {[...Array(totalPages).keys()].map(p => (
+                        <Pagination.Item key={p + 1} active={p + 1 === currentPage} onClick={() => setCurrentPage(p + 1)}>
+                            {p + 1}
+                        </Pagination.Item>
+                    ))}
+                </Pagination>
+            )}
         </div>
     );
 };

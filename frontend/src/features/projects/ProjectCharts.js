@@ -37,10 +37,6 @@ const ProjectCharts = ({ projectId }) => {
             <h5 className="card-title">Health Indicators</h5>
             <ul className="list-group list-group-flush">
                 <li className="list-group-item">
-                <span className="fw-bold">Time:</span>
-                <span className="badge bg-success ms-2">14% ahead</span>
-                </li>
-                <li className="list-group-item">
                 <span className="fw-bold">Tasks:</span> {taskSummary.length} tasks to be completed
                 </li>
                 <li className="list-group-item">
@@ -56,10 +52,6 @@ const ProjectCharts = ({ projectId }) => {
                     {taskSummary.filter(task => task.status === 'Completed').length} complete
                     </div>
                 </div>
-                </li>
-                <li className="list-group-item">
-                <span className="fw-bold">Cost:</span>
-                <span className="badge bg-info ms-2">42% under budget</span>
                 </li>
             </ul>
             </div>
@@ -82,12 +74,12 @@ const ProjectCharts = ({ projectId }) => {
             <TimeChart tasks={taskSummary} />
           </div>
         </div>
-        <div className="col-md-4">
+        {/* <div className="col-md-4">
           <div className="chart-container">
             <h3>Cost Chart</h3>
             <CostBarChart tasks={taskSummary} />
           </div>
-        </div>
+        </div> */}
         <div className="col-md-4">
           <div className="chart-container">
             <h3>Workload Chart</h3>

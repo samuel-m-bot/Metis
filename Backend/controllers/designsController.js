@@ -44,6 +44,11 @@ const createNewDesign = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Invalid revision number format' });
     }
 
+    const revision = {
+        revisionNumber: revisionNumber,
+        description: 'Initial creation of the design.',
+        author: authors,
+    }
     // Create new design with attachment if available
     const design = new Design({
         projectId,
@@ -55,7 +60,8 @@ const createNewDesign = asyncHandler(async (req, res) => {
         status,
         designers,
         classification,
-        attachment
+        attachment,
+        revision
     });
 
     const createdDesign = await design.save();

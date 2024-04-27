@@ -64,16 +64,34 @@ const createTask = asyncHandler(async (req, res) => {
     res.status(201).json(savedTask);
 });
 
-// @desc Get all tasks
-// @route GET /tasks
+// @desc Get all tasks with pagination
+// @route GET /tasks?page=1&limit=10
 // @access Private
 const getAllTasks = asyncHandler(async (req, res) => {
-    const tasks = await Task.find().populate('assignedTo', 'firstName surname').populate('projectId', 'name');
-    if(!tasks?.length){
-        return res.status(400).json({ message: 'No tasks found'})
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const tasks = await Task.find()
+        .populate('assignedTo', 'firstName surname')
+        .populate('projectId', 'name')
+        .skip(skip)
+        .limit(limit);
+
+    const totalTasks = await Task.countDocuments();
+
+    if (!tasks.length) {
+        return res.status(404).json({ message: 'No tasks found' });
     }
-    res.status(200).json(tasks);
+
+    res.status(200).json({
+        tasks,
+        totalTasks,
+        totalPages: Math.ceil(totalTasks / limit),
+        currentPage: page
+    });
 });
+
 
 // @desc Get task by ID
 // @route GET /tasks/:id
@@ -86,25 +104,37 @@ const getTaskById = asyncHandler(async (req, res) => {
     res.status(200).json(task);
 });
 
-// @desc Get tasks assigned to a specific user
-// @route GET /tasks/user/:userId
+// @desc Get tasks assigned to a specific user with pagination
+// @route GET /tasks/user/:userId?page=1&limit=10
 // @access Private
 const getUserTasks = asyncHandler(async (req, res) => {
-    const userId = req.params.userId; // Or obtain the userId from req.user if using authentication middleware
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     if (!userId) {
         return res.status(400).json({ message: 'User ID is required' });
     }
 
-    // Find tasks where the userId is in the assignedTo array
-    const tasks = await Task.find({ assignedTo: { $in: [userId] } });
+    const tasks = await Task.find({ assignedTo: { $in: [userId] } })
+        .skip(skip)
+        .limit(limit);
 
-    if (tasks.length === 0) {
+    const totalTasks = await Task.countDocuments({ assignedTo: { $in: [userId] } });
+
+    if (!tasks.length) {
         return res.status(404).json({ message: 'No tasks found for this user' });
     }
 
-    res.status(200).json(tasks);
+    res.status(200).json({
+        tasks,
+        totalTasks,
+        totalPages: Math.ceil(totalTasks / limit),
+        currentPage: page
+    });
 });
+
 
 
 // @desc Update a task
@@ -358,23 +388,39 @@ const filterTasks = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc Get tasks by projectId
-// @route GET /tasks/project/:projectId
+// @desc Get tasks by projectId with pagination
+// @route GET /tasks/project/:projectId?page=1&limit=10
 // @access private
 const getTasksByProjectId = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
-    const tasks = await Task.find({ projectId }).populate('assignedTo', 'firstName surname').lean();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const tasks = await Task.find({ projectId })
+        .populate('assignedTo', 'firstName surname')
+        .skip(skip)
+        .limit(limit);
+
+    const totalTasks = await Task.countDocuments({ projectId });
+
     if (!tasks.length) {
         return res.status(404).json({ message: 'No tasks found for this project' });
     }
-    res.json(tasks);
+
+    res.json({
+        tasks,
+        totalTasks,
+        totalPages: Math.ceil(totalTasks / limit),
+        currentPage: page
+    });
 });
+
 
 // @desc Manages review related tasks including marking the setup task as complete, creating review tasks for each reviewer, and setting up an observation task
 // @route POST /tasks/manage-review-tasks
 // @access Private
 const manageReviewTasks = asyncHandler(async (req, res) => {
-    console.log("PPPPPPPPPPPPPPPPPPPPPPPPPPP")
     const { reviewId, projectId, reviewers, taskDetails, isChangeRequest } = req.body;
 
     const requestUserId = req.user._id; 

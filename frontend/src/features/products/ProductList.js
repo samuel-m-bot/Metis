@@ -98,7 +98,7 @@ const ProductList = ({ products, isLoading, isError, error }) => {
         <tbody>
           {sortedProducts.map((product) => (
             <tr key={product.id}>
-              <td onClick={() => handleProductNavigate(product.id)} style={{ cursor: 'pointer' }}>
+              <td onClick={() => handleProductNavigate(product.id)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}>
                 {product.name}
               </td>
               <td onClick={() => handleProjectNavigate(product.projectId._id)} style={{ cursor: 'pointer' }}>

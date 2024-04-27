@@ -14,9 +14,6 @@ const getAllChangeRequests = asyncHandler(async (req, res) => {
     res.json(changeRequests)
 })
 
-// @desc Get specific change request by ID
-// @route GET /changeRequests/:id
-// @access Private
 const getChangeRequestById = asyncHandler(async (req, res) => {
     const changeRequestId = req.params.id; 
     const changeRequest = await ChangeRequest.findById(changeRequestId)
@@ -28,6 +25,18 @@ const getChangeRequestById = asyncHandler(async (req, res) => {
             path: 'requestedBy',
             select: 'firstName surname' 
         })
+        .populate({
+            path: 'relatedDocuments',
+            select: 'title type revisionNumber status'
+        })
+        .populate({
+            path: 'relatedDesigns',
+            select: 'name type revisionNumber status'
+        })
+        .populate({
+            path: 'relatedProducts',
+            select: 'name category lifecycleStatus revisionNumber'
+        })
         .lean(); 
 
     if (!changeRequest) {
@@ -36,6 +45,7 @@ const getChangeRequestById = asyncHandler(async (req, res) => {
 
     res.json(changeRequest);
 });
+
 
 /// @desc Create a new change request
 // @route POST /changeRequests

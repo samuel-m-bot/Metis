@@ -10,7 +10,7 @@ const ProgressHorizontalBarChart = ({ tasks }) => {
   };
 
   const data = {
-    labels: ['Completed', 'Ongoing', 'Not Started'],
+    labels: ['Completed', 'In Progress', 'Not Started'],
     datasets: [
       {
         label: 'Tasks',

@@ -50,12 +50,17 @@ const createNewProduct = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Duplicate product name' })
     }
 
+    const revision = {
+        revisionNumber: revisionNumber,
+        description: 'Initial creation of the product.',
+        author: authors,
+    }
+
     // Create new product object
     const productObject = {
         projectId, name, description, category, lifecycleStatus, type,
-        revisionNumber, physicalAttributes, digitalAttributes, classification, status
+        revisionNumber, physicalAttributes, digitalAttributes, classification, status, revision
     }
-
     // Create and store new product
     const product = await Product.create(productObject)
 

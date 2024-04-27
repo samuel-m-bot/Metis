@@ -11,28 +11,30 @@ const initialState = tasksAdapter.getInitialState()
 export const tasksApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
         getTasks: builder.query({
-            query: () => ({
-                url: '/tasks',
-                validateStatus: (response, result) => {
-                    return response.status === 200 && !result.isError
-                },
+            query: ({ page = 1, limit = 10 } = {}) => ({
+                url: `/tasks?page=${page}&limit=${limit}`,
+                method: 'GET'
             }),
             transformResponse: responseData => {
-                const loadedTasks = responseData.map(task => {
-                    task.id = task._id
-                    return task
+                const loadedTasks = responseData.tasks.map(task => {
+                    task.id = task._id;
+                    return task;
                 });
-                return tasksAdapter.setAll(initialState, loadedTasks)
+                return {
+                    tasks: tasksAdapter.setAll(initialState, loadedTasks),
+                    totalPages: responseData.totalPages,
+                    currentPage: responseData.currentPage
+                };
             },
             providesTags: (result, error, arg) => {
-                if (result?.ids) {
+                if (result?.tasks.ids) {
                     return [
                         { type: 'Task', id: 'LIST' },
-                        ...result.ids.map(id => ({ type: 'Task', id }))
-                    ]
-                } else return [{ type: 'Task', id: 'LIST' }]
+                        ...result.tasks.ids.map(id => ({ type: 'Task', id }))
+                    ];
+                } else return [{ type: 'Task', id: 'LIST' }];
             }
-        }),
+        }),        
         getTaskById: builder.query({
             query: (taskId) => `/tasks/${taskId}`,
             transformResponse: responseData => {
@@ -85,44 +87,55 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
             invalidatesTags: [{ type: 'Task', id: 'LIST' }]
         }),   
         getTasksByProjectId: builder.query({
-            query: projectId => ({
-                url: `/tasks/project/${projectId}`,
+            query: ({ projectId, page = 1, limit = 10 } = {}) => ({
+                url: `/tasks/project/${projectId}?page=${page}&limit=${limit}`,
                 method: 'GET'
             }),
             transformResponse: responseData => {
-                const loadedTasks = responseData.map(task => {
+                const loadedTasks = responseData.tasks.map(task => {
                     task.id = task._id;
                     return task;
                 });
-                return tasksAdapter.setAll(initialState, loadedTasks);
+                return {
+                    tasks: tasksAdapter.setAll(initialState, loadedTasks),
+                    totalPages: responseData.totalPages,
+                    currentPage: responseData.currentPage
+                };
             },
             providesTags: (result, error, arg) => {
-                if (result?.ids) {
+                if (result?.tasks.ids) {
                     return [
                         { type: 'Task', id: 'LIST' },
-                        ...result.ids.map(id => ({ type: 'Task', id }))
-                    ]
+                        ...result.tasks.ids.map(id => ({ type: 'Task', id }))
+                    ];
                 } else return [{ type: 'Task', id: 'LIST' }];
             }
-        }), 
+        }),        
         getUserTasks: builder.query({
-            query: (userId) => `/tasks/user/${userId}`, // Adjust the endpoint URL to match your backend route
+            query: ({ userId, page = 1, limit = 10 } = {}) => ({
+                url: `/tasks/user/${userId}?page=${page}&limit=${limit}`,
+                method: 'GET'
+            }),
             transformResponse: responseData => {
-                const loadedTasks = responseData.map(task => {
-                    task.id = task._id; // Ensure tasks have an 'id' property for normalization
+                const loadedTasks = responseData.tasks.map(task => {
+                    task.id = task._id;
                     return task;
                 });
-                return tasksAdapter.setAll(initialState, loadedTasks);
+                return {
+                    tasks: tasksAdapter.setAll(initialState, loadedTasks),
+                    totalPages: responseData.totalPages,
+                    currentPage: responseData.currentPage
+                };
             },
             providesTags: (result, error, arg) => {
-                if (result?.ids) {
+                if (result?.tasks.ids) {
                     return [
                         { type: 'Task', id: 'LIST' },
-                        ...result.ids.map(id => ({ type: 'Task', id }))
-                    ]
-                } else return [{ type: 'Task', id: 'LIST' }]
+                        ...result.tasks.ids.map(id => ({ type: 'Task', id }))
+                    ];
+                } else return [{ type: 'Task', id: 'LIST' }];
             }
-        }),
+        }),        
         manageReviewTasks: builder.mutation({
             query: reviewTasksData => ({
                 url: '/tasks/manage-review-tasks',

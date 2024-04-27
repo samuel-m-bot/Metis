@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Tab, Tabs, Dropdown, Button, Modal, ButtonGroup  } from 'react-bootstrap';
 import TasksTable from '../Tasks/TasksTable';
-import ProgressHorizontalBarChart from '../Tasks/ProgressHorizontalBarChart';
-import TimeChart from './TimeChart';
-import CostBarChart from './CostBarChart';
-import ProjectWorkloadChart from './ProjectWorkloadChart';
 import { useGetProjectByIdQuery } from './projectsApiSlice';
 import { useGetDocumentsByProjectIdQuery } from '../documents/documentsApiSlice';
 import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
@@ -34,10 +30,18 @@ const ProjectDashboard = () => {
   const [key, setKey] = useState('overview');
   const {isAdmin, isProjectManager} = useAuth()
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   
   const { data: documents, isLoadingDocuments, isErrorDocuments, errorD } = useGetDocumentsByProjectIdQuery(project?.id);
-  const { data: tasks, isLoadingTasks, isErrorTasks, errorT } = useGetTasksByProjectIdQuery(project?.id);
+
+  const {
+    data: tasks,
+    isLoading: isLoadingTasks,
+    isError: isErrorTasks,
+    error: errorT
+  } = useGetTasksByProjectIdQuery({ projectId, page: currentPage, limit: pageSize })
 
 
   const navigate = useNavigate()
@@ -72,6 +76,9 @@ const ProjectDashboard = () => {
     navigate('manage-team/');
   };
 
+  if (isLoadingTasks) return <p>Loading tasks...</p>;
+  if (isErrorTasks) return <p>Error: {errorT?.data?.message || 'An error occurred'}</p>;
+  if (!tasks || tasks.tasks.ids.length === 0) return <p>No tasks available.</p>;
   if (isLoading) return <LoadingSpinner />
   return (
     <div className="container-fluid">
@@ -161,33 +168,23 @@ const ProjectDashboard = () => {
         </Tab>
 
         <Tab eventKey="tasks" title="Tasks" className="tab-tasks">
-        {isLoadingTasks ? (
-            <p>Loading tasks...</p>
-          ) : isErrorTasks ? (
-            <p>Error: {errorT?.data?.message}</p>
-          ) : tasks?.ids.length > 0 ? (
-            <>
-              <div className="row">
-                <div className="col-md-6">
-                  <TasksTable taskIds={tasks.ids} status="In Progress" title="Ongoing Tasks" />
-                </div>
-                <div className="col-md-6">
-                  <TasksTable taskIds={tasks.ids} status="Completed" title="Completed Tasks" />
-                </div>
-              </div>
-              <div className="row mt-4">
-                <div className="col">
-                  <TasksTable taskIds={tasks.ids} status="Not Started" title="Upcoming Tasks" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <button onClick={viewAllTasks} className="btn btn-primary">View All Tasks</button>
-              </div>
-            </>
-          ) : (
-            <p>No tasks available.</p>
-          )}
-        </Tab>
+          <div className="row">
+            <div className="col-md-6">
+              <TasksTable tasks={tasks.tasks} status="In Progress" title="Ongoing Tasks" />
+            </div>
+            <div className="col-md-6">
+              <TasksTable tasks={tasks.tasks} status="Completed" title="Completed Tasks" />
+            </div>
+          </div>
+          <div className="row mt-4">
+            <div className="col">
+              <TasksTable tasks={tasks.tasks} status="Not Started" title="Upcoming Tasks" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <button onClick={viewAllTasks} className="btn btn-primary">View All Tasks</button>
+          </div>
+      </Tab>
 
         <Tab eventKey="products" title="Products">
           <ProductsTab projectId={project.id} />

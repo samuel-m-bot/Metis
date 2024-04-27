@@ -167,7 +167,7 @@ const updateRevisionNumber = (item, isMajor) => {
     return newRevisionNumber;
 };
 
-const updateItem = async (itemId, model,isMajor) => {
+const updateItem = async (itemId, model, isMajor, changeRequestId, user) => {
     console.log(`Looking up item ${itemId} in model ${model.modelName}`);
     const item = await model.findById(itemId);
     if (!item) {
@@ -175,12 +175,13 @@ const updateItem = async (itemId, model,isMajor) => {
         return;
     }
 
+    // Generate new revision number
     const newRevisionNumber = updateRevisionNumber(item, isMajor);
     if (newRevisionNumber) {
-
+        // Create and save the activity
         const activity = new Activity({
             actionType: 'RevisionUpdate',
-            description: `${item.revisionNumber},${newRevisionNumber}`,
+            description: `Revision updated to ${newRevisionNumber}`,
             relatedTo: itemId,
             onModel: model.modelName,
             ipAddress: req.ip,
@@ -188,10 +189,20 @@ const updateItem = async (itemId, model,isMajor) => {
         });
         await activity.save();
 
-        console.log(`Updating item ${itemId}: setting status to 'Checked In' and revision number to ${newRevisionNumber}`);
+        // Prepare revision data
+        const revision = {
+            revisionNumber: newRevisionNumber,
+            description: 'Updated based on change request.',
+            author: user,  
+            date: new Date(),  
+            changeRequestId: changeRequestId  
+        };
+
+        // Update item with new revision and status
+        console.log(`Updating item ${itemId}: setting status to 'Checked In' and adding new revision`);
         await model.findByIdAndUpdate(itemId, {
-            status: 'Checked In',
-            revisionNumber: newRevisionNumber
+            $set: { status: 'Checked In' },
+            $push: { revisions: revision }  
         }, { new: true });
     }
 };
@@ -205,22 +216,21 @@ const processUpdates = async (items, model,isMajor) => {
     }
 };
 
-const updateRelatedItemsAndMain = async (changeRequest) => {
+const updateRelatedItemsAndMain = async (changeRequest, user) => {
     const isMajor = changeRequest.revisionType === 'Major';
     console.log(`Updating related items and main for ChangeRequest: ${changeRequest._id}, Major update: ${isMajor}`);
-
 
     // Update the main item
     const mainModel = models[changeRequest.onModel];
     console.log(`Model for main item: ${mainModel.modelName}`);
     if (mainModel) {
-        await updateItem(changeRequest.mainItem, mainModel,isMajor);
+        await updateItem(changeRequest.mainItem, mainModel, isMajor, changeRequest._id, user);
     }
 
     // Process all related item types
-    await processUpdates(changeRequest.relatedDocuments, models.Document,isMajor);
-    await processUpdates(changeRequest.relatedDesigns, models.Design);
-    await processUpdates(changeRequest.relatedProducts, models.Product,isMajor);
+    await processUpdates(changeRequest.relatedDocuments, models.Document, isMajor, changeRequest._id, user);
+    await processUpdates(changeRequest.relatedDesigns, models.Design, isMajor, changeRequest._id, user);
+    await processUpdates(changeRequest.relatedProducts, models.Product, isMajor, changeRequest._id, user);
 };
 
 const processRejectionWorkflow = async (review, req, res) => {

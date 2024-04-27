@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const revisionSchema = require('./Revision');
 
 const documentSchema = new mongoose.Schema({
     projectId: {
@@ -69,6 +70,7 @@ const documentSchema = new mongoose.Schema({
         enum: ['Confidential', 'Restricted', 'Public', 'Private'],
         required: true
     },
+    revisions: [revisionSchema]
 });
 
 module.exports = mongoose.model('Document', documentSchema);

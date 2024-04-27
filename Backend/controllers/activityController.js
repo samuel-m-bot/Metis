@@ -1,11 +1,12 @@
 const Activity = require('../models/Activity');
 const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose')
 
 // @desc Get all activities (with optional filtering)
 // @route GET /activities
 // @access Private
 const getAllActivities = asyncHandler(async (req, res) => {
-    const { actionType, onModel, startDate, endDate } = req.query;
+    const { actionType, onModel, startDate, endDate, page = 1, limit = 10 } = req.query;
     let query = {};
 
     if (actionType) query.actionType = actionType;
@@ -18,13 +19,36 @@ const getAllActivities = asyncHandler(async (req, res) => {
         query.timestamp = { $lte: new Date(endDate) };
     }
 
-    const activities = await Activity.find(query);
+    const skip = (page - 1) * limit;
 
-    if (activities.length === 0) {
-        return res.status(404).json({ message: 'No activities found' });
+    try {
+        const activities = await Activity.find(query)
+            .populate({
+                path: 'createdBy',
+                select: 'firstName surname -_id'
+            })
+            .sort({ timestamp: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const count = await Activity.countDocuments(query);
+
+        if (activities.length === 0) {
+            return res.status(404).json({ message: 'No activities found' });
+        }
+
+        res.json({
+            activities: activities.map(activity => ({
+                ...activity.toJSON(),
+                createdBy: activity.createdBy ? `${activity.createdBy.firstName} ${activity.createdBy.surname}` : "Unknown User"
+            })),
+            currentPage: Number(page),
+            totalPages: Math.ceil(count / limit),
+            totalActivities: count
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching activities', error: error.message });
     }
-
-    res.json(activities);
 });
 
 // @desc Update an activity (if needed, typically not common for activity logs)
@@ -144,11 +168,10 @@ const getActivitiesByRelatedToAndModel = asyncHandler(async (req, res) => {
     });
 });
 
-
 module.exports = {
     getAllActivities,
     updateActivity,
     deleteActivity,
     getUserActivities,
-    getActivitiesByRelatedToAndModel
+    getActivitiesByRelatedToAndModel,
 };

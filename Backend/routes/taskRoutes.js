@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const verifyJWT = require('../middleware/verifyJWT')
+const verifyJWT = require('../middleware/verifyJWT');
 
-router.use(verifyJWT)
-// Routes for managing tasks
+router.use(verifyJWT);
+
+// Task management routes
 router.route('/')
-    .get(taskController.getAllTasks) // Get all tasks
+    .get(taskController.getAllTasks) // Get all tasks with optional pagination
     .post(taskController.createTask); // Create a new task
 
 router.route('/:id')
@@ -14,25 +15,26 @@ router.route('/:id')
     .patch(taskController.updateTask) // Update a task
     .delete(taskController.deleteTask); // Delete a task
 
-// Routes for subtasks
-router.post('/:id/subtasks', taskController.addSubtask); // Add a subtask to a task
-router.patch('/:taskId/subtasks/:subtaskId', taskController.updateSubtask); // Update a subtask
+// Subtask management
+router.post('/:id/subtasks', taskController.addSubtask);
+router.patch('/:taskId/subtasks/:subtaskId', taskController.updateSubtask);
 
-// Route for checklist items
-router.patch('/:taskId/checklist/:itemId', taskController.toggleChecklistItem); // Mark a checklist item as completed
+// Checklist item management
+router.patch('/:taskId/checklist/:itemId', taskController.toggleChecklistItem);
 
-// Routes for comments
-router.post('/:id/comments', taskController.addCommentToTask); // Add a comment to a task
-router.patch('/:taskId/comments/:commentId', taskController.editTaskComment); // Edit a task comment
+// Comment management on tasks
+router.post('/:id/comments', taskController.addCommentToTask);
+router.patch('/:taskId/comments/:commentId', taskController.editTaskComment);
 
-// Route to get tasks assigned to a specific user
-router.get('/user/:userId', taskController.getUserTasks); // Get tasks for a specific user
+// Specific queries
+router.get('/user/:userId', taskController.getUserTasks); 
+router.get('/project/:projectId', taskController.getTasksByProjectId); 
 
+// Special task management routes
 router.post('/filter', taskController.filterTasks);
-
-router.get('/project/:projectId', taskController.getTasksByProjectId);
 router.post('/manage-review-tasks', taskController.manageReviewTasks);
 router.post('/manage-revised-task', taskController.manageRevisedTask);
 router.post('/complete-and-setup-review', taskController.completeTaskAndSetupReview);
 router.patch('/:id/status', taskController.handleUpdateTaskStatus);
+
 module.exports = router;

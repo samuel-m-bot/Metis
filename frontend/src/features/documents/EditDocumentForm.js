@@ -29,7 +29,7 @@ const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal })
     const [revisionNumber, setRevisionNumber] = useState(document.revisionNumber);
     const [revisionError, setRevisionError] = useState('');
     const [associatedProductIDs, setAssociatedProductIDs] = useState(document.associatedProductIDs);
-    const [authors, setAuthors] = useState(document.authors || []);
+    const [authors, setAuthors] = useState(document.authors.map(author => author._id) || []);
     const [status, setStatus] = useState('Checked In');
     const [relatedDocuments, setRelatedDocuments] = useState(document.relatedDocuments || []);
     const [file, setFile] = useState(null);
@@ -50,7 +50,7 @@ const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal })
     const handleMultiSelectChange = (event, setState) => {
         const values = Array.from(event.target.selectedOptions, option => option.value);
         setState(values);
-    };
+    };    
 
     useEffect(() => {
         // Assuming 'document' is the current document you are viewing/editing
@@ -65,6 +65,8 @@ const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal })
     
 
     const onSaveChanges = async () => {
+        console.log("Submitting the following authors:", authors);
+
         const formData = new FormData();
         formData.append('projectId', projectId);
         formData.append('title', title);
@@ -189,7 +191,9 @@ const EditDocumentForm = ({ projectId: initialProjectId, document, closeModal })
                 <label htmlFor="authors" className="form-label">Authors:</label>
                 <select multiple className="form-select" id="authors" value={authors} onChange={(e) => handleMultiSelectChange(e, setAuthors)}>
                     {users?.ids.map(userId => (
-                    <option key={userId} value={userId}>{users.entities[userId].firstName} {users.entities[userId].surname}</option>
+                        <option key={userId} value={userId}>
+                            {users.entities[userId].firstName} {users.entities[userId].surname}
+                        </option>
                     ))}
                 </select>
                 </div>

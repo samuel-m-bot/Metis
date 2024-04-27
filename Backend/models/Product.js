@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const revisionSchema = require('./Revision');
 
 const productSchema = new Schema({
     projectId: {
@@ -76,6 +77,7 @@ const productSchema = new Schema({
         enum: ['Draft', 'In Review', 'Revised', 'Published', 'Archived', 'Checked Out', 'Checked In'],
         default: 'Draft'
     },
+    revisions: [revisionSchema]
 });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -6,7 +6,7 @@ const ProjectsList = ({ projects }) => {
 
     const canEdit = (isAdmin || isProjectManager);
 
-    if (!projects.length) {
+    if (!projects) {
         return (
           <div>No projects to display</div>
         );

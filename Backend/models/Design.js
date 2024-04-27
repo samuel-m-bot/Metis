@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const revisionSchema = require('./Revision');
 
 const designSchema = new mongoose.Schema({
     projectId: {
@@ -69,7 +70,8 @@ const designSchema = new mongoose.Schema({
     isFeatured: {
         type: Boolean,
         default: false // Most designs will not be featured by default
-    }
+    },
+    revisions: [revisionSchema]
 });
 
 module.exports = mongoose.model('Design', designSchema);

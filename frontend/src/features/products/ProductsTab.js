@@ -17,24 +17,28 @@ const ProductsTab = ({ projectId }) => {
     const completedProducts = products.filter(product => product.status === 'Published');
 
     return (
-        <div>
-            <div className='row'>
-                <h3>Ongoing Products</h3>
-                <ProductList 
-                    products={ongoingProducts} 
-                    isLoading={isLoading} 
-                    isError={isError} 
-                    error={error}
-                />
+        <div className="container mt-3">
+            <div className='row mb-4'>
+                <div className="col-12">
+                    <h3>Ongoing Products</h3>
+                    <ProductList 
+                        products={ongoingProducts} 
+                        isLoading={isLoading} 
+                        isError={isError} 
+                        error={error}
+                    />
+                </div>
             </div>
             <div className='row'>
-                <h3>Completed Products</h3>
-                <ProductList 
-                    products={completedProducts} 
-                    isLoading={isLoading} 
-                    isError={isError} 
-                    error={error}
-                />
+                <div className="col-12">
+                    <h3>Completed Products</h3>
+                    <ProductList 
+                        products={completedProducts} 
+                        isLoading={isLoading} 
+                        isError={isError} 
+                        error={error}
+                    />
+                </div>
             </div>
         </div>
     );

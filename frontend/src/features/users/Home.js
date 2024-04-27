@@ -3,6 +3,7 @@ import './Home.css';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import UserTasks from '../Tasks/UserTasks';
+import UserActivityList from '../activity/UserActivityList';
 
 
 const Home = () => {
@@ -21,12 +22,14 @@ const Home = () => {
             <li className="list-group-item"><a href="/products">Products List</a></li>
             <li className="list-group-item"><a href="/designs">Designs List</a></li>
             <li className="list-group-item"><a href="/documents">Document Library</a></li>
+            <li className="list-group-item"><a href="/activities">Activities</a></li>
             {isAdmin && <li className="list-group-item"><a href="/admin-dashboard">Admin Dashboard</a></li>} 
           </ul>
         </div>
         <div className="col-md-8">
-          <h2>Overview</h2>
-          <p>Your latest activities and updates will appear here...</p>
+          {/* <h2>Overview</h2>
+          <p>Your latest activities and updates will appear here...</p> */}
+          <UserActivityList />
         </div>
       </div>
       {id && (

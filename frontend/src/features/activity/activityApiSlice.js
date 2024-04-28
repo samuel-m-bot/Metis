@@ -41,18 +41,23 @@ export const activityApiSlice = apiSlice.injectEndpoints({
             }
         }),
         getActivityByUser: builder.query({
-            query: ({userId}) => ({
+            query: ({userId, page = 1}) => ({
                 url: `/activities/user/${userId}`,
+                params: { page }
             }),
-            transformResponse: responseData => {
-                const loadedActivities = responseData.map(activity => ({
+            transformResponse: (responseData) => {
+                const loadedActivities = responseData.activities.map(activity => ({
                     ...activity,
                     id: activity._id
                 }));
-                return activityAdapter.setAll(initialState, loadedActivities);
+                return {
+                    activities: activityAdapter.setAll(initialState, loadedActivities),
+                    totalPages: responseData.totalPages,
+                    currentPage: responseData.currentPage
+                };
             },
             providesTags: (result, error, arg) => result ? [{ type: 'Activity', id: result.id }] : [],
-        }),
+        }),        
         getActivitiesByRelatedToAndModel: builder.query({
             query: ({ relatedTo, onModel }) => ({
                 url: `/activities/by-context`,

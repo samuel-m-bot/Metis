@@ -103,29 +103,37 @@ const deleteActivity = asyncHandler(async (req, res) => {
 // @access Private
 const getUserActivities = asyncHandler(async (req, res) => {
     const { userId } = req.params;
-    const { page = 1, limit = 10 } = req.query;  // Default page is 1, and limit is 10
+    const { page = 1, limit = 5 } = req.query;
 
-    // Validate the userId, optionally ensure it is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ message: 'Invalid user ID format' });
+        return res.status(400).json({ status: 'error', message: 'Invalid user ID format' });
     }
 
+    // Adding populate to include firstName and surname from the User model
     const activities = await Activity.find({ createdBy: userId })
-        .sort({ timestamp: -1 }) 
+        .populate({
+            path: 'createdBy', 
+            select: 'firstName surname' 
+        })
+        .sort({ timestamp: 1 })
         .skip((page - 1) * limit)
-        .limit(limit) 
-        .exec();
+        .limit(limit);
 
     const count = await Activity.countDocuments({ createdBy: userId });
 
     if (!activities.length) {
-        return res.status(404).json({ message: 'No activities found for this user' });
+        return res.status(404).json({ status: 'error', message: 'No activities found for this user' });
     }
 
+    const totalPages = Math.ceil(count / limit);
     res.json({
+        status: 'success',
         activities,
+        count,
         currentPage: page,
-        totalPages: Math.ceil(count / limit)
+        totalPages,
+        nextPage: page < totalPages ? `?page=${page + 1}&limit=${limit}` : null,
+        prevPage: page > 1 ? `?page=${page - 1}&limit=${limit}` : null
     });
 });
 

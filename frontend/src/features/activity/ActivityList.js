@@ -16,7 +16,13 @@ const ActivityList = ({ activities, onPageChange, currentPage, totalPages }) => 
                         <tr key={activity.id}>
                             <td><strong>{activity.actionType}</strong></td>
                             <td>{activity.description}</td>
-                            <td>{activity.createdBy}</td> 
+                            <td>
+                            {activity.createdBy ? 
+                                (activity.createdBy.firstName && activity.createdBy.surname ? 
+                                `${activity.createdBy.firstName} ${activity.createdBy.surname}` : 
+                                activity.createdBy) : 
+                                'No User'}
+                            </td>
                             <td>{new Date(activity.timestamp).toLocaleString()}</td>
                         </tr>
                     ))}

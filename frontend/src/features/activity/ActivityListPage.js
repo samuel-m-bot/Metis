@@ -15,6 +15,7 @@ const ActivityListPage = () => {
         refetchOnMountOrArgChange: true
     });
 
+    console.log(activityData)
     const activities = activityData ? activityData.ids.map(id => activityData.entities[id]) : [];
     const totalPages = activityData ? activityData.totalPages : 0;
 

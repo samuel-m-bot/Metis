@@ -28,18 +28,20 @@ const Home = () => {
       <div className="row">
         <div className="col-md-4">
           <h2>Quick Links</h2>
-          <ul className="list-group">
-            <li className="list-group-item"><a href="/projects">Projects Dashboard</a></li>
-            <li className="list-group-item"><a href="/products">Products List</a></li>
-            <li className="list-group-item"><a href="/designs">Designs List</a></li>
-            <li className="list-group-item"><a href="/documents">Document Library</a></li>
-            <li className="list-group-item"><a href="/activities">Activities</a></li>
-            <li className="list-group-item"><a href="/customer">Customers</a></li>
-            <li className="list-group-item"><a href="/products/analytics">Products analytics</a></li>
-            {isAdmin && <li className="list-group-item"><a href="/admin-dashboard">Admin Dashboard</a></li>}
-            <button onClick={handleSalesforceLogin}>Login with Salesforce</button>
-            <button onClick={handleCheckAccessToken}>Check Access Token</button>
-          </ul>
+          <div className="list-group">
+            <a href="/projects" className="list-group-item list-group-item-action">Projects Dashboard</a>
+            <a href="/products" className="list-group-item list-group-item-action">Products List</a>
+            <a href="/designs" className="list-group-item list-group-item-action">Designs List</a>
+            <a href="/documents" className="list-group-item list-group-item-action">Document Library</a>
+            <a href="/activities" className="list-group-item list-group-item-action">Activities</a>
+            <a href="/customer" className="list-group-item list-group-item-action">Customers</a>
+            <a href="/products/analytics" className="list-group-item list-group-item-action">Products analytics</a>
+            {isAdmin && <a href="/admin-dashboard" className="list-group-item list-group-item-action">Admin Dashboard</a>}
+          </div>
+          <div className="mt-3">
+            <button onClick={handleSalesforceLogin} className="btn btn-primary me-2 mb-2">Login with Salesforce</button>
+            {/* <button onClick={handleCheckAccessToken} className="btn btn-secondary">Check Access Token</button> */}
+          </div>
         </div>
         <div className="col-md-8">
           <UserActivityList />

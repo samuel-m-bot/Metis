@@ -2,8 +2,8 @@
 PLM system
 
 **Prerequisite :**<br />
--nodejs is installed on the device<br />
--Visuial studio code is installed<br />
+-nodejs is installed on the device (download here: https://nodejs.org/en/download)<br />
+-Visuial studio code is installed( download here https://code.visualstudio.com/download)<br />
 
 **Build steps:**<br />
 -Clone the Repository:<br />

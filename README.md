@@ -1,20 +1,20 @@
 # Metis
 PLM system
 
-**Build steps:**__
--Clone the Repository:__
--Use git clone [repository-url] to clone the repo into your desired directory or unzip it.__
-**Prepare the Environment:**__
--Open the cloned directory in Visual Studio Code.__
-**Install Dependencies:**__
--Navigate to the backend directory: cd backend__
--Install dependencies: npm install__
--Navigate to the frontend directory: cd ../frontend__
--Install dependencies: npm install__
-**Configure the Application:**__
--Locate the metis-421507-6c16c96a1c7e.json file in the backend directory.__
--Copy its full path and update the .env file with this path.__
-**Run the Application:**__
--Open two terminal windows in Visual Studio Code.__
--In the first terminal (backend), run: npm run dev__
+**Build steps:**<br />
+-Clone the Repository:<br />
+-Use git clone [repository-url] to clone the repo into your desired directory or unzip it.<br />
+**Prepare the Environment:**<br />
+-Open the cloned directory in Visual Studio Code.<br />
+**Install Dependencies:**<br />
+-Navigate to the backend directory: cd backend<br />
+-Install dependencies: npm install<br />
+-Navigate to the frontend directory: cd ../frontend<br />
+-Install dependencies: npm install<br />
+**Configure the Application:**<br />
+-Locate the metis-421507-6c16c96a1c7e.json file in the backend directory.<br />
+-Copy its full path and update the .env file with this path.<br />
+**Run the Application:**<br />
+-Open two terminal windows in Visual Studio Code.<br />
+-In the first terminal (backend), run: npm run dev<br />
 -In the second terminal (frontend), run: npm start

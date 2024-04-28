@@ -44,6 +44,26 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 }
             }
         }),
+        salesforceLogin: builder.mutation({
+            query: () => ({
+                url: '/auth/salesforce',
+                method: 'GET',
+            }),
+            async onQueryStarted(arg, { queryFulfilled }) {
+                try {
+                    const response = await queryFulfilled;
+                } catch (error) {
+                    console.error('Error initiating Salesforce OAuth:', error);
+                }
+            }
+        }),
+        checkAccessToken: builder.query({
+            query: () => ({
+                url: 'auth/test/access-token',
+                method: 'GET',
+            }),
+            transformResponse: response => response, 
+        }),
     })
 })
 
@@ -51,4 +71,7 @@ export const {
     useLoginMutation,
     useSendLogoutMutation,
     useRefreshMutation,
+    useSalesforceLoginMutation,
+    useCheckAccessTokenQuery,
+    useLazyCheckAccessTokenQuery
 } = authApiSlice 

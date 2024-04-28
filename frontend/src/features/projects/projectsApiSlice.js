@@ -100,7 +100,22 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
                 };
             },
             providesTags: (result, error, arg) => [{ type: 'Permission', id: result ? result.id : 'LIST' }]
-        }),               
+        }), 
+        getSalesforceCustomer: builder.query({
+            query: (projectId) => ({
+                url: `/projects/${projectId}/customer`,
+                method: 'GET'
+            }),
+            providesTags: (result, error, arg) => [{ type: 'Project', id: arg }]
+        }),
+        updateProjectCustomer: builder.mutation({
+            query: ({ projectId, customerId }) => ({
+                url: `/projects/${projectId}/customer/add`,
+                method: 'PATCH',
+                body: { customerId }
+            }),
+            invalidatesTags: (result, error, arg) => [{ type: 'Project', id: arg.projectId }]
+        }),              
     }),
 });
 
@@ -115,7 +130,9 @@ export const {
     useDeleteProjectMutation,
     useAddTeamMemberMutation,
     useRemoveTeamMemberMutation,
-    useGetUserPermissionsQuery
+    useGetUserPermissionsQuery,
+    useGetSalesforceCustomerQuery,
+    useUpdateProjectCustomerMutation
 } = projectsApiSlice;
 
 // Selectors

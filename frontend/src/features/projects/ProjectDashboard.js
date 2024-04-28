@@ -12,6 +12,7 @@ import ProductsTab from '../products/ProductsTab';
 import DesignTab from '../designs/DesignTab';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ProjectCharts from './ProjectCharts';
+import CustomerInfoTab from '../integration/CustomerInfoTab';
 
 const ProjectDashboard = () => {
 
@@ -195,6 +196,9 @@ const ProjectDashboard = () => {
           <DesignTab projectId={project.id} />
         </Tab>
 
+        <Tab eventKey="customerInfo" title="Customer Information" className="customer-info-tab-content">
+          <CustomerInfoTab projectId={project.id} />
+        </Tab>
 
       </Tabs>
     </div>

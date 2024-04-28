@@ -43,6 +43,10 @@ const projectSchema = new mongoose.Schema({
             required: true
         }
     }],
+    salesforceCustomerId: {
+        type: String,
+        required: false 
+    }
 });
 
 module.exports = mongoose.model('Project', projectSchema);

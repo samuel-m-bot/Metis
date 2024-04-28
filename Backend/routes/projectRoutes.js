@@ -27,6 +27,9 @@ router.get('/assigned/:userId', projectController.getAssignedProjects); // Getti
 router.get('/:id/reviewers', projectController.getReviewers); // Fetch reviewers for a project
 router.get('/:id/manager', projectController.getProjectManagerById);
 router.get('/:projectId/my-permissions', projectController.getUserPermissions);
+router.get('/:id/customer', projectController.getSalesforceCustomer);
+router.patch('/:id/customer/add', projectController.updateProjectCustomer);
+
 
 
 module.exports = router;

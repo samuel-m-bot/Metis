@@ -13,6 +13,22 @@ const { logEvents } = require('./middleware/logger')
 const http = require('http')
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3500
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+app.use(session({
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, 
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, 
+    sameSite: 'Lax' 
+  }  
+}));
+
 
 connectDB()
 
@@ -23,6 +39,13 @@ app.use(cors(corsOptions))
 app.use(express.json())
 
 app.use(cookieParser())
+
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { secure: false } // Set to true if using https
+// }));
 
 app.use('/', express.static(path.join(__dirname, 'public')))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -38,8 +61,9 @@ app.use('/designs', require('./routes/designRoutes'))
 app.use('/changeRequests', require('./routes/changeRequestRoutes'))
 app.use('/tasks', require('./routes/taskRoutes'))
 app.use('/reviews', require('./routes/reviewRoutes'))
-app.use('/activity', require('./routes/activityRoutes'))
+app.use('/activities', require('./routes/activityRoutes'))
 app.use('/items', require('./routes/itemRoutes'))
+app.use('/integrations', require('./routes/integrationRoutes'))
 
 app.all('*', (req, res) => {
     res.status(404)

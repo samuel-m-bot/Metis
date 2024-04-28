@@ -55,7 +55,10 @@ import DesignsListPage from './features/designs/DesignsListPage.js'
 import ActivityListPage from './features/activity/ActivityListPage.js'
 import UserActivityList from './features/activity/UserActivityList.js'
 import ProjectsListPage from './features/projects/ProjectsListPage.js'
+import CustomerList from './features/integration/CustomerList.js'
+import ProductAnalytics from './features/products/ProductAnalytics.js'
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css'
 
 
 function App() {
@@ -144,8 +147,10 @@ function App() {
               <Route path="change-requests/:changeRequestID" element={<ChangeRequestPage />} />
               <Route path="change-requests/review/:changeRequestID" element={<ChangeRequestReview />} />
               <Route path="products" element={<ProductListPage />} />
+              <Route path="products/analytics" element={<ProductAnalytics />} />
               <Route path="products/create" element={<NewProductForm />} />
               <Route path="products/:productId" element={<Product />} />
+              <Route path="customer" element={<CustomerList />} />
               <Route path="designs" element={<DesignsListPage />} />
               <Route path="designs/:designId" element={<Design />} />
               <Route path="/change-requests" element={<Navigate to="/home" replace />} />

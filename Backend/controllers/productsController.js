@@ -1,6 +1,7 @@
 const Product = require('../models/Product')
 const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
+const axios = require('axios');
 const bcrypt = require('bcrypt')
 
 // @desc Get all products
@@ -197,7 +198,51 @@ const getProductsByProjectId = asyncHandler(async (req, res) => {
     res.json(products);
 });
 
-//Search Product
+// @desc Fetch Salesforce analytics report data
+// @route GET /services/data/v60.0/analytics/reports/{reportId}
+// @access Private
+const fetchSalesforceAnalytics = async (accessToken, reportId) => {
+    const url = `https://eu45.salesforce.com/services/data/v60.0/analytics/reports/${reportId}`;
+  
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data; 
+    } catch (error) {
+      console.error('Error fetching Salesforce analytics:', error);
+      return null;
+    }
+  };  
+
+// @desc Fetch Salesforce Product Performance Report
+// @route GET /analytics/product-performance
+// @access Private
+const fetchProductPerformanceReport = asyncHandler(async (req, res) => {
+    const accessToken = req.session.accessToken; 
+    if (!accessToken) {
+        return res.status(401).json({ message: 'Unauthorized - No access token' });
+    }
+
+    const reportId = "00O7R00000An8luUAB"; // Hardcoded report ID for the product report in salesforce
+    try {
+        const reportData = await fetchSalesforceAnalytics(accessToken, reportId);
+        if (reportData) {
+            res.json({
+                success: true,
+                data: reportData
+            });
+        } else {
+            res.status(404).json({ message: 'Report data not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching product performance report:', error);
+        res.status(500).json({ message: 'Failed to fetch report data' });
+    }
+});
 
 //Link Product To Project
 
@@ -209,5 +254,7 @@ module.exports = {
     updateProduct,
     deleteProduct,
     listProductsByCategory,
-    getProductsByProjectId
+    getProductsByProjectId,
+    fetchSalesforceAnalytics,
+    fetchProductPerformanceReport
 }

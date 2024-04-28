@@ -2,6 +2,8 @@ const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
+const jsforce = require('jsforce');
+const crypto = require('crypto');
 
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body
@@ -99,8 +101,66 @@ const logout = asyncHandler(async (req, res) => {
     res.json({ message: 'Cookie cleared' })
 })
 
+const redirectToSalesforce = (req, res) => {
+    const conn = new jsforce.Connection({
+        oauth2: {
+            clientId: process.env.SALESFORCE_CLIENT_ID,
+            clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
+            redirectUri: 'http://localhost:3500/auth/callback',
+            authorizeUrl: 'https://login.salesforce.com/services/oauth2/authorize'
+        }
+    });
+
+    const authUrl = conn.oauth2.getAuthorizationUrl({
+        response_type: 'code',
+        scope: 'full'
+    });
+
+    console.log("Redirecting to Salesforce:", authUrl);
+    res.redirect(authUrl);
+};
+
+const handleSalesforceCallback = async (req, res) => {
+    const { code } = req.query;
+    const conn = new jsforce.Connection({
+        oauth2: {
+            clientId: process.env.SALESFORCE_CLIENT_ID,
+            clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
+            redirectUri: 'http://localhost:3500/auth/callback'
+        }
+    });
+
+    try {
+        await conn.authorize(code);
+        console.log('Access Token:', conn.accessToken);
+        req.session.accessToken = conn.accessToken;
+        req.session.refreshToken = conn.refreshToken;
+        res.redirect('http://localhost:3000/home');
+    } catch (error) {
+        console.error('Salesforce authorization error:', error);
+        res.status(500).send('Authentication error');
+    }
+};
+
+const checkAccessToken = asyncHandler(async (req, res) => {
+    if (req.session.accessToken) {
+        return res.status(200).json({
+            message: 'Access Token is present',
+            accessToken: req.session.accessToken  
+        });
+    } else {
+        return res.status(404).json({
+            message: 'No Access Token found'
+        });
+    }
+});
+
+
 module.exports = {
     login,
     refresh,
-    logout
+    logout,
+    redirectToSalesforce,
+    handleSalesforceCallback,
+    checkAccessToken
 }

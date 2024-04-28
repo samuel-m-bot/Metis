@@ -98,6 +98,27 @@ export const productsApiSlice = apiSlice.injectEndpoints({
                 } else return [{ type: 'Product', id: 'LIST' }];
             }
         }),
+        fetchProductPerformanceReport: builder.query({
+            query: () => ({
+                url: `/products/analytics/product-performance`,
+                method: 'GET'
+            }),
+            transformResponse: responseData => {
+                const { factMap } = responseData.data;
+                return {
+                    salesPerformance: factMap["T!T"].aggregates[0].value,
+                    customerFeedbackSummary: factMap["T!T"].rows.map(row => ({
+                        productId: row.dataCells[0].value,
+                        productName: row.dataCells[1].label,
+                        customerFeedback: row.dataCells[2].label,
+                        productDescription: row.dataCells[3].label,
+                        lifecycleStage: row.dataCells[4].label,
+                        salesAmount: parseFloat(row.dataCells[5].label.replace(/,/g, ''))
+                    }))
+                };
+            },            
+            providesTags: ['Report']
+        }),
     }),
 })
 
@@ -109,7 +130,8 @@ export const {
     useUpdateProductMutation,
     useDeleteProductMutation,
     useLazyGetProductsQuery,
-    useGetProductsByProjectIdQuery
+    useGetProductsByProjectIdQuery,
+    useFetchProductPerformanceReportQuery
 } = productsApiSlice
 
 // returns the query result object

@@ -3,6 +3,7 @@ const User = require('../models/User')
 const Activity = require('../models/Activity')
 const asyncHandler = require('express-async-handler')
 const bcrypt = require('bcrypt')
+const axios = require('axios');
 
 // @desc Get all projects
 // @route GET /projects
@@ -494,6 +495,74 @@ const getUserPermissions = asyncHandler(async (req, res) => {
     res.json(permissions);
 });
 
+// @desc Get Salesforce contact and associated account information for a project
+// @route GET /projects/:id/customer
+// @access Private
+const getSalesforceCustomer = asyncHandler(async (req, res) => {
+    const projectId = req.params.id;
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+    }
+
+    if (!project.salesforceCustomerId) {
+        return res.status(404).json({ message: 'No Salesforce contact linked to this project' });
+    }
+
+    const accessToken = req.session.accessToken; 
+    if (!accessToken) {
+        return res.status(401).json({ message: 'Salesforce access token is not available. Please log in again.' });
+    }
+
+    try {
+        const url = `https://eu45.salesforce.com/services/data/v60.0/sobjects/Contact/${project.salesforceCustomerId}?fields=FirstName,LastName,Email,AccountId,Account.Name,Account.Phone,Account.Description,Account.BillingStreet,Account.BillingCity,Account.BillingState,Account.BillingPostalCode,Account.BillingCountry,Account.ShippingStreet,Account.ShippingCity,Account.ShippingState,Account.ShippingPostalCode,Account.ShippingCountry`;
+        const headers = {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers });
+        res.json(response.data);  
+    } catch (error) {
+        console.error('Failed to fetch contact and account from Salesforce:', error);
+        res.status(500).json({ message: 'Failed to fetch contact and account data from Salesforce' });
+    }
+});
+
+// @desc Update Salesforce customer ID for a project
+// @route PATCH /projects/:id/customer
+// @access Private
+const updateProjectCustomer = asyncHandler(async (req, res) => {
+    const { customerId } = req.body;  
+    const projectId = req.params.id;
+
+    if (!customerId) {
+        return res.status(400).json({ message: 'Customer ID is required' });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Check if the current customer ID is the same as the new one
+    if (project.salesforceCustomerId === customerId) {
+        return res.status(409).json({ message: 'This customer is already linked to the project' });
+    }
+
+    try {
+        project.salesforceCustomerId = customerId; 
+        const updatedProject = await project.save(); 
+        res.status(200).json({
+            message: 'Salesforce customer ID updated successfully',
+            project: updatedProject
+        });
+    } catch (error) {
+        console.error('Error updating the project:', error);
+        res.status(500).json({ message: 'Failed to update the project' });
+    }
+});
 
 //GenerateProjectReport (complex endpoint tba)
 
@@ -515,5 +584,7 @@ module.exports = {
     archiveProject,
     getReviewers,
     getProjectManagerById,
-    getUserPermissions
+    getUserPermissions,
+    getSalesforceCustomer,
+    updateProjectCustomer
 }

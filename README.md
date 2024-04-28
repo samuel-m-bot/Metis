@@ -1,6 +1,10 @@
 # Metis
 PLM system
 
+**Prerequisite :**<br />
+-nodejs is installed on the device<br />
+-Visuial studio code is installed<br />
+
 **Build steps:**<br />
 -Clone the Repository:<br />
 -Use git clone [repository-url] to clone the repo into your desired directory or unzip it.<br />

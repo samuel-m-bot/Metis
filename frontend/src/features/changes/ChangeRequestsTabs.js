@@ -1,42 +1,25 @@
 import React, { useState } from 'react';
-import { Tab, Tabs } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
+import { Tab, Tabs, Dropdown, Button, ButtonGroup } from 'react-bootstrap';
 import './ChangeRequest.css'
 import RelatedItems from '../../components/RelatedItems';
 import ChangeRequestDetails from '../../components/ChangeRequestDetails';
-import { Dropdown, Button, ButtonGroup } from 'react-bootstrap';
 import EditChangeRequestModal from './EditChangeRequestModal'
 import useAuth from '../../hooks/useAuth';
 import HistoryCommentsTab from '../../components/HistoryCommentsTab';
+import { useGetChangeRequestByIdQuery } from './changeRequestsApiSlice';
+import LoadingSpinner from "../../components/LoadingSpinner";
 
-const ChangeRequestTabs = ({changeRequestData}) => {
-  const {isAdmin, isProjectManager} = useAuth()
+const ChangeRequestTabs = () => {
+  const { changeRequestID } = useParams();
+  const { data: changeRequestData, isLoading, isError, error } = useGetChangeRequestByIdQuery(changeRequestID);
+  const { isAdmin, isProjectManager } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [key, setKey] = useState('details');
 
   console.log(changeRequestData)
-  const changeRequests = [
-    {
-      id: 'CR001',
-      title: 'Update Project Scope',
-      status: 'Completed',
-      reviews: [
-        {
-          reviewer: 'Alice Johnson',
-          role: 'Project Manager',
-          date: '2021-04-20',
-          feedback: 'Approved with minor revisions needed.',
-          decision: 'Approved',
-        },
-        {
-          reviewer: 'Bob Smith',
-          role: 'Quality Assurance',
-          date: '2021-04-22',
-          feedback: 'All checks passed. No further changes required.',
-          decision: 'Approved',
-        },
-      ],
-    },
-  ];
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div>Error fetching change request: {error?.data?.message || 'Unknown error'}</div>;
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -89,7 +72,7 @@ const ChangeRequestTabs = ({changeRequestData}) => {
             <h3>Change Request Reviews</h3>
             <p>This section provides an overview of each change request's review process, including reviewer feedback and approval status.</p>
 
-            {changeRequests.map((cr, index) => (
+            {/* {changeRequestData.map((cr, index) => (
               <div key={index} className="change-request-review">
                 <h4>{`Change Request: ${cr.title} (${cr.id})`}</h4>
                 <p>Status: <strong>{cr.status}</strong></p>
@@ -104,7 +87,7 @@ const ChangeRequestTabs = ({changeRequestData}) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cr.reviews.map((review, index) => (
+                    {cr?.reviews.map((review, index) => (
                       <tr key={index}>
                         <td>{review.reviewer}</td>
                         <td>{review.role}</td>
@@ -116,7 +99,7 @@ const ChangeRequestTabs = ({changeRequestData}) => {
                   </tbody>
                 </table>
               </div>
-            ))}
+            ))} */}
           </div>
         </Tab>
 

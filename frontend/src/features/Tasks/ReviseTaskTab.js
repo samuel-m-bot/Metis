@@ -22,12 +22,21 @@ const ReviseTaskTab = ({ task }) => {
 
   const handleNavigateToItem = async (itemId, itemType) => {
     try {
-      const itemTypeLower = itemType.toLowerCase();
-      navigate(`/${itemTypeLower}s/${itemId}`);
+        let path;
+        const itemTypeLower = itemType.toLowerCase();
+
+        console.log(itemTypeLower)
+        if (itemTypeLower === 'changerequest') {
+            path = 'change-requests';
+        } else {
+            path = `${itemTypeLower}s`;
+        }
+
+        navigate(`/${path}/${itemId}`);
     } catch (error) {
-      console.error("Failed to navigate:", error);
+        console.error("Failed to navigate:", error);
     }
-  };  
+};
 
   if (isCRLoading || reviewLoading) return <div>Loading details...</div>;
   if (reviewError) return <div>Error loading review: {reviewError.message}</div>;

@@ -56,7 +56,7 @@ const createNewReview = asyncHandler(async (req, res) => {
         actionType: 'Created',
         description: `New review was created with ID ${review._id}`,
         createdBy: req.user._id,
-        relatedTo: project._id,
+        relatedTo: createdReview._id,
         onModel: 'Review',
         ipAddress: req.ip,
         deviceInfo: req.headers['user-agent']
@@ -86,7 +86,7 @@ const updateReview = asyncHandler(async (req, res) => {
         actionType: 'Updated',
         description: `Updated review was created with ID ${review._id}`,
         createdBy: req.user._id,
-        relatedTo: project._id,
+        relatedTo: updatedReview._id,
         onModel: 'Review',
         ipAddress: req.ip,
         deviceInfo: req.headers['user-agent']
@@ -113,7 +113,7 @@ const deleteReview = asyncHandler(async (req, res) => {
         actionType: 'Deleted',
         description: `Review with ID ${review._id} was deleted`,
         createdBy: req.user._id,
-        relatedTo: project._id,
+        relatedTo: review._id,
         onModel: 'Review',
         ipAddress: req.ip,
         deviceInfo: req.headers['user-agent']
@@ -277,7 +277,7 @@ const processRejectionWorkflow = async (review, req, res) => {
         await observeTask.save();
 
         const activity = new Activity({
-            actionType: 'Update',
+            actionType: 'Updated',
             description: `Review Failed task: ${observeTask.id} updated to complete`,
             relatedTo: observeTask.id,
             onModel: 'Task',

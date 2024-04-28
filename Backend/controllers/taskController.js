@@ -75,6 +75,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
     const tasks = await Task.find()
         .populate('assignedTo', 'firstName surname')
         .populate('projectId', 'name')
+        .sort({ creationDate: -1 }) 
         .skip(skip)
         .limit(limit);
 
@@ -91,7 +92,6 @@ const getAllTasks = asyncHandler(async (req, res) => {
         currentPage: page
     });
 });
-
 
 // @desc Get task by ID
 // @route GET /tasks/:id
@@ -118,6 +118,7 @@ const getUserTasks = asyncHandler(async (req, res) => {
     }
 
     const tasks = await Task.find({ assignedTo: { $in: [userId] } })
+        .sort({ creationDate: -1 }) 
         .skip(skip)
         .limit(limit);
 
@@ -134,8 +135,6 @@ const getUserTasks = asyncHandler(async (req, res) => {
         currentPage: page
     });
 });
-
-
 
 // @desc Update a task
 // @route PATCH /tasks/:id
@@ -399,6 +398,7 @@ const getTasksByProjectId = asyncHandler(async (req, res) => {
 
     const tasks = await Task.find({ projectId })
         .populate('assignedTo', 'firstName surname')
+        .sort({ creationDate: -1 }) 
         .skip(skip)
         .limit(limit);
 
@@ -416,13 +416,13 @@ const getTasksByProjectId = asyncHandler(async (req, res) => {
     });
 });
 
-
 // @desc Manages review related tasks including marking the setup task as complete, creating review tasks for each reviewer, and setting up an observation task
 // @route POST /tasks/manage-review-tasks
 // @access Private
 const manageReviewTasks = asyncHandler(async (req, res) => {
     const { reviewId, projectId, reviewers, taskDetails, isChangeRequest } = req.body;
 
+    console.log(reviewId)
     const requestUserId = req.user._id; 
     try {
         if (!isChangeRequest) {

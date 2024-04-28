@@ -24,6 +24,7 @@ const ObserveTab = ({ task }) => {
         <div className="card-header">
           Reviewer Feedback
         </div>
+        {console.log(task)}
         {review.reviewers.map(reviewer => (
           <div key={reviewer._id} className="card mb-2">
             <div className="card-body">

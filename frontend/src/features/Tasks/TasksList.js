@@ -1,5 +1,4 @@
-// TasksList.js
-import React from 'react';
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useGetTasksQuery } from './tasksApiSlice';
 import Task from './Task';
@@ -9,10 +8,15 @@ import useAuth from '../../hooks/useAuth';
 const TasksList = () => {
     const navigate = useNavigate();
     const { isAdmin, isProjectManager } = useAuth();
-    const { data, isLoading, isError, error } = useGetTasksQuery();
+    const [currentPage, setCurrentPage] = useState(1);
+    const { data, isLoading, isError, error } = useGetTasksQuery(currentPage);
 
     const handleCreateNewTask = () => {
         navigate('/admin-dashboard/tasks/create');
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
     };
 
     if (isLoading) return <LoadingSpinner />;
@@ -51,10 +55,20 @@ const TasksList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {console.log(data)}
                     {data?.tasks?.ids.map(taskId => <Task key={taskId} task={data.tasks.entities[taskId]} />)}
                 </tbody>
             </table>
+            <nav>
+                <ul className="pagination">
+                    {Array.from({ length: data.totalPages }, (_, i) => (
+                        <li key={i + 1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                            <button className="page-link" onClick={() => handlePageChange(i + 1)}>
+                                {i + 1}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
         </div>
     );
 };

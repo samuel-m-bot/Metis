@@ -6,7 +6,7 @@ const activitySchema = new mongoose.Schema({
         required: true,
         enum: ['Created', 'Updated', 'Reviewed', 'Commented', 'Completed', 'Approved', 
         'Rejected', 'Deleted', 'RevisionUpdate' , 'Checked Out', 'Checked In', 
-        'Added', 'Removed','Cancelled','Implemented','Other'],
+        'Added', 'Removed','Cancelled','Implemented','Other', 'Downloaded'],
     },
     description: {
         type: String,

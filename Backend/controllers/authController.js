@@ -6,30 +6,26 @@ const jsforce = require('jsforce');
 const crypto = require('crypto');
 
 const login = asyncHandler(async (req, res) => {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
-    if(!email || !password){
-        return res.status(400).json({ message: 'All fields are required'})
+    if (!email || !password) {
+        return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const foundUser = await User.findOne({ email }).exec()
+    try {
+        const foundUser = await User.findOne({ email }).exec();
+        if (!foundUser) {
+            console.log("EMAIL not found for:", email);
+            return res.status(401).json({ message: 'Unauthorized - Incorrect information' });
+        }
 
-    if(!foundUser){
-        console.log("EMAIL")
-        return res.status(401).json({ message: 'Unauthorized - Incorrect information'})
-    }
-      
+        const match = await bcrypt.compare(password, foundUser.passwordHash);
+        if (!match) {
+            console.log("PASSWORD mismatch for:", email);
+            return res.status(401).json({ message: 'Unauthorized - Incorrect information' });
+        }
 
-    const match = await bcrypt.compare(password, foundUser.passwordHash)
-
-    if(!match){
-        console.log("PASSWORD")
-        return res.status(401).json({ message: 'Unauthorized - Incorrect information'})
-    }
-
-    console.log(foundUser.email)
-    const accessToken = jwt.sign(
-        {
+        const accessToken = jwt.sign({
             "UserInfo": {
                 "id": foundUser._id,
                 "email": foundUser.email,
@@ -37,26 +33,28 @@ const login = asyncHandler(async (req, res) => {
                 "surname": foundUser.surname,
                 "roles": foundUser.roles
             }
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '1h'}
-    )
+        }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
-    const refreshToken = jwt.sign(
-        {"id": foundUser._id, "email": foundUser.email},
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: '5d'}
-    )
+        const refreshToken = jwt.sign(
+            {"id": foundUser._id, "email": foundUser.email},
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '5d'}
+        );
 
-    res.cookie('jwt', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        maxAge: 7 * 24 * 60 * 60 * 1000
-    })
+        res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
-    res.json({ accessToken })
-})
+        res.json({ accessToken });
+    } catch (error) {
+        console.error("Login process error for:", email, error);
+        res.status(500).json({ message: 'Internal server error during login' });
+    }
+});
+
 
 const refresh = asyncHandler(async (req, res) => {
     const cookies = req.cookies

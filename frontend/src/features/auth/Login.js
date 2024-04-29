@@ -4,6 +4,7 @@ import { useLoginMutation } from './authApiSlice'
 import { useDispatch } from 'react-redux'
 import { setCredentials } from './authSlice'
 import usePersist from '../../hooks/usePersist'
+import metisLogo from '../../img/metis-logo-no-background.png' // Ensure correct import for image
 
 const Login = () => {
     const userRef = useRef()
@@ -15,94 +16,87 @@ const Login = () => {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
-
-    const [login, {isLoading} ] = useLoginMutation()
+    const [login, { isLoading }] = useLoginMutation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        try{
-            const {accessToken, role} = await login({email, password}).unwrap()
-            console.log(role)
-            dispatch(setCredentials({ accessToken, role}))
+        try {
+            const { accessToken, role } = await login({ email, password }).unwrap()
+            dispatch(setCredentials({ accessToken, role }))
             setEmail('')
             setPassword('')
-            navigate('/home');
-        } catch (err){
-            if(!errMsg.status) {
+            navigate('/home')
+        } catch (err) {
+            if (!err.status) {
                 setErrMsg('No server response')
-            }else if(err.status === 400) {
+            } else if (err.status === 400) {
                 setErrMsg('Missing email or Password')
-            }else if(err.status === 401){
+            } else if (err.status === 401) {
                 setErrMsg('Unauthorized')
-            }else{
+            } else {
                 setErrMsg(err.message || err.data?.message)
             }
             errRef.current.focus()
         }
     }
 
-    const handleIDInput = (e) => setEmail(e.target.value)
-    const handlePwdInput = (e) => setPassword(e.target.value)
-    const handleToggle = (e) => setPersist(prev => !prev)
-
-    const errClass = errMsg ? "errmsg" : "offscreen"
-
-    const content = (
-        <>
-        <div className='LoginContent'>
-            <div className='LoginContainer'>
-            <div className="welcome_content_logo">
-                logo placeholder
-            </div>
-                <h2>Sign In</h2>
-                <p ref={errRef} className={errClass} aria-live="assertive">{errMsg}</p>
-                <p>Please sign in or register in order to continue</p>
-                <form className="viewerLoginForm" onSubmit={handleSubmit}>
-                        <input
-                            className="viewerLoginInput"
-                            type="text"
-                            id="email"
-                            ref={userRef}
-                            value={email}
-                            onChange={handleIDInput}
-                            autoComplete="off"
-                            placeholder='Email'
-                            required
-                        />
-
-                        <input
-                            className="viewerLoginInput"
-                            type="password"
-                            id="password"
-                            onChange={handlePwdInput}
-                            value={password}
-                            placeholder='Password'
-                            required
-                        />
-                        <div className="ForgotPassContainer">
-                            <Link  className='ForgotPass' to="/employeeLogin">Forgot password?</Link>
+    return (
+        <div className="container my-5">
+            <div className="row justify-content-center">
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="text-center">
+                                <img src={metisLogo} alt="Metis Logo" className="mb-4 img-fluid" style={{ maxWidth: '150px' }} />
+                                <h2 className="card-title">Sign In</h2>
+                                <p ref={errRef} className={errMsg ? "alert alert-danger" : "offscreen"} aria-live="assertive">{errMsg}</p>
+                                <p>Please sign in or register in order to continue.</p>
+                            </div>
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <input
+                                        className="form-control"
+                                        type="text"
+                                        id="email"
+                                        ref={userRef}
+                                        value={email}
+                                        onChange={e => setEmail(e.target.value)}
+                                        autoComplete="off"
+                                        placeholder='Email'
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <input
+                                        className="form-control"
+                                        type="password"
+                                        id="password"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        placeholder='Password'
+                                        required
+                                    />
+                                </div>
+                                <div className="d-flex justify-content-between mb-3">
+                                    <button type="submit" className="btn btn-primary" disabled={isLoading}><b>Login</b></button>
+                                </div>
+                                <div className="form-check mb-3">
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        id="persist"
+                                        onChange={() => setPersist(prev => !prev)}
+                                        checked={persist}
+                                    />
+                                    <label className="form-check-label" htmlFor="persist">Stay logged in?</label>
+                                </div>
+                            </form>
                         </div>
-                        <button className="viewerLoginSubmitButton"><b>Login</b></button>
-
-                        <label htmlFor="persist" className="userLoginPersistLabel">
-                            <input
-                                type="checkbox"
-                                className="form__checkbox"
-                                id="persist"
-                                onChange={handleToggle}
-                                checked={persist}
-                            />
-                            Stay logged in?
-                        </label>
-                    </form>
-                    <div className='signUpContainer'>
-                        <p>Don’t have an account? <Link  className='signUp' to="/signUp"><b>Sign up</b></Link></p>
                     </div>
+                </div>
             </div>
         </div>
-        </>
     )
-  return content
 }
 
 export default Login

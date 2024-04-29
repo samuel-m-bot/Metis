@@ -78,14 +78,21 @@ app.all('*', (req, res) => {
 
 app.use(errorHandler)
 
-mongoose.connection.once('open', () => {
-    console.log('Connected to MongoDB')
-    app.listen(PORT, () => { 
-      console.log(`Server is running on port ${PORT}`)
-    })
-  })
+if (require.main === module) {
+  // This will true if file is run directly (e.g., node server.js), but false if required (like in tests)
+  mongoose.connection.once('open', () => {
+      console.log('Connected to MongoDB');
+      server.listen(PORT, () => { 
+          console.log(`Server is running on port ${PORT}`);
+      });
+  });
+}
+
   
   mongoose.connection.on('error', err => {
     console.log(err)
     logEvents(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`, 'mongoErrLog.log')
   })
+
+  // At the end of your server.js or app.js
+module.exports = app; // Export the Express application instance

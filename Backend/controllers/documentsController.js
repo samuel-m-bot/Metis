@@ -84,18 +84,29 @@ const createNewDocument = asyncHandler(async (req, res) => {
     // Automatically set the creation date to now
     document.creationDate = Date.now();
 
-    const createdDocument = await document.save();
+        let createdDocument;
+    try {
+        createdDocument = await document.save();
+    } catch (error) {
+        console.error("Error saving document:", error);
+        return res.status(500).json({ message: 'Failed to save document', error: error.message });
+    }
 
-    const activity = new Activity({
-        actionType: 'Created',
-        description: `New document '${createdDocument.title}' was created with ID ${createdDocument._id}`,
-        createdBy: req.user._id,
-        relatedTo: createdDocument._id,
-        onModel: 'Document',
-        ipAddress: req.ip,
-        deviceInfo: req.headers['user-agent']
-    });
-    await activity.save();
+    if (!createdDocument) {
+        return res.status(500).json({ message: 'Document not created' });
+    }
+
+
+    // const activity = new Activity({
+    //     actionType: 'Created',
+    //     description: `New document '${createdDocument.title}' was created with`,
+    //     createdBy: req.user._id,
+    //     relatedTo: createdDocument._id,
+    //     onModel: 'Document',
+    //     ipAddress: req.ip,
+    //     deviceInfo: req.headers['user-agent']
+    // });
+    // await activity.save();
 
     res.status(201).json(createdDocument);
 
@@ -107,28 +118,17 @@ const createNewDocument = asyncHandler(async (req, res) => {
 const updateDocument = asyncHandler(async (req, res) => {
     const documentId = req.params.id;
     const document = await Document.findById(documentId);
-
-    console.log(req.body)
     if (!document) {
         return res.status(404).json({ message: 'Document not found' });
     }
 
-    // Update fields if provided
-    document.projectId = req.body.projectId || document.projectId;
-    document.title = req.body.title || document.title;
-    document.type = req.body.type || document.type;
-    document.description = req.body.description || document.description;
-    document.revisionNumber = req.body.revisionNumber || document.revisionNumber;
-    document.associatedProductIDs = req.body.associatedProductIDs || document.associatedProductIDs;
-    document.authors = req.body.authors || document.authors;
-    document.status = req.body.status || document.status;
-    document.relatedDocuments = req.body.relatedDocuments || document.relatedDocuments;
-    document.comments = req.body.comments || document.comments;
-    document.classification = req.body.classification || document.classification;
-    // Automatically set the last modified date to now
-    document.lastModifiedDate = Date.now();
+    const fieldsToUpdate = ['projectId', 'title', 'type', 'description', 'revisionNumber', 'associatedProductIDs', 'authors', 'status', 'relatedDocuments', 'comments', 'classification'];
+    fieldsToUpdate.forEach(field => {
+        if (req.body.hasOwnProperty(field)) {
+            document[field] = req.body[field];
+        }
+    });
 
-    // Prepare the attachment data if a new file is uploaded
     if (req.fileUrl) {
         document.attachment = {
             filePath: req.fileUrl,
@@ -136,22 +136,26 @@ const updateDocument = asyncHandler(async (req, res) => {
         };
     }
 
-    const updatedDocument = await document.save();
+    document.lastModifiedDate = Date.now();
 
-    const activity = new Activity({
-        actionType: 'Updated',
-        description: `Document '${updatedDocument.title}' was updated with ID ${updatedDocument._id}`,
-        createdBy: req.user._id,
-        relatedTo: updatedDocument._id,
-        onModel: 'Document',
-        ipAddress: req.ip,
-        deviceInfo: req.headers['user-agent']
-    });
-    await activity.save();
-
-    res.json({ message: `Document '${updatedDocument._id}' updated successfully.` });
-
+    try {
+        const updatedDocument = await document.save();
+        const activity = new Activity({
+            actionType: 'Updated',
+            description: `Document '${updatedDocument.title}' was updated with ID ${updatedDocument._id}`,
+            createdBy: req.user._id,
+            relatedTo: updatedDocument._id,
+            onModel: 'Document',
+            ipAddress: req.ip,
+            deviceInfo: req.headers['user-agent']
+        });
+        await activity.save();
+        res.json({ message: `Document '${updatedDocument._id}' updated successfully.`, updatedDocument });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to update document', error: error.message });
+    }
 });
+
 
 // @desc Delete a document form the cloud and database
 // @route DELETE /documents

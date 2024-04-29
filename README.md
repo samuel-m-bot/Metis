@@ -22,3 +22,7 @@ PLM system
 -Open two terminal windows in Visual Studio Code.<br />
 -In the first terminal (backend), run: npm run dev<br />
 -In the second terminal (frontend), run: npm start
+
+- sign in to salesforce with this:
+samuelmongare2002-94cb@force.com
+password:BleachBestanime2021

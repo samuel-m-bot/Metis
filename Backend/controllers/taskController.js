@@ -479,16 +479,17 @@ const manageReviewTasks = asyncHandler(async (req, res) => {
             assignedProduct: taskDetails?.assignedProduct
         });
 
-        const observerTaskCreationActivity = new Activity({
-            actionType: 'Created',
-            description: `Observer task created for observing the review process of ${taskDetails.relatedTo}, assigned to user ${observerId}. Task ID: ${observeTask._id}`,
-            createdBy: observerId, 
-            relatedTo: observeTask._id,
-            onModel: 'Task',
-            ipAddress: req.ip,
-            deviceInfo: req.headers['user-agent']
-        });
-        await observerTaskCreationActivity.save();
+
+        // const observerTaskCreationActivity = new Activity({
+        //     actionType: 'Created',
+        //     description: `Observer task created for observing the review process of ${taskDetails.relatedTo}, assigned to user ${observerId}. Task ID: ${observeTask._id}`,
+        //     createdBy: observerId, 
+        //     relatedTo: observeTask._id,
+        //     onModel: 'Task',
+        //     ipAddress: req.ip,
+        //     deviceInfo: req.headers['user-agent']
+        // });
+        // await observerTaskCreationActivity.save();
 
         await observeTask.save();
 

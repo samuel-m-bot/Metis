@@ -325,7 +325,7 @@ const processRejectionWorkflow = async (review, req, res) => {
     res.status(200).json({ message: 'Review rejected, pending tasks cancelled, and revise task created' });
 };
 
-const handleChangeRequestApproval = async (review) => {
+const handleChangeRequestApproval = async (review,req) => {
     try {
         const changeRequest = await ChangeRequest.findById(review.itemReviewed);
         if (!changeRequest) {
@@ -425,7 +425,8 @@ const processCompletionWorkflow = async (review, req, res) => {
 
         const Model = models[review.onModel];
         if (review.onModel === 'ChangeRequest') {
-            const result = await handleChangeRequestApproval(review);
+            console.log("Change rweqrqwer");
+            const result = await handleChangeRequestApproval(review,req);
             console.log(result.message);
         }else  if (review.reviewType === 'Update') {
             const changeRequest = await models.ChangeRequest.findById(observeTask.assignedChangeRequest);

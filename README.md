@@ -23,6 +23,14 @@ PLM system
 -In the first terminal (backend), run: npm run dev<br />
 -In the second terminal (frontend), run: npm start
 
-- sign in to salesforce with this:
+**All passwords are: theskyisblue**<br />
+**emails and roles:**<br />
+admin@gmail.com - Admin<br />
+tom@gmail.com - Project manager<br />
+bob@gmail.com - Engineer <br />
+gojo@gmail.com - Engineer <br />
+ben@gmail.com - Sales <br />
+
+**sign in to salesforce with this:**<br />
 samuelmongare2002-94cb@force.com
 password:BleachBestanime2021

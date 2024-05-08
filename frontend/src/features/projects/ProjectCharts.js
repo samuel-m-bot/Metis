@@ -1,4 +1,5 @@
 import { useGetTasksByProjectIdQuery } from '../Tasks/tasksApiSlice';
+import useFetchAllTasks from '../Tasks/useFetchAllTasks';
 import ProgressHorizontalBarChart from '../Tasks/ProgressHorizontalBarChart';
 import TimeChart from './TimeChart';
 import CostBarChart from './CostBarChart';
@@ -6,15 +7,11 @@ import ProjectWorkloadChart from './ProjectWorkloadChart';
 import TasksDoughnutChart from '../Tasks/TasksDoughnutChart';
 
 const ProjectCharts = ({ projectId }) => {
-  const {
-    data: tasks,
-    isLoading: tasksLoading,
-    isError: tasksError,
-    error: tasksErrorDetails,
-  } = useGetTasksByProjectIdQuery(projectId);
+  const { tasks, isLoading, isError } = useFetchAllTasks(projectId);
 
-  if (tasksLoading) return <p>Loading tasks...</p>;
-  if (tasksError) return (
+  console.log(tasks)
+  if (isLoading) return <p>Loading tasks...</p>;
+  if (isError) return (
     <div className="alert alert-info" role="alert">
       <h4 className="alert-heading">No Tasks Available</h4>
       <p>There are no tasks for this project; therefore, no charts can be presented.</p>
